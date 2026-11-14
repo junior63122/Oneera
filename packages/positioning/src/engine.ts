@@ -80,6 +80,11 @@ export interface EngineOptions {
    * doit être revalidé par la métrologie terrain (part de la vérité dans r68 ≈ 68 %).
    */
   radiusInflation: number;
+  /**
+   * Apprendre en ligne l'atténuation supplémentaire due à la foule (dB/m) par rapport à la carte radio
+   * (calibrée à vide). Chaque particule porte sa propre hypothèse, sélectionnée par les mesures.
+   */
+  learnCrowdLoss: boolean;
   seed: number;
 }
 
@@ -94,10 +99,12 @@ export const DEFAULT_ENGINE_OPTIONS: EngineOptions = {
   negativeEvidence: false,
   injectionRate: 0.08,
   radiusInflation: 1.35,
+  learnCrowdLoss: true,
   seed: 7,
 };
 
 const LOG_SQRT_2PI = 0.5 * Math.log(2 * Math.PI);
+const clampCrowd = (c: number) => Math.min(0.9, Math.max(-0.15, c));
 
 export class PositioningEngine {
   readonly opts: EngineOptions;
@@ -109,6 +116,7 @@ export class PositioningEngine {
   private w: Float64Array;
   private scale: Float64Array; // facteur de longueur de pas propre à chaque particule
   private hbias: Float64Array; // biais de cap propre à chaque particule (perturbations magnétiques)
+  private crowd: Float64Array; // atténuation foule supposée (dB/m) propre à chaque particule
   private initialized = false;
   private lastT = 0;
   private lastObsT = -Infinity;
@@ -129,6 +137,7 @@ export class PositioningEngine {
     this.w = new Float64Array(this.n).fill(1 / this.n);
     this.scale = new Float64Array(this.n).fill(1);
     this.hbias = new Float64Array(this.n);
+    this.crowd = new Float64Array(this.n);
   }
 
   get isInitialized(): boolean {
@@ -161,8 +170,10 @@ export class PositioningEngine {
     // Si des pas ont été intégrés, le PDR porte déjà le mouvement : diffusion résiduelle faible.
     const q = this.stepsSinceUpdate > 0 ? 0.1 : this.still ? this.opts.diffusionStill : this.opts.diffusionUnknown;
     const sd = q * Math.sqrt(dt);
+    const cd = 0.01 * Math.sqrt(dt);
     for (let i = 0; i < this.n; i++) {
       this.moveParticle(i, this.rng.normal(0, sd), this.rng.normal(0, sd));
+      if (this.opts.learnCrowdLoss) this.crowd[i] = clampCrowd(this.crowd[i] + this.rng.normal(0, cd));
     }
     this.stepsSinceUpdate = 0;
     this.normalize();
@@ -305,7 +316,9 @@ export class PositioningEngine {
         // La moyenne de k paquets réduit le bruit rapide, pas l'erreur de modèle.
         const k = Math.max(1, o.count ?? 1);
         const s = Math.sqrt(radio.sigma[bi] ** 2 * 0.7 + (radio.sigma[bi] ** 2 * 0.3) / k);
-        const z = (o.rssi - radio.expectedAt(bi, fi, cell)) / s;
+        const b = this.venue.def.beacons[bi];
+        const extra = this.crowd[i] * Math.max(0, Math.hypot(this.x[i] - b.pos.x, this.y[i] - b.pos.y) - 1);
+        const z = (o.rssi - radio.expectedAt(bi, fi, cell) + extra) / s;
         const gauss = Math.exp(-0.5 * z * z - LOG_SQRT_2PI) / s;
         ll += Math.log((1 - eps) * gauss + eps / 60);
       }
@@ -368,6 +381,7 @@ export class PositioningEngine {
     const nf = new Uint8Array(n);
     const ns = new Float64Array(n);
     const nh = new Float64Array(n);
+    const nc = new Float64Array(n);
     const step = 1 / n;
     let u = this.rng.next() * step;
     let c = this.w[0];
@@ -379,6 +393,7 @@ export class PositioningEngine {
       nf[i] = this.f[j];
       ns[i] = this.scale[j];
       nh[i] = this.hbias[j];
+      nc[i] = this.crowd[j];
       u += step;
     }
     this.x = nx;
@@ -386,6 +401,7 @@ export class PositioningEngine {
     this.f = nf;
     this.scale = ns;
     this.hbias = nh;
+    this.crowd = nc;
     this.w.fill(1 / n);
     // Rajeunissement : petite perturbation praticable pour éviter l'appauvrissement.
     for (let i = 0; i < n; i++) {
@@ -418,13 +434,18 @@ export class PositioningEngine {
     const ll = new Float64Array(cand.length);
     let max = -Infinity;
     const idx = obs.map((o) => this.venue.beaconIndex.get(o.beaconId)!);
+    const c0 = this.opts.learnCrowdLoss ? this.crowdPrior() : 0;
+    const gridOf = this.venue.def.floors.map((f) => this.venue.grid(f.id));
     for (let k = 0; k < cand.length; k++) {
       const c = cand[k];
       let l = 0;
       for (let j = 0; j < obs.length; j++) {
         const bi = idx[j];
         const sd = this.radio.sigma[bi];
-        const z = (obs[j].rssi - this.radio.expectedAt(bi, c.fi, c.cell)) / sd;
+        const b = this.venue.def.beacons[bi];
+        const pc = gridOf[c.fi].centerOfIndex(c.cell);
+        const extra = c0 * Math.max(0, Math.hypot(pc.x - b.pos.x, pc.y - b.pos.y) - 1);
+        const z = (obs[j].rssi - this.radio.expectedAt(bi, c.fi, c.cell) + extra) / sd;
         l += Math.log((1 - eps) * Math.exp(-0.5 * z * z) / sd + eps / 60);
       }
       ll[k] = l * this.opts.bleTemper;
@@ -456,6 +477,19 @@ export class PositioningEngine {
 
   private candidates: { fi: number; cell: number }[] | null = null;
 
+  /** Atténuation foule courante (moyenne pondérée), ou a priori si non initialisé. */
+  private crowdPrior(): number {
+    if (!this.initialized || !this.opts.learnCrowdLoss) return 0.1;
+    let s = 0;
+    for (let i = 0; i < this.n; i++) s += this.w[i] * this.crowd[i];
+    return s;
+  }
+
+  /** Atténuation due à la foule actuellement estimée (dB/m) — utile à l'exploitation et au débogage. */
+  get crowdLossEstimate(): number {
+    return this.crowdPrior();
+  }
+
   private initializeFromBle(obs: BleObservation[]): void {
     const pts = this.sampleFromBle(obs, this.n);
     pts.forEach((p, i) => {
@@ -464,6 +498,7 @@ export class PositioningEngine {
       this.f[i] = p.f;
       this.scale[i] = 1 + this.rng.normal(0, 0.12);
       this.hbias[i] = this.rng.normal(0, 0.25);
+      this.crowd[i] = this.opts.learnCrowdLoss ? clampCrowd(this.crowdPrior() + this.rng.normal(0, 0.12)) : 0;
     });
     this.w.fill(1 / this.n);
     this.initialized = true;
@@ -482,6 +517,7 @@ export class PositioningEngine {
       this.f[i] = p.f;
       this.scale[i] = 1 + this.rng.normal(0, 0.12);
       this.hbias[i] = this.rng.normal(0, 0.25);
+      this.crowd[i] = this.opts.learnCrowdLoss ? clampCrowd(this.crowdPrior() + this.rng.normal(0, 0.12)) : 0;
       this.w[i] = meanW;
     }
     this.normalize();
@@ -511,6 +547,7 @@ export class PositioningEngine {
       this.f[i] = fi;
       this.scale[i] = 1 + this.rng.normal(0, 0.12);
       this.hbias[i] = this.rng.normal(0, 0.25);
+      this.crowd[i] = this.opts.learnCrowdLoss ? clampCrowd(this.crowdPrior() + this.rng.normal(0, 0.12)) : 0;
     }
     this.w.fill(1 / this.n);
     this.initialized = true;

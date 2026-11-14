@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
-  DisplayTracker, findRoute, geoToLocal, localToGeo, PositioningEngine, proximity, RadioMap, rect, segmentsIntersect,
+  DisplayTracker, findRoute, lineOfSight, geoToLocal, localToGeo, PositioningEngine, proximity, RadioMap, rect, segmentsIntersect,
   Venue, VenueDef, WallIndex,
 } from '../src';
 
@@ -57,6 +57,13 @@ describe('lieu et itinéraires', () => {
     expect(g.isWalkable(10, 2)).toBe(false);
     expect(g.isWalkable(10.0, 5)).toBe(true); // porte
     expect(g.isWalkable(5, 5)).toBe(true);
+  });
+  it("la ligne de vue refuse de frôler un montant de porte (cellule bloquée)", () => {
+    const g = venue.grid('L0');
+    // Le montant du haut de la porte (10, 6) bloque les cellules qui le touchent.
+    expect(g.isWalkable(9.75, 6.25)).toBe(false);
+    expect(lineOfSight(g, { x: 9.2, y: 6.9 }, { x: 10.9, y: 5.4 })).toBe(false);
+    expect(lineOfSight(g, { x: 8, y: 5 }, { x: 12, y: 5 })).toBe(true);
   });
   it("passe par la porte au lieu de traverser le mur", () => {
     const r = findRoute(venue, { floorId: 'L0', x: 5, y: 1 }, { floorId: 'L0', x: 15, y: 1 })!;

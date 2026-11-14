@@ -71,14 +71,48 @@ class MinHeap {
   }
 }
 
-/** Ligne de vue praticable entre deux points du même étage. */
+/**
+ * Ligne de vue praticable entre deux points du même étage : aucun mur traversé et TOUTES les cellules
+ * touchées par le segment sont praticables (parcours « supercover », exact — pas d'échantillonnage).
+ */
 export function lineOfSight(g: FloorGrid, a: Vec2, b: Vec2): boolean {
   if (g.walls.crosses(a.x, a.y, b.x, b.y)) return false;
-  const d = Math.hypot(b.x - a.x, b.y - a.y);
-  const n = Math.max(1, Math.ceil(d / (g.res * 0.5)));
-  for (let i = 1; i < n; i++) {
-    const t = i / n;
-    if (!g.isWalkable(a.x + (b.x - a.x) * t, a.y + (b.y - a.y) * t)) return false;
+  const { minX, minY } = g.floor.bounds;
+  const ax = (a.x - minX) / g.res;
+  const ay = (a.y - minY) / g.res;
+  const bx = (b.x - minX) / g.res;
+  const by = (b.y - minY) / g.res;
+  let cx = Math.floor(ax);
+  let cy = Math.floor(ay);
+  const ex = Math.floor(bx);
+  const ey = Math.floor(by);
+  const dx = bx - ax;
+  const dy = by - ay;
+  const sx = dx > 0 ? 1 : dx < 0 ? -1 : 0;
+  const sy = dy > 0 ? 1 : dy < 0 ? -1 : 0;
+  const tdx = sx ? Math.abs(1 / dx) : Infinity;
+  const tdy = sy ? Math.abs(1 / dy) : Infinity;
+  let tmx = sx > 0 ? (cx + 1 - ax) * tdx : sx < 0 ? (ax - cx) * tdx : Infinity;
+  let tmy = sy > 0 ? (cy + 1 - ay) * tdy : sy < 0 ? (ay - cy) * tdy : Infinity;
+  const ok = (c: number, r: number) => c >= 0 && r >= 0 && c < g.cols && r < g.rows && g.walkable[r * g.cols + c] === 1;
+  if (!ok(cx, cy)) return false;
+  let guard = 0;
+  while ((cx !== ex || cy !== ey) && guard++ < 100000) {
+    if (Math.abs(tmx - tmy) < 1e-9) {
+      // Passage exact par un coin : les deux cellules adjacentes doivent être praticables.
+      if (!ok(cx + sx, cy) || !ok(cx, cy + sy)) return false;
+      cx += sx;
+      cy += sy;
+      tmx += tdx;
+      tmy += tdy;
+    } else if (tmx < tmy) {
+      cx += sx;
+      tmx += tdx;
+    } else {
+      cy += sy;
+      tmy += tdy;
+    }
+    if (!ok(cx, cy)) return false;
   }
   return true;
 }

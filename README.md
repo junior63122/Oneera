@@ -9,6 +9,7 @@ Géolocalisation événementielle et intelligence opérationnelle des lieux rece
 | Chemin | Rôle |
 |---|---|
 | `packages/positioning` | Moteur de localisation (filtre particulaire contraint par la carte : BLE, GNSS, podomètre/cap, baromètre ; itinéraires multi-étages ; affichage sans téléportation ; proximité amis) |
+| `packages/backend` | Schéma PostgreSQL/PostGIS multi-établissements avec Row-Level Security, passerelle WebSocket temps réel, test de charge (`reports/realtime-load.md`) |
 | `packages/simulator` | Club synthétique, monde radio volontairement différent du moteur, banc comparatif (`reports/positioning-sim.md`) |
 | `docs/architecture.md` | Architecture cible V2 |
 | `docs/positioning/` | Fonctionnement du moteur, protocole de mesure terrain |
@@ -20,7 +21,8 @@ Géolocalisation événementielle et intelligence opérationnelle des lieux rece
 
 ```bash
 pnpm install
-pnpm test                 # tests unitaires
+scripts/dev-db.sh         # PostgreSQL + PostGIS local jetable (affiche TEST_DATABASE_URL)
+pnpm test                 # tests unitaires, sécurité/RGPD (base réelle), passerelle
 pnpm bench:positioning    # banc de simulation complet (~4 min) → reports/
 pnpm --filter @oneera/simulator bench -- --quick
 ```
@@ -32,8 +34,9 @@ Moteur V2 complet, calibré sur site, comparé à l'approche « balise la plus p
 | Condition | Méthode | Médiane | P95 | Bonne zone | Sauts > 3 m /h | Traversées de mur /h |
 |---|---|---|---|---|---|---|
 | Foule légère, Android | V1-like | 3,7 m | 10,2 m | 90 % | 987 | 330 |
-| Foule légère, Android | **V2** | **1,6 m** | **4,4 m** | **97 %** | **0** | **0** |
+| Foule légère, Android | **V2** | **1,6 m** | **4,8 m** | **98 %** | **0** | **0** |
 | Foule dense, iOS | V1-like | 3,7 m | 8,6 m | 87 % | 695 | 286 |
-| Foule dense, iOS | **V2** | **2,1 m** | 9,1 m | 88 % | **0** | **0** |
+| Foule dense, iOS | **V2** | **1,8 m** | **6,9 m** | **94 %** | **0** | **0** |
+| Foule dense, Android | **V2** | **1,7 m** | 8,9 m | 92 % | **0** | **0** |
 
-En foule dense, la bonne zone (88 %) reste sous la cible de 93 % : c'est le chantier prioritaire (densité de balises, modèle adaptatif à la foule, classification d'activité). Chiffres complets et limites dans `reports/positioning-sim.md`.
+L'apprentissage en ligne de l'atténuation due à la foule a fait passer la bonne zone en foule dense de 88–89 % à 92–94 %. Android en foule dense (92 %, P95 8,9 m) reste sous les cibles (93 %, 8 m) : prochains leviers = densité de balises, classification danse/marche. Chiffres complets et limites dans `reports/positioning-sim.md`.

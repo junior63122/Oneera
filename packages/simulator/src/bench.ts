@@ -259,7 +259,10 @@ function runOne(venue: Venue, truth: TruthSample[], world: World, estimators: Es
       if (s.t >= warmupS && d) {
         acc.frames++;
         const g = venue.grid(d.floorId);
-        if (!g.isWalkable(d.x, d.y)) acc.offMap++;
+        if (!g.isWalkable(d.x, d.y)) {
+          acc.offMap++;
+          if (process.env.DEBUG_OFFMAP) console.error('[hors-carte]', est.name, d.floorId, d.x.toFixed(2), d.y.toFixed(2), 'reacq', !!d.reacquired, 'prev', prevDisp[k] ? `${prevDisp[k]!.floorId} ${prevDisp[k]!.x.toFixed(2)},${prevDisp[k]!.y.toFixed(2)}` : '-');
+        }
         const p = prevDisp[k];
         if (p && p.floorId === d.floorId && !d.reacquired) {
           const jump = Math.hypot(d.x - p.x, d.y - p.y);
@@ -362,7 +365,9 @@ export function runBench(cfg: BenchConfig) {
           accs = ests.map(newAcc);
           names = ests.map((e) => e.name);
         }
+        const tRun = Date.now();
         runOne(venue, truth, world, ests, accs);
+        if (process.env.BENCH_PROGRESS) console.error(`[banc] ${label} soirée ${r + 1}/${cfg.runs} : ${truth.length / 10 | 0} s simulées en ${((Date.now() - tRun) / 1000).toFixed(1)} s`);
       }
       results[label] = accs.map((a, i) => finalize(names[i], a));
     }
