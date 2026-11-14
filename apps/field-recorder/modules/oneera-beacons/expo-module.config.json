@@ -1,0 +1,5 @@
+{
+  "platforms": ["ios", "android"],
+  "ios": { "modules": ["OneeraBeaconsModule"] },
+  "android": { "modules": ["fr.oneera.beacons.OneeraBeaconsModule"] }
+}

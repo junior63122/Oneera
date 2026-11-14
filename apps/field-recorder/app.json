@@ -1,0 +1,32 @@
+{
+  "expo": {
+    "name": "ONEERA Mesure",
+    "slug": "oneera-mesure",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "dark",
+    "backgroundColor": "#0b0b12",
+    "ios": {
+      "bundleIdentifier": "fr.oneera.mesure",
+      "supportsTablet": false,
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "ONEERA Mesure enregistre votre position pendant la session de mesure, uniquement pour évaluer la précision de la localisation dans le lieu.",
+        "NSMotionUsageDescription": "ONEERA Mesure enregistre vos pas et votre orientation pendant la session de mesure.",
+        "NSBluetoothAlwaysUsageDescription": "ONEERA Mesure lit les balises Bluetooth du lieu pendant la session de mesure."
+      }
+    },
+    "android": {
+      "package": "fr.oneera.mesure",
+      "permissions": [
+        "ACCESS_FINE_LOCATION",
+        "BLUETOOTH_SCAN",
+        "ACTIVITY_RECOGNITION",
+        "HIGH_SAMPLING_RATE_SENSORS"
+      ]
+    },
+    "plugins": [
+      ["expo-location", { "locationWhenInUsePermission": "ONEERA Mesure enregistre votre position pendant la session de mesure." }],
+      ["expo-sensors", { "motionPermission": "ONEERA Mesure enregistre vos pas et votre orientation pendant la session de mesure." }]
+    ]
+  }
+}

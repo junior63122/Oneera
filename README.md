@@ -11,8 +11,10 @@ Géolocalisation événementielle et intelligence opérationnelle des lieux rece
 | `packages/positioning` | Moteur de localisation (filtre particulaire contraint par la carte : BLE, GNSS, podomètre/cap, baromètre ; itinéraires multi-étages ; affichage sans téléportation ; proximité amis) |
 | `packages/backend` | Schéma PostgreSQL/PostGIS multi-établissements avec Row-Level Security, passerelle WebSocket temps réel, test de charge (`reports/realtime-load.md`) |
 | `packages/simulator` | Club synthétique, monde radio volontairement différent du moteur, banc comparatif (`reports/positioning-sim.md`) |
+| `apps/field-recorder` | App de mesure terrain (Expo) : enregistre capteurs + points de vérité, export rejouable (`packages/simulator/src/replay.ts`) |
+| `examples/` | Plan du club de test (format `VenueDef`) |
 | `docs/architecture.md` | Architecture cible V2 |
-| `docs/positioning/` | Fonctionnement du moteur, protocole de mesure terrain |
+| `docs/positioning/` | Fonctionnement du moteur, protocole de mesure terrain, préparation des balises |
 | `docs/validation-grid.md` | Critères chiffrés et seuils bloquants de mise en production |
 | `docs/decisions.md` | Journal des décisions |
 | `docs/audit/v1-findings.md` | Défauts techniques de la V1 et réponses V2 |

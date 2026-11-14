@@ -1,0 +1,34 @@
+{
+  "name": "@oneera/field-recorder",
+  "version": "0.1.0",
+  "private": true,
+  "description": "App de mesure terrain ONEERA (iOS/Android) : enregistre BLE, GNSS, podomètre, cap, baromètre et points de vérité.",
+  "main": "index.ts",
+  "scripts": {
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit -p tsconfig.core.json",
+    "typecheck:app": "tsc --noEmit -p .",
+    "start": "expo start",
+    "prebuild": "expo prebuild"
+  },
+  "dependencies": {
+    "@babel/runtime": "^7.29.14",
+    "@oneera/positioning": "workspace:*",
+    "expo": "~52.0.49",
+    "expo-device": "~7.0.3",
+    "expo-file-system": "~18.0.12",
+    "expo-keep-awake": "~14.0.3",
+    "expo-location": "~18.0.10",
+    "expo-modules-core": "~2.2.3",
+    "expo-sensors": "~14.0.2",
+    "expo-sharing": "~13.0.1",
+    "expo-status-bar": "~2.0.1",
+    "react": "18.3.1",
+    "react-native": "0.76.9"
+  },
+  "devDependencies": {
+    "@types/react": "~18.3.31",
+    "typescript": "^5.6.3",
+    "vitest": "^2.1.8"
+  }
+}

@@ -6,3 +6,4 @@ export * from './engine';
 export * from './pathfinding';
 export * from './display';
 export * from './proximity';
+export * from './session';

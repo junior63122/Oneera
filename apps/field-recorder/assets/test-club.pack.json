@@ -1,0 +1,75 @@
+{
+ "venueId": "test-club",
+ "mapVersion": 1,
+ "venueName": "Club de test (synthétique)",
+ "georef": {
+  "origin": {
+   "lat": 43.5513,
+   "lon": 7.0128
+  },
+  "rotationDeg": 0
+ },
+ "ibeaconUuid": "00000000-0000-4000-8000-000000000001",
+ "checkpoints": [
+  {
+   "id": "P1",
+   "floorId": "L0",
+   "x": 25.25,
+   "y": 3.25
+  },
+  {
+   "id": "P2",
+   "floorId": "L0",
+   "x": 23.25,
+   "y": 9.25
+  },
+  {
+   "id": "P3",
+   "floorId": "L0",
+   "x": 38.25,
+   "y": 9.25
+  },
+  {
+   "id": "P4",
+   "floorId": "L0",
+   "x": 25.25,
+   "y": 23.25
+  },
+  {
+   "id": "P5",
+   "floorId": "L0",
+   "x": 45.25,
+   "y": 18.25
+  },
+  {
+   "id": "P6",
+   "floorId": "L0",
+   "x": 45.25,
+   "y": 29.25
+  },
+  {
+   "id": "P7",
+   "floorId": "L0",
+   "x": 5.25,
+   "y": 27.25
+  },
+  {
+   "id": "P8",
+   "floorId": "L0",
+   "x": 5.25,
+   "y": 9.25
+  },
+  {
+   "id": "P9",
+   "floorId": "L1",
+   "x": 23.25,
+   "y": 11.25
+  },
+  {
+   "id": "P10",
+   "floorId": "L1",
+   "x": 38.25,
+   "y": 11.25
+  }
+ ]
+}
