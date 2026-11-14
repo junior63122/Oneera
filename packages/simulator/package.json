@@ -1,0 +1,14 @@
+{
+  "name": "@oneera/simulator",
+  "version": "0.1.0",
+  "description": "Simulateur et banc de mesure du moteur de localisation (capteurs bruités, modèle volontairement différent du moteur).",
+  "type": "module",
+  "main": "src/index.ts",
+  "scripts": {
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit -p .",
+    "bench": "tsx src/bench.ts"
+  },
+  "dependencies": { "@oneera/positioning": "workspace:*" },
+  "devDependencies": { "typescript": "^5.6.3", "vitest": "^2.1.8", "tsx": "^4.19.2" }
+}

@@ -1,0 +1,19 @@
+{
+  "name": "oneera",
+  "private": true,
+  "version": "2.0.0-alpha.0",
+  "description": "ONEERA V2 — géolocalisation événementielle et intelligence opérationnelle des lieux",
+  "scripts": {
+    "build": "pnpm -r build",
+    "test": "pnpm -r test",
+    "typecheck": "pnpm -r typecheck",
+    "bench:positioning": "pnpm --filter @oneera/simulator bench"
+  },
+  "packageManager": "pnpm@10.28.0",
+  "engines": {
+    "node": ">=20"
+  },
+  "devDependencies": {
+    "@types/node": "^22.20.5"
+  }
+}
