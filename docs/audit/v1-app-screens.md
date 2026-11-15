@@ -34,7 +34,7 @@ Source : 51 captures d'écran de l'app iOS publiée et exports du Figma (app + w
 
 1. **Récap incohérent** : « Nombre de pas 0 » avec une distance de 865 m ; heure de sortie (15 h 02) antérieure à l'heure d'entrée (18 h 03) ; « 14 % mobile » avec 1 h 08 immobile sur 1 h 19.
 2. **Écran technique exposé** : « Balises BLE (47) — 5/47 détectées » visible en arrière-plan des réglages (outil de debug en production) ; distances par balise affichées au dixième de mètre.
-3. **Contamination Teufy** : un compte « Teufy » dans les amis, suggestions et discussions.
+3. **Libellés erronés** : le mot « Teufy » apparaît à certains endroits (nom affiché d'un compte dans les amis, suggestions et discussions). Il s'agit d'erreurs de nommage des développeurs : tout relève d'ONEERA. À renommer en V2.
 4. Le profil réclame une **date de naissance complète et un numéro de téléphone** (minimisation RGPD à revoir : une tranche d'âge suffit pour les statistiques).
 5. Texte placeholder « ???? » sur les événements à venir.
 
