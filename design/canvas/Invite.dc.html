@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Ajouter un ami</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#4B5EE8}a:hover{color:#3346C9}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; background: #F6F7FB; color: #1A1C2B; font-family: Inter, system-ui, sans-serif; display: flex; flex-direction: column; padding: 56px 20px 28px; gap: 16px">
+<div style="display: flex; align-items: center; justify-content: space-between">
+<button aria-label="Retour" style="width: 44px; height: 44px; border-radius: 22px; border: 0; background: #FFFFFF; display: flex; align-items: center; justify-content: center">
+<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1A1C2B" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"></path></svg>
+</button>
+<span style="font: 800 17px Inter, sans-serif">Ajouter un ami</span>
+<span style="width: 44px"></span>
+</div>
+<div style="display: flex; background: #FFFFFF; border-radius: 14px; padding: 4px">
+<button style="flex: 1; height: 42px; border: 0; border-radius: 11px; background: #4B5EE8; color: #FFFFFF; font: 700 13px Inter, sans-serif">Mon code</button>
+<button style="flex: 1; height: 42px; border: 0; border-radius: 11px; background: transparent; color: #4A4F66; font: 600 13px Inter, sans-serif">Scanner</button>
+<button style="flex: 1; height: 42px; border: 0; border-radius: 11px; background: transparent; color: #4A4F66; font: 600 13px Inter, sans-serif">Suggestions</button>
+</div>
+<div style="align-self: center; background: linear-gradient(160deg, #F7D3E4 0%, #E3D6F7 55%, #CFE0FA 100%); border-radius: 28px; padding: 22px; margin-top: 6px; display: flex; flex-direction: column; align-items: center; gap: 14px">
+<span style="width: 64px; height: 64px; border-radius: 32px; background: #FFFFFF; display: flex; align-items: center; justify-content: center; font: 800 24px Inter, sans-serif; color: #4B5EE8; border: 3px solid #FFFFFF; box-shadow: 0 6px 16px rgba(70, 60, 140, 0.2)">A</span>
+<div style="background: #FFFFFF; border-radius: 18px; padding: 14px">
+<div role="img" aria-label="QR code d'invitation (illustration)" style="display: grid; grid-template-columns: repeat(21, 9px); grid-auto-rows: 9px">
+<sc-for list="{{cells}}" as="c" hint-placeholder-count="441">
+<div style="{{c.style}}"></div>
+</sc-for>
+</div>
+</div>
+<span style="font: 800 18px Inter, sans-serif">@alex</span>
+</div>
+<div style="display: flex; gap: 8px; align-items: center; justify-content: center; font-size: 13px; color: #8A5300; font-weight: 600">
+<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#8A5300" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg>
+<span>Code valable 24 h · usage unique</span>
+</div>
+<div style="flex-grow: 1"></div>
+<button style="height: 54px; border: 0; border-radius: 16px; background: #4B5EE8; color: #FFFFFF; font: 700 15px Inter, sans-serif">Envoyer un lien d'invitation</button>
+<span style="font-size: 12px; line-height: 1.5; color: #5A5F77; text-align: center">Devenir amis ne partage pas votre position : vous choisissez ensuite si et quand vous la partagez.</span>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    var n = 21, cells = [], seed = 7;
+    function rnd() { seed = (seed * 9301 + 49297) % 233280; return seed / 233280; }
+    function finder(r, c) {
+      var corners = [[0, 0], [0, n - 7], [n - 7, 0]];
+      for (var i = 0; i < 3; i++) {
+        var rr = r - corners[i][0], cc = c - corners[i][1];
+        if (rr >= 0 && rr < 7 && cc >= 0 && cc < 7) {
+          var ring = Math.max(Math.abs(rr - 3), Math.abs(cc - 3));
+          return ring === 3 || ring <= 1 ? 1 : 0;
+        }
+      }
+      return -1;
+    }
+    for (var r = 0; r < n; r++) {
+      for (var c = 0; c < n; c++) {
+        var f = finder(r, c);
+        var on = f === -1 ? rnd() > 0.52 : f === 1;
+        cells.push({ style: 'background:' + (on ? '#1A1C2B' : '#FFFFFF') });
+      }
+    }
+    return { cells: cells };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>App — Partager ma localisation</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div style="width: 2158px; height: 940px; box-sizing: border-box; background: #E9EBF3; padding: 24px; display: flex; gap: 40px; font-family: Inter, system-ui, sans-serif">
+<sc-for list="{{screens}}" as="s" hint-placeholder-count="5">
+<div style="display: flex; flex-direction: column; gap: 10px; flex-shrink: 0">
+<span style="font: 700 15px Inter, sans-serif; color: #1A1C2B">{{s.n}}</span>
+<div style="width: 390px; height: 844px; border-radius: 36px; overflow: hidden; box-shadow: 0 10px 30px rgba(30,40,90,0.18)"><dc-import name="Screen" spec="{{s.spec}}" hint-size="390px,844px"></dc-import></div>
+</div>
+</sc-for>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":2158,"height":940}}'>
+class Component extends DCLogic {
+  renderVals() {
+    function aud(sel) {
+      return { t: 'rows', items: [
+        { t: 'Mes amis', s: 'Tous mes amis', radio: sel === 0 },
+        { t: 'Mes amis, sauf…', s: 'Aucun ami exclu', radio: sel === 1 },
+        { t: 'Seulement ces amis', s: 'Aucun ami sélectionné', radio: sel === 2 }
+      ] };
+    }
+    var friendsPick = function (title) {
+      return [{ t: 'section', text: title }, { t: 'search', ph: 'Rechercher un ami' }, { t: 'rows', items: [
+        { av: 'L', t: 'Léa', btn: '+', btnAlt: true }, { av: 'E', t: 'Emma', btn: '+', btnAlt: true }, { av: 'J', t: 'Jules', btn: '+', btnAlt: true }, { av: 'T', t: 'Tom', btn: '+', btnAlt: true }
+      ] }];
+    };
+    var online = { t: 'rows', items: [{ t: 'Afficher lorsque je suis en ligne', toggle: true }] };
+    var head = { t: 'top', title: 'Partager ma localisation', back: true };
+    var active = { t: 'rows', items: [{ av: '●', avBg: '#DDF4EF', avFg: '#12A38F', t: 'Partage actif', s: 'Visible par 5 amis', ok: true, btn: 'Arrêter', btnAlt: false }] };
+    return {
+      screens: [
+        { n: '26 · Toujours', spec: { bg: 'sky', sheet: true, blocks: [head, active, { t: 'seg', items: ['Toujours', 'Temporairement', 'Désactiver'], active: 0 }, { t: 'note', tone: 'info', text: '« Toujours » : vos amis voient votre position sur la carte, avec sa précision.' }, aud(0), online] } },
+        { n: '27 · Mes amis, sauf…', spec: { bg: 'sky', sheet: true, blocks: [head, { t: 'seg', items: ['Toujours', 'Temporairement', 'Désactiver'], active: 0 }, aud(1)].concat(friendsPick('Amis exclus · 0')) } },
+        { n: '28 · Temporairement', spec: { bg: 'sky', sheet: true, blocks: [head, { t: 'seg', items: ['Toujours', 'Temporairement', 'Désactiver'], active: 1 }, { t: 'note', tone: 'info', text: '« Temporairement » : le partage s’arrête tout seul à la fin de la durée.' }, { t: 'section', text: 'Durée du partage' }, { t: 'seg', items: ['1 h', '3 h', 'Jusqu’à la fin'], active: 2 }, aud(2), online] } },
+        { n: '29 · Seulement ces amis', spec: { bg: 'sky', sheet: true, blocks: [head, { t: 'seg', items: ['Toujours', 'Temporairement', 'Désactiver'], active: 1 }, aud(2)].concat(friendsPick('Amis autorisés · 0')) } },
+        { n: '30 · Désactiver', spec: { bg: 'sky', sheet: true, blocks: [head, { t: 'seg', items: ['Toujours', 'Temporairement', 'Désactiver'], active: 2 }, { t: 'note', tone: 'warn', text: '« Désactiver » masque immédiatement votre position à tous vos amis sur la carte.' }, { t: 'rows', items: [{ t: 'Partage désactivé', s: 'Personne ne voit votre position', ok: true }] }, { t: 'spacer' }, { t: 'btn', text: 'Réactiver le partage' }] } }
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>

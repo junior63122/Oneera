@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Dashboard — Paramètres du système</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div style="width: 1440px; min-height: 1100px"><dc-import name="DashPage" spec="{{spec}}" hint-size="1440px,1100px"></dc-import></div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1100}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return { spec: { active: 'none', h: 1100, title: 'Paramètres du système', sub: 'Sécurité de la plateforme, qualité de localisation et règles de gouvernance', actions: ['Annuler', 'Enregistrer'], rows: [
+      [{ t: 'toggles', w: 1, title: 'Sécurité de la plateforme', items: [{ l: 'Authentification 2FA obligatoire' }, { l: 'Expiration des sessions après 12 h' }, { l: 'Alerte en cas de connexion inhabituelle' }] },
+       { t: 'list', w: 1, title: 'Sessions actives', items: [{ t: 'Chrome · Paris, FR', s: 'Session actuelle', tone: 'ok' }, { t: 'iPhone 15 · Londres, UK', s: 'Il y a 2 h', tag: 'Révoquer', tone: 'danger' }] }],
+      [{ t: 'hbars', w: 1, title: 'Qualité de localisation (remplace la « balance GPS / balise »)', items: [
+        { l: 'Positions « précises » (≤ 4 m)', v: '71 %', p: 71, c: '#12A38F' },
+        { l: 'Positions « à la zone près »', v: '22 %', p: 22, c: '#D98A00' },
+        { l: 'Positions approximatives', v: '7 %', p: 7, c: '#C2282F' },
+        { l: 'Balises actives', v: '19 / 20', p: 95, c: '#3B54E0', s: 'Balise 7 (terrasse) non vue depuis 12 min', tone: 'warn' }
+      ] },
+       { t: 'list', w: 1, title: 'Dernière calibration', items: [{ t: '12/11 · lieu vide', s: 'Erreur médiane mesurée 2,4 m · P90 5,1 m', tone: 'ok' }, { t: 'Pondération GPS / balises', s: 'Automatique : le moteur pondère chaque mesure selon sa qualité (aucun réglage manuel).', tone: 'info' }, { t: 'Recalibrer', s: 'Recommandé après tout déplacement de balise', tag: 'Lancer', tone: 'info' }] }],
+      [{ t: 'table', title: 'Audit système et historique', link: 'Tout voir', tpl: '1.2fr 1fr 1.2fr 1.4fr 0.8fr', cols: ['Horodatage', 'Opérateur', 'Action', 'Changement', 'Statut'], rows: [['14/11 · 22:11', 'Admin', 'Règles globales', 'Rétention positions 7 j', { b: 'Approuvé', tone: 'ok' }], ['14/11 · 21:40', 'Manager', 'Seuil d’alerte Zone A', '85 % → 90 %', { b: 'Approuvé', tone: 'ok' }], ['13/11 · 18:02', 'Admin', 'Rôles', 'Ajout rôle Serveur', { b: 'Approuvé', tone: 'ok' }], ['13/11 · 17:55', 'Inconnu', 'Connexion', 'Tentative refusée (2FA)', { b: 'Rejeté', tone: 'danger' }]] }]
+    ] } };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Référence — Figma du dashboard</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#4B5EE8}a:hover{color:#3346C9}
+</style>
+</helmet>
+<div style="width: 1960px; min-height: 3400px; box-sizing: border-box; background: #F6F7FB; color: #1A1C2B; font-family: Inter, system-ui, sans-serif; padding: 32px; display: flex; flex-direction: column; gap: 20px">
+<span style="font: 800 28px Inter, sans-serif">Figma « Dashboard Oneera » — 18 écrans de référence</span>
+<div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px; align-items: start">
+<sc-for list="{{shots}}" as="s" hint-placeholder-count="18">
+<figure style="margin: 0; display: flex; flex-direction: column; gap: 6px">
+<img src="{{s.src}}" alt="{{s.alt}}" style="width: 100%; height: auto; border-radius: 12px; border: 1px solid #E3E5EE; background: #FFFFFF">
+<figcaption style="font: 600 13px Inter, sans-serif; color: #3A3F55">{{s.alt}}</figcaption>
+</figure>
+</sc-for>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1960,"height":3400}}'>
+class Component extends DCLogic {
+  renderVals() {
+    var s = [
+      ['729df55c0b703bc1e457e6d85a130b5d', '1 · Vue globale'],
+      ['8cc8868c06065d5c5e698089695d842e', '18 · Vue globale (variante)'],
+      ['bf47670b9966ea43c32d4e3098570ee9', '3 · Replay'],
+      ['3a146523b8a4e7fd48d059a4b4aac17e', '2 · Centre d’alertes (incidents)'],
+      ['137be45288bcd7c39cf905e6a4320865', '4 · Programmation'],
+      ['75def22dc3718f40d0d4ef77fa1339bd', '5 · Gestion du staff'],
+      ['2768d84d78935edb950300bafc443fcb', '6 · Utilisateurs'],
+      ['2501a14acd00250acb89ee980ad0f20e', '7 · Communication temps réel'],
+      ['5f6a90f1b994865ed04fa5d609364a50', '8 · Partenaires'],
+      ['3ca9540bed356673a38a574eb78fd2dd', '9 · Paramètres du système'],
+      ['a603596117a38fe4c6e8129c8272b3cb', '10 · Événements (catalogue)'],
+      ['501552f97bfd85cb68ae8f7f24b06a68', '11 · Créer un événement'],
+      ['597130ad948564bfd9e48a544b840bcf', '12 · Comparaison de deux événements'],
+      ['bb3358ccce10261901f91e73f0955b98', '13 · Organisateurs (global)'],
+      ['7e9d9393c638ab3199dfc960dc98eff4', '14 · Partenaires (global)'],
+      ['d39d39525cc8bd49b09953ea202a9299', '15 · Utilisateurs (global)'],
+      ['9b3bdc39886f50daf117878d9b365bfa', '16 · Staff (global)'],
+      ['188cbb3bbbb7ebc9f3bdcddc90c81b88', '17 · Modération des signalements']
+    ];
+    return { shots: s.map(function (x) { return { src: '/_blob/' + x[0], alt: x[1] }; }) };
+  }
+}
+</script>
+</body>
+</html>

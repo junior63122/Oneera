@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Dashboard — Balises et qualité de localisation</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div style="width: 1440px; min-height: 1150px"><dc-import name="DashPage" spec="{{spec}}" hint-size="1440px,1150px"></dc-import></div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1150}}'>
+class Component extends DCLogic {
+  renderVals() {
+    var b = function (n, z, s, p, st, t) { return [n, z, s, p, { b: st, tone: t }, '⋯']; };
+    return { spec: { active: 'Balises', h: 1150, title: 'Balises et qualité de localisation', sub: 'État du parc de balises et précision mesurée de la localisation', actions: ['Exporter', 'Lancer une calibration'], rows: [
+      [{ t: 'kpi', l: 'Balises actives', v: '19 / 20', c: '#0B5A50' }, { t: 'kpi', l: 'Précision médiane', v: '2,4 m', s: 'mesurée le 12/11 (lieu vide)' }, { t: 'kpi', l: 'Positions « précises »', v: '71 %', s: 'ce soir, ≤ 4 m' }, { t: 'kpi', l: 'Piles à remplacer', v: '2', c: '#D98A00', s: 'sous 20 %' }],
+      [{ t: 'map', w: 1, h: 420, incident: true, panel: { title: 'Balise 7 · Terrasse', stats: [{ v: 'absente', l: 'non vue depuis 12 min', c: '#C2282F' }, { v: '18 %', l: 'pile', c: '#D98A00' }] } },
+       { t: 'table', w: 1, title: 'Parc de balises', tpl: '0.6fr 1fr 0.8fr 0.6fr 0.9fr 0.4fr', cols: ['N°', 'Zone', 'Signal', 'Pile', 'État', ''], hl: 6, rows: [
+        b('1', 'Hall', '−64 dBm', '92 %', 'Active', 'ok'), b('2', 'Dancefloor', '−71 dBm', '88 %', 'Active', 'ok'), b('3', 'Dancefloor', '−69 dBm', '85 %', 'Active', 'ok'), b('4', 'Bar', '−78 dBm', '90 %', 'Active', 'ok'), b('5', 'VIP', '−73 dBm', '19 %', 'Pile faible', 'warn'), b('6', 'Toilettes', '−80 dBm', '76 %', 'Active', 'ok'), b('7', 'Terrasse', '—', '18 %', 'Absente', 'danger'), b('8', 'Escalier', '−70 dBm', '81 %', 'Active', 'ok')
+      ] }],
+      [{ t: 'hbars', w: 1, title: 'Qualité des positions ce soir', items: [{ l: 'Précises (≤ 4 m)', v: '71 %', p: 71, c: '#12A38F' }, { l: 'À la zone près', v: '22 %', p: 22, c: '#D98A00' }, { l: 'Approximatives', v: '7 %', p: 7, c: '#C2282F' }] },
+       { t: 'list', w: 1, title: 'Recommandations', items: [{ t: 'Remplacer la pile de la balise 5 (VIP)', s: 'Pile à 19 %', tone: 'warn' }, { t: 'Vérifier la balise 7 (terrasse)', s: 'Non vue depuis 12 min : précision dégradée en terrasse', tone: 'danger', bg: true }, { t: 'Recalibrer après déplacement de balise', s: 'Dernière calibration : 12/11', tone: 'info' }] }]
+    ] } };
+  }
+}
+</script>
+</body>
+</html>

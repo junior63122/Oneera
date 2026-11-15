@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Référence — app ONEERA actuelle</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#4B5EE8}a:hover{color:#3346C9}
+</style>
+</helmet>
+<div style="width: 1960px; min-height: 2240px; box-sizing: border-box; background: #F6F7FB; color: #1A1C2B; font-family: Inter, system-ui, sans-serif; padding: 32px; display: flex; flex-direction: column; gap: 20px">
+<span style="font: 800 28px Inter, sans-serif">App ONEERA actuelle (V1) — captures de référence</span>
+<div style="display: grid; grid-template-columns: repeat(8, minmax(0, 1fr)); gap: 16px; align-items: start">
+<sc-for list="{{shots}}" as="s" hint-placeholder-count="31">
+<figure style="margin: 0; display: flex; flex-direction: column; gap: 6px">
+<img src="{{s.src}}" alt="{{s.alt}}" style="width: 100%; height: auto; border-radius: 14px; border: 1px solid #E3E5EE; background: #FFFFFF">
+<figcaption style="font: 600 12px Inter, sans-serif; color: #3A3F55">{{s.alt}}</figcaption>
+</figure>
+</sc-for>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1960,"height":2240}}'>
+class Component extends DCLogic {
+  renderVals() {
+    var s = [
+      ['13144b80eac0f4e79a4220305761929f', '1 · Carte des événements'],
+      ['07f894f03c4673e13595b449dd7172e0', '2 · Événements à venir'],
+      ['05ec72e7475a8fd75c365c2dd09a5bbc', '3 · Fiche événement'],
+      ['665eda83293d6dacf90e0e0c5882f00f', '4 · Fiche événement (programmation)'],
+      ['7229cd08ad017d158f10f56a34d3f846', '5 · Liste des événements'],
+      ['ceb9976a57b460d96700a52529091682', '8 · Recherche de festivals'],
+      ['3abe78f2693d643d7b354015aee0ba70', '19 · Écran Balises BLE (debug)'],
+      ['d09cc3af18406cf1e6cbbf4c81a04ec4', '22 · Paramètres et activités'],
+      ['1250ec8ed26d8ee47a635a86542824c3', '23 · Paramètres (suite)'],
+      ['af90e46a57a1f2905e1d2b8fc8fe0b82', '24 · Autorisations'],
+      ['b20a437da073f68b89d58acf6bf8ac88', '25 · Autorisations (suite)'],
+      ['25ccaed51f55894b22a4840a92646c84', '31 · Historique d’événements'],
+      ['5975be85caed9d2b26cfebcfdcc4ae42', '32 · Carte d’événement 2,5D'],
+      ['75e277271faa8a0905fd72255b0cc073', '33 · Zones fréquentées'],
+      ['0c63c8e603e59c6eca13a01ec9582ff1', '34 · Temps par zone'],
+      ['96643b7f3b8272fcd04ff18d43ff8424', '35 · Récap de l’événement'],
+      ['b9fbc6129ec71e105677ce3fdd753628', '36 · Récap (suite)'],
+      ['dbd162b2b0dc8fe1796332ce9363c6ce', '37 · Replay personnel'],
+      ['ad73d3cbe248677abb6d383744997d65', '38 · Avatar'],
+      ['500f98f4ccced03c0e37df3b2daa5ed3', '39 · Avatar : lunettes'],
+      ['c2db42b90e48d0423daf21fd619c1cfc', '40 · Avatar : lunettes de soleil'],
+      ['384254cfcf9b223d63a6fc3ae4c9932c', '41 · Avatar : chapeaux'],
+      ['e292a088d34c37fbfdfddbc10ec3c380', '42 · Avatar : bijoux'],
+      ['59f4d02bb03dfa26c8fa7eab27012dbe', '43 · Avatar : hauts'],
+      ['4f41cf0d67c552cc11e74808b7a4a30d', '44 · Avatar : bas'],
+      ['fef1e7f54eea162dc0487d16e31aa317', '45 · Avatar : chaussures'],
+      ['f60f023283cfa6e51bce8d53da9d140b', '46 · Avatar : tenues'],
+      ['5a6d190e6766b4fed5ab621c72567f3f', '47 · Avatar : peau'],
+      ['b03f24e697165a9960d43e4fd9a197a6', '48 · Avatar : coiffure'],
+      ['56350621e773d3a397316b9676789af5', '49 · Avatar : expressions'],
+      ['bc86e1fb155c8ba15f59e038dd684b53', '50 · Avatar : barbe']
+    ];
+    return { shots: s.map(function (x) { return { src: '/_blob/' + x[0], alt: x[1] }; }) };
+  }
+}
+</script>
+</body>
+</html>

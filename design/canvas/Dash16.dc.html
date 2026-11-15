@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Dashboard — Staff (global)</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div style="width: 1440px; min-height: 1000px"><dc-import name="DashPage" spec="{{spec}}" hint-size="1440px,1000px"></dc-import></div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1000}}'>
+class Component extends DCLogic {
+  renderVals() {
+    var r = function (n, role, t, i) { return [n, { b: role, tone: t }, { b: 'Actif', tone: 'ok' }, i, '☏ ⋯']; };
+    return { spec: { scope: 'global', active: 'Équipe', h: 1000, title: 'Staff', sub: 'Tous les membres du staff, sur l’ensemble des événements · total : 1 250', actions: ['Exporter', '+ Ajouter un staff'], rows: [
+      [{ t: 'table', w: 2, tpl: '1.4fr 1fr 0.8fr 1fr 0.6fr', cols: ['Membre', 'Rôle', 'Statut', 'Interventions', 'Action'], hl: 3, rows: [
+        r('Marc B.', 'Admin', 'warn', '12'), r('Sarah E.', 'Médical', 'danger', '24'), r('Lucas M.', 'Serveur', 'purple', '3'), r('Nadia K.', 'Sécurité', 'info', '18'), r('Hugo P.', 'Sécurité', 'info', '9'), r('Léo T.', 'Manager', 'warn', '6'), r('Emma R.', 'Technique', 'neutral', '4')
+      ] },
+       { t: 'list', w: 1, title: 'Nadia K. · Sécurité · active', items: [{ t: 'Historique des événements', s: '[ÉVÉNEMENT A] · [ÉVÉNEMENT B] · 6 autres', tone: 'purple' }, { t: 'Historique des interventions', s: 'Malaise · Zone A · 3 min de réponse\nRixe · Bar nord · 2 min', tone: 'info' }, { t: 'Historique des alertes', s: '18 alertes traitées ce mois', tone: 'warn' }, { t: 'Positions', s: 'Conservées 7 jours, pendant le service uniquement', tone: 'ok' }] }]
+    ] } };
+  }
+}
+</script>
+</body>
+</html>

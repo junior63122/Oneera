@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>App — Nouveaux écrans V2</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div style="width: 2158px; height: 940px; box-sizing: border-box; background: #E9EBF3; padding: 24px; display: flex; gap: 40px; font-family: Inter, system-ui, sans-serif">
+<sc-for list="{{screens}}" as="s" hint-placeholder-count="5">
+<div style="display: flex; flex-direction: column; gap: 10px; flex-shrink: 0">
+<span style="font: 700 15px Inter, sans-serif; color: #1A1C2B">{{s.n}}</span>
+<div style="width: 390px; height: 844px; border-radius: 36px; overflow: hidden; box-shadow: 0 10px 30px rgba(30,40,90,0.18)"><dc-import name="Screen" spec="{{s.spec}}" hint-size="390px,844px"></dc-import></div>
+</div>
+</sc-for>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":2158,"height":940}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {
+      screens: [
+        { n: 'V2-1 · Activer la localisation', spec: { bg: 'sky', blocks: [
+          { t: 'avatar', h: 260 },
+          { t: 'h', text: 'Retrouvez vos amis, même à l’intérieur' },
+          { t: 'card', text: '✓ Personne ne vous voit tant que vous ne partagez pas.\n✓ L’établissement ne voit que des statistiques anonymes.\n✓ Vous coupez tout en un geste.' },
+          { t: 'note', tone: 'warn', text: 'Choisissez « Toujours » à l’étape suivante pour que vos amis vous voient même écran éteint.' },
+          { t: 'spacer' },
+          { t: 'btn', text: 'Activer la localisation' },
+          { t: 'btn', text: 'Plus tard — voir le plan seul', kind: 'link' }
+        ] } },
+        { n: 'V2-2 · Rejoindre un ami', spec: { bg: 'sky', blocks: [
+          { t: 'top', title: 'Rejoindre Léa', back: true },
+          { t: 'map', h: 360, people: true },
+          { t: 'stats', cols: 2, items: [{ l: 'Distance', v: '≈ 20 m', s: 'précision ± 3 m' }, { l: 'À pied', v: '≈ 30 s', s: 'position à l’instant' }] },
+          { t: 'rows', items: [{ av: '1', t: 'Traversez le dancefloor vers le bar' }, { av: '2', t: 'Passez la porte du bar' }, { av: '3', t: 'Léa est près du comptoir' }] },
+          { t: 'btn', text: '« J’arrive »' }
+        ] } },
+        { n: 'V2-3 · Ajouter un ami (QR)', spec: { bg: 'light', blocks: [
+          { t: 'top', title: 'Ajouter un ami', back: true },
+          { t: 'seg', items: ['Mon code', 'Scanner', 'Suggestions'] },
+          { t: 'qr' },
+          { t: 'h', text: '@alex' },
+          { t: 'note', tone: 'warn', text: 'Code valable 24 h · usage unique' },
+          { t: 'spacer' },
+          { t: 'btn', text: 'Envoyer un lien d’invitation' },
+          { t: 'note', tone: 'info', text: 'Devenir amis ne partage pas votre position : vous choisissez ensuite si et quand.' }
+        ] } },
+        { n: 'V2-4 · Signaler un problème', spec: { bg: 'light', blocks: [
+          { t: 'top', title: 'Créer un signalement', back: true },
+          { t: 'note', tone: 'danger', text: 'Urgence vitale : appelez le 112. ONEERA alerte l’équipe du lieu mais ne remplace pas les secours.' },
+          { t: 'tiles', cols: 3, h: 86, active: 0, items: [{ l: 'Médical', ico: '+', bg: '#FDE7E8', fg: '#C2282F' }, { l: 'Danger', ico: '!', bg: '#FFF0DC', fg: '#9A5B00' }, { l: 'Affluence', ico: '≡', bg: '#EDE7FB', fg: '#6A3FA8' }, { l: 'Technique', ico: '⚙', bg: '#E4EEFB', fg: '#2C5BA8' }, { l: 'Objet perdu', ico: '?', bg: '#DDF4EF', fg: '#0B5A50' }, { l: 'Autre', ico: '…' }] },
+          { t: 'rows', items: [{ av: '⌖', t: 'Bar · rez-de-chaussée', s: 'Votre position · précision ± 3 m', btn: 'Modifier', btnAlt: true }] },
+          { t: 'input', label: 'Précisions (facultatif)', value: 'Ex. : une personne a fait un malaise', ph: true, tall: true },
+          { t: 'spacer' },
+          { t: 'btn', text: 'Envoyer à l’équipe du lieu', kind: 'danger' }
+        ] } },
+        { n: 'V2-5 · App staff — alertes', spec: { bg: 'light', nav: 'alertes', staff: true, blocks: [
+          { t: 'top', title: 'Alertes', big: true },
+          { t: 'chips', items: ['Toutes', 'Assignées à moi', 'Ma zone'] },
+          { t: 'rows', items: [
+            { av: '+', avBg: '#FDE7E8', avFg: '#C2282F', t: 'Malaise · Bar', s: 'Critique · il y a 2 min · à 25 m', btn: 'Prendre' },
+            { av: '≡', avBg: '#FFF4E0', avFg: '#8A5300', t: 'Saturation · Zone A', s: 'Automatique · confiance moyenne', btn: 'Voir', btnAlt: true },
+            { av: '?', t: 'Objet perdu · Terrasse', s: 'Info · il y a 14 min', btn: 'Voir', btnAlt: true }
+          ] },
+          { t: 'note', tone: 'warn', text: 'Réseau faible : les mises à jour partent dès que la connexion revient.' }
+        ] } }
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>

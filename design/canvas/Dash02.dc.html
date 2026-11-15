@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Dashboard — Centre d'alertes</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div style="width: 1440px; min-height: 1300px"><dc-import name="DashPage" spec="{{spec}}" hint-size="1440px,1300px"></dc-import></div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1300}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return { spec: { active: 'Incidents', h: 1300, title: 'Centre d’alertes', sub: 'Gestion des incidents et signalements', actions: ['⚙', 'Mode crise'], rows: [
+      [{ t: 'kpi', l: 'Alertes', v: '12', c: '#C2282F', tint: '#FDF0F0' }, { t: 'kpi', l: 'Alertes critiques', v: '3', c: '#1A1C2B' }, { t: 'kpi', l: 'Signalements', v: '5', c: '#7C5BD6' }, { t: 'kpi', l: 'Alertes automatiques', v: '2', c: '#D98A00', s: 'densité, immobilité' }, { t: 'kpi', l: 'Résolus aujourd’hui', v: '45', c: '#0B5A50', tint: '#E7F5EF' }],
+      [{ t: 'list', w: 1, title: 'Alertes actives', link: 'Filtrer', items: [
+        { t: 'Malaise #02 · Critique', s: 'Urgence médicale · Scène principale · à 20 m\nSignalement staff · assigné à Sophie V. (médical) · en cours', tag: 'Critique', tone: 'danger', bg: true },
+        { t: 'Panne #10 · Majeur', s: 'Technique · Scène principale\nSignalement staff · en cours', tag: 'Majeur', tone: 'danger' },
+        { t: 'Pénurie #03 · Mineur', s: 'Déstockage · Bar nord\nSignalement visiteur · en cours', tag: 'Mineur', tone: 'warn' },
+        { t: 'Saturation Zone A', s: 'Automatique · > 90 % depuis 12 min · confiance moyenne (couverture 25 %)', tag: 'Auto', tone: 'purple' },
+        { t: 'Spam #05', s: 'Signalement visiteur · à modérer', tag: 'Spam', tone: 'neutral' }
+      ] },
+       { t: 'map', w: 1, h: 420, incident: true, heat: false }],
+      [{ t: 'list', w: 1, title: 'Malaise #04 · Mode crise actif', tint: '#FFF7F7', items: [
+        { t: 'Description', s: 'Personne au sol près de la porte B, consciente. Signalée par un visiteur.', tone: 'neutral' },
+        { t: 'Position', s: 'Zone A · Scène principale · à 20 m · précision ± 4 m', tone: 'info' },
+        { t: 'Staff assigné', s: 'Sécurité · pris en charge à 18 h 54 · en route', tone: 'ok' },
+        { t: 'Rappel', s: 'Urgence vitale : appeler le 112 en parallèle. ONEERA ne remplace pas les secours.', tone: 'danger', bg: true }
+      ] }]
+    ] } };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Partager ma localisation</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#4B5EE8}a:hover{color:#3346C9}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; background: linear-gradient(180deg, #F7D3E4 0%, #E3D6F7 60%, #CFE0FA 100%); color: #1A1C2B; font-family: Inter, system-ui, sans-serif; position: relative; overflow: hidden">
+<div style="position: absolute; left: 0; right: 0; top: 0; height: 130px; background: rgba(40, 30, 80, 0.12)"></div>
+<div style="position: absolute; left: 0; right: 0; top: 90px; bottom: 0; background: #F6F7FB; border-top-left-radius: 28px; border-top-right-radius: 28px; padding: 10px 18px 24px; display: flex; flex-direction: column; gap: 14px; box-sizing: border-box">
+<div style="width: 40px; height: 5px; border-radius: 3px; background: #D3D5E0; align-self: center"></div>
+<div style="display: flex; align-items: center; gap: 10px">
+<button aria-label="Retour" style="width: 44px; height: 44px; border-radius: 22px; border: 0; background: #FFFFFF; display: flex; align-items: center; justify-content: center">
+<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1A1C2B" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"></path></svg>
+</button>
+<span style="font: 800 18px Inter, sans-serif">Partager ma localisation</span>
+</div>
+<div style="display: flex; align-items: center; gap: 12px; background: #DDF4EF; border-radius: 16px; padding: 12px 14px">
+<span style="width: 10px; height: 10px; border-radius: 5px; background: #12A38F; flex-shrink: 0"></span>
+<span style="display: flex; flex-direction: column; gap: 1px; flex-grow: 1"><span style="font: 700 14px Inter, sans-serif; color: #0B5A50">Partage actif</span><span style="font: 500 12px Inter, sans-serif; color: #2E5F58">Visible par 3 amis · s'arrête à 5 h 00</span></span>
+<button style="height: 40px; padding: 0 14px; border: 0; border-radius: 12px; background: #C2282F; color: #FFFFFF; font: 700 13px Inter, sans-serif">Arrêter</button>
+</div>
+<div style="display: flex; background: #FFFFFF; border-radius: 14px; padding: 4px">
+<button style="flex: 1; height: 42px; border: 0; border-radius: 11px; background: transparent; color: #4A4F66; font: 600 13px Inter, sans-serif">Toujours</button>
+<button style="flex: 1; height: 42px; border: 0; border-radius: 11px; background: #4B5EE8; color: #FFFFFF; font: 700 13px Inter, sans-serif">Temporairement</button>
+<button style="flex: 1; height: 42px; border: 0; border-radius: 11px; background: transparent; color: #4A4F66; font: 600 13px Inter, sans-serif">Désactiver</button>
+</div>
+<span style="font-size: 12px; color: #5A5F77">« Temporairement » : vos amis voient votre position pendant une durée limitée, puis le partage s'arrête tout seul.</span>
+<span style="font: 700 13px Inter, sans-serif; color: #3A3F55">Durée du partage</span>
+<div style="display: flex; background: #FFFFFF; border-radius: 14px; padding: 4px">
+<button style="flex: 1; height: 40px; border: 0; border-radius: 11px; background: transparent; color: #4A4F66; font: 600 13px Inter, sans-serif">1 h</button>
+<button style="flex: 1; height: 40px; border: 0; border-radius: 11px; background: transparent; color: #4A4F66; font: 600 13px Inter, sans-serif">3 h</button>
+<button style="flex: 1.4; height: 40px; border: 0; border-radius: 11px; background: #4B5EE8; color: #FFFFFF; font: 700 13px Inter, sans-serif">Jusqu'à la fin</button>
+</div>
+<div style="display: flex; flex-direction: column; background: #FFFFFF; border-radius: 16px; overflow: hidden">
+<label style="display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 13px 14px; border-bottom: 1px solid #EEF0F6">
+<span style="display: flex; flex-direction: column; gap: 1px"><span style="font: 600 14px Inter, sans-serif">Mes amis</span><span style="font: 400 12px Inter, sans-serif; color: #6B7088">Tous mes amis</span></span>
+<input type="radio" name="aud" checked style="width: 20px; height: 20px; accent-color: #4B5EE8">
+</label>
+<label style="display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 13px 14px; border-bottom: 1px solid #EEF0F6">
+<span style="display: flex; flex-direction: column; gap: 1px"><span style="font: 600 14px Inter, sans-serif">Mes amis, sauf…</span><span style="font: 400 12px Inter, sans-serif; color: #6B7088">Aucun ami exclu</span></span>
+<input type="radio" name="aud" style="width: 20px; height: 20px; accent-color: #4B5EE8">
+</label>
+<label style="display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 13px 14px">
+<span style="display: flex; flex-direction: column; gap: 1px"><span style="font: 600 14px Inter, sans-serif">Seulement ces amis</span><span style="font: 400 12px Inter, sans-serif; color: #6B7088">Aucun ami sélectionné</span></span>
+<input type="radio" name="aud" style="width: 20px; height: 20px; accent-color: #4B5EE8">
+</label>
+</div>
+<label style="display: flex; align-items: center; justify-content: space-between; background: #FFFFFF; border-radius: 16px; padding: 13px 14px">
+<span style="font: 600 14px Inter, sans-serif">Afficher lorsque je suis en ligne</span>
+<input type="checkbox" checked style="width: 22px; height: 22px; accent-color: #4B5EE8">
+</label>
+<div style="flex-grow: 1"></div>
+<span style="font-size: 12px; line-height: 1.5; color: #5A5F77">Vos amis voient votre position avec sa précision et son ancienneté. L'établissement n'y a jamais accès : il ne voit que des statistiques anonymes.</span>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

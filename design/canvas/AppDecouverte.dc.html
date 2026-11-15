@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>App — Découverte des événements</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div style="width: 2588px; height: 940px; box-sizing: border-box; background: #E9EBF3; padding: 24px; display: flex; gap: 40px; font-family: Inter, system-ui, sans-serif">
+<sc-for list="{{screens}}" as="s" hint-placeholder-count="6">
+<div style="display: flex; flex-direction: column; gap: 10px; flex-shrink: 0">
+<span style="font: 700 15px Inter, sans-serif; color: #1A1C2B">{{s.n}}</span>
+<div style="width: 390px; height: 844px; border-radius: 36px; overflow: hidden; box-shadow: 0 10px 30px rgba(30,40,90,0.18)"><dc-import name="Screen" spec="{{s.spec}}" hint-size="390px,844px"></dc-import></div>
+</div>
+</sc-for>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":2588,"height":940}}'>
+class Component extends DCLogic {
+  renderVals() {
+    var heroEvent = { t: 'hero', tag: 'En direct', title: '[NOM DE L’ÉVÉNEMENT]', sub: '23 h – 5 h · [NOM DU LIEU] · à 1,2 km\n2 de vos amis y sont' };
+    return {
+      screens: [
+        { n: '1 · Carte des événements', spec: { bg: 'map', nav: 'map', blocks: [
+          { t: 'seg', items: ['Carte', 'Liste'] },
+          { t: 'map', kind: 'region', h: 460, flush: true },
+          { t: 'btn', text: 'Ouvrir la carte de l’événement en direct' }
+        ] } },
+        { n: '2 · Carte + événements à venir', spec: { bg: 'map', nav: 'map', blocks: [
+          { t: 'seg', items: ['Carte', 'Liste'] },
+          { t: 'map', kind: 'region', h: 300, flush: true },
+          { t: 'hero', tag: 'À venir · 21 juil.', title: 'Événements à venir', sub: '[NOM DE L’ÉVÉNEMENT] · Bientôt\n12:50 – 05:00 · [VILLE], 556 km', c1: '#2A1B4A', c2: '#7C5BD6', c3: '#E55CA0' }
+        ] } },
+        { n: '3 · Fiche événement', spec: { bg: 'light', blocks: [
+          { t: 'top', title: 'Événement', back: true, right: '↗' },
+          { t: 'hero', tag: '21 juil.', title: '[NOM DE L’ÉVÉNEMENT]', sub: '12:50 – 05:00 · [VILLE], 556 km', h: 150, c1: '#2A1B4A', c2: '#7C5BD6', c3: '#E55CA0' },
+          { t: 'note', tone: 'info', text: 'La carte de cet événement sera bientôt disponible.' },
+          { t: 'stats', cols: 3, items: [{ l: 'Genre', v: 'À venir' }, { l: 'En direct', v: '—', s: 'aucun live' }, { l: 'Distance', v: '556 km' }] },
+          { t: 'card', title: 'À propos', text: '[DESCRIPTION DE L’ÉVÉNEMENT]' },
+          { t: 'btn', text: 'Ajouter à mes favoris', kind: 'secondary' }
+        ] } },
+        { n: '4 · Fiche événement — programmation', spec: { bg: 'light', blocks: [
+          { t: 'top', title: 'Programmation', back: true },
+          { t: 'chips', items: ['21 juil.', '22 juil.', '23 juil.'] },
+          { t: 'section', text: '21/07 · À suivre' },
+          { t: 'rows', items: [
+            { av: '♪', t: '[ARTISTE 1]', s: '12:50 – 21:00 · Électro · Amapiano', btn: 'M’abonner', btnAlt: true },
+            { av: '♪', t: '[ARTISTE 2]', s: '21:00 – 05:00 · Reggaeton · Afro', btn: 'M’abonner', btnAlt: true },
+            { av: '♪', t: '[ARTISTE 3]', s: 'Dans 3 h · Scène principale', btn: 'M’abonner', btnAlt: true }
+          ] },
+          { t: 'note', tone: 'info', text: 'Vous serez prévenu 15 min avant le début des artistes suivis.' }
+        ] } },
+        { n: '5 · Liste des événements', spec: { bg: 'light', nav: 'map', blocks: [
+          { t: 'seg', items: ['Carte', 'Liste'], active: 1 },
+          heroEvent,
+          { t: 'hero', tag: 'À venir · 29 juin', title: 'Événements à venir', sub: '13:30 – 23:45 · [VILLE], 790 km', c1: '#2A1B4A', c2: '#7C5BD6', c3: '#E55CA0', h: 100 }
+        ] } },
+        { n: '8 · Rechercher un festival', spec: { bg: 'light', sheet: true, blocks: [
+          { t: 'search', ph: 'Votre recherche' },
+          { t: 'section', text: 'Festivals' },
+          { t: 'rows', items: [
+            { av: '★', t: '[ÉVÉNEMENT A]', s: '13:30 – 23:45 · Nantes', chev: true },
+            { av: '★', t: '[ÉVÉNEMENT B]', s: '12:50 – 05:00 · Châteauroux', chev: true },
+            { av: '★', t: '[ÉVÉNEMENT C]', s: '18:00 – 23:45 · Strasbourg', chev: true },
+            { av: '★', t: '[ÉVÉNEMENT D]', s: '00:00 – 06:30 · Montpellier', chev: true },
+            { av: '★', t: '[ÉVÉNEMENT E]', s: '14:30 – 23:45 · Cannes', chev: true }
+          ] }
+        ] } }
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>

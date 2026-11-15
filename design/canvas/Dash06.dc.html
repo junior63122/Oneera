@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Dashboard — Utilisateurs</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div style="width: 1440px; min-height: 1000px"><dc-import name="DashPage" spec="{{spec}}" hint-size="1440px,1000px"></dc-import></div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1000}}'>
+class Component extends DCLogic {
+  renderVals() {
+    var row = function (p, a, s) { return [p, a, s, { b: 'Actif', tone: 'ok' }, '⋯']; };
+    return { spec: { active: 'Utilisateurs', h: 1000, title: 'Utilisateurs', sub: 'Comptes visiteurs de l’événement · nombre total : 2 500', actions: ['Exporter', 'Filtrer'], rows: [
+      [{ t: 'table', w: 2, tpl: '1.4fr 1fr 1fr 0.8fr 0.6fr', cols: ['Pseudo', 'Tranche d’âge', 'Signalements', 'Statut', 'Action'], hl: 4, rows: [
+        row('@theo', '18-24', '0'), row('@lina', '25-34', '0'), row('@max', '18-24', '1'), row('@ines', '25-34', '0'), row('@yanis', '18-24', '2'), row('@nora', 'non renseigné', '0'), row('@sam', '25-34', '0'), row('@kim', '35-44', '0')
+      ] },
+       { t: 'list', w: 1, title: '@yanis · utilisateur actif', items: [
+        { t: 'Compte', s: 'Créé le 24/02/2026 · connexion Apple', tone: 'info' },
+        { t: 'Historique des signalements', s: 'Spam · 2 min · signalé par 2 personnes\nSpam · hier', tone: 'warn' },
+        { t: 'Actions', s: 'Avertir · Mettre en sourdine 24 h · Suspendre', tone: 'danger' },
+        { t: 'Données de position', s: 'Non visibles ici : les déplacements individuels des visiteurs restent privés (seuls leurs amis, s’ils partagent).', tone: 'ok', bg: true }
+      ] }],
+      [{ t: 'note', tone: 'info', text: 'V2 : pas de téléphone, d’e-mail ni d’âge exact affichés à l’organisateur ; pas d’historique de mouvements des visiteurs (RGPD). L’écran sert à la gestion des comptes et à la modération.' }]
+    ] } };
+  }
+}
+</script>
+</body>
+</html>

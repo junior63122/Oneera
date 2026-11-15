@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Dashboard — Partenaires</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div style="width: 1440px; min-height: 1000px"><dc-import name="DashPage" spec="{{spec}}" hint-size="1440px,1000px"></dc-import></div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1000}}'>
+class Component extends DCLogic {
+  renderVals() {
+    var p = function (n, c, d) { return [n, { b: c, tone: 'info' }, d, '⋯']; };
+    return { spec: { active: 'Partenaires', h: 1000, title: 'Partenaires', sub: 'Bars, stands et sponsors présents sur la carte · nombre total : 24', actions: ['Exporter', '+ Créer un partenaire'], rows: [
+      [{ t: 'table', w: 2, tpl: '1fr 0.8fr 2fr 0.4fr', cols: ['Nom', 'Catégorie', 'Description', 'Action'], hl: 0, rows: [
+        p('[PARTENAIRE 1]', 'Bar', 'Cocktails signature'), p('[PARTENAIRE 2]', 'Food', 'Street food'), p('[PARTENAIRE 3]', 'Sponsor', 'Espace photo'), p('[PARTENAIRE 4]', 'Bar', 'Bières artisanales'), p('[PARTENAIRE 5]', 'Stand', 'Merchandising'), p('[PARTENAIRE 6]', 'Bar', 'Sans alcool')
+      ] },
+       { t: 'list', w: 1, title: '[PARTENAIRE 1] · actif', items: [
+        { t: 'Description', s: 'Cocktails signature, ouvert de 22 h à 4 h.', tone: 'info' },
+        { t: 'Réseaux sociaux', s: 'Instagram · TikTok · Facebook · site web', tone: 'purple' },
+        { t: 'Carte / menu', s: 'menu.pdf · carte.png', tone: 'neutral' },
+        { t: 'Emplacement sur le plan', s: 'Zone B · POI « Bar »', tone: 'ok' },
+        { t: 'Fréquentation estimée', s: '≈ 85 personnes · pic à 1 h · estimation (couverture 25 %)', tone: 'warn' }
+      ] }]
+    ] } };
+  }
+}
+</script>
+</body>
+</html>

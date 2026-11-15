@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Dashboard — Utilisateurs (global)</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div style="width: 1440px; min-height: 1000px"><dc-import name="DashPage" spec="{{spec}}" hint-size="1440px,1000px"></dc-import></div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1000}}'>
+class Component extends DCLogic {
+  renderVals() {
+    var r = function (p, a, e, s) { return [p, a, e, s, { b: 'Actif', tone: 'ok' }, '⋯']; };
+    return { spec: { scope: 'global', active: 'Utilisateurs', h: 1000, title: 'Utilisateurs', sub: 'Tous les comptes visiteurs ONEERA · total : 25 000', actions: ['Exporter', 'Filtrer'], rows: [
+      [{ t: 'kpi', l: 'Comptes', v: '25 000' }, { t: 'kpi', l: 'Actifs ce mois', v: '6 400', c: '#0B5A50' }, { t: 'kpi', l: 'Invités (sans compte)', v: '9 800', c: '#7C5BD6', s: 'sessions temporaires' }, { t: 'kpi', l: 'Suppressions demandées', v: '12', c: '#C2282F', s: 'traitées sous 30 jours' }],
+      [{ t: 'table', w: 2, tpl: '1.2fr 1fr 1.6fr 0.8fr 0.8fr 0.5fr', cols: ['Pseudo', 'Tranche d’âge', 'Événements', 'Signalements', 'Statut', 'Action'], hl: 2, rows: [
+        r('@theo', '18-24', '3', '0'), r('@lina', '25-34', '1', '0'), r('@max', '18-24', '5', '1'), r('@ines', '25-34', '2', '0'), r('@yanis', '18-24', '4', '2'), r('@nora', 'non renseigné', '1', '0')
+      ] },
+       { t: 'list', w: 1, title: '@max · utilisateur actif', items: [{ t: 'Compte', s: 'Créé le 24/02/2026 · connexion Google', tone: 'info' }, { t: 'Historique des événements', s: '[ÉVÉNEMENT A] · [ÉVÉNEMENT B] · 3 autres', tone: 'purple' }, { t: 'Historique des signalements', s: 'Spam · 1 signalement', tone: 'warn' }, { t: 'Droits RGPD', s: 'Exporter ses données · supprimer le compte (sur demande)', tone: 'ok' }] }],
+      [{ t: 'note', tone: 'info', text: 'Aucun téléphone, e-mail complet ni déplacement individuel n’est affiché. Les données personnelles restent accessibles uniquement à la personne concernée (export depuis l’app).' }]
+    ] } };
+  }
+}
+</script>
+</body>
+</html>

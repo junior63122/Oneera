@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>App — Création d'avatar</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div style="width: 5598px; height: 940px; box-sizing: border-box; background: #E9EBF3; padding: 24px; display: flex; gap: 40px; font-family: Inter, system-ui, sans-serif">
+<sc-for list="{{screens}}" as="s" hint-placeholder-count="13">
+<div style="display: flex; flex-direction: column; gap: 10px; flex-shrink: 0">
+<span style="font: 700 15px Inter, sans-serif; color: #1A1C2B">{{s.n}}</span>
+<div style="width: 390px; height: 844px; border-radius: 36px; overflow: hidden; box-shadow: 0 10px 30px rgba(30,40,90,0.18)"><dc-import name="Screen" spec="{{s.spec}}" hint-size="390px,844px"></dc-import></div>
+</div>
+</sc-for>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":5598,"height":940}}'>
+class Component extends DCLogic {
+  renderVals() {
+    var COL = ['#3A3D4A', '#F28A2E', '#F2D23A', '#8CD43A', '#2FBF6E', '#2FCFC0', '#3A86F2'];
+    var SKIN = ['#F6D2B5', '#EDBE98', '#E6B48C', '#D69A6A', '#B8794A', '#8E5A34', '#6B3F22', '#4A2A16'];
+    var HAIR = ['#2A1B12', '#5A3A22', '#1E1E24', '#8A5A34', '#B87A3A', '#D8B86A', '#B9B6B0'];
+    function scr(title, opts) {
+      var b = [{ t: 'top', title: 'Mon avatar', back: true, right: '✓' }, { t: 'avatar', h: opts.h || 340, glasses: opts.glasses, top: opts.top }, { t: 'seg', items: opts.tabs, active: opts.tab }];
+      if (opts.sw) b.push({ t: 'swatches', items: opts.sw, active: opts.swa || 0 });
+      b.push({ t: 'tiles', cols: 3, h: 86, items: opts.items, active: opts.sel });
+      return { n: title, spec: { bg: 'sky', blocks: b } };
+    }
+    var acc = ['Lunettes', 'Chapeaux', 'Bijoux'];
+    var clo = ['Hauts', 'Bas', 'Chaussures', 'Tenues'];
+    var body = ['Peau', 'Coiffure', 'Expression', 'Barbe'];
+    return {
+      screens: [
+        { n: '38 · Mon avatar', spec: { bg: 'sky', blocks: [
+          { t: 'top', title: 'Mon avatar', back: true, right: '✓' },
+          { t: 'avatar', h: 520, glasses: true },
+          { t: 'seg', items: ['Corps', 'Vêtements', 'Accessoires'] },
+          { t: 'note', tone: 'info', text: 'Votre avatar représente votre position sur la carte, visible seulement par vos amis.' }
+        ] } },
+        scr('39 · Accessoires : lunettes', { tabs: acc, tab: 0, items: ['Aucune', 'Lunettes', 'Lunettes de soleil'], sel: 1 }),
+        scr('40 · Lunettes de soleil', { tabs: acc, tab: 0, glasses: true, items: ['Aucune', 'Lunettes', 'Lunettes de soleil'], sel: 2, sw: COL }),
+        scr('41 · Chapeaux', { tabs: acc, tab: 1, glasses: true, items: ['Aucun', 'Casquette', 'Chapeau cowboy', 'Bob', 'Bonnet', 'Cône'], sel: 0 }),
+        scr('42 · Bijoux', { tabs: acc, tab: 2, glasses: true, items: ['Aucun', 'Bracelet', 'Montre', 'Collier'], sel: 2 }),
+        scr('43 · Hauts', { tabs: clo, tab: 0, glasses: true, sw: COL, swa: 0, items: ['T-shirt', 'Marcel', 'Chemise', 'Sweat', 'Veste', 'Crop top'], sel: 2 }),
+        scr('44 · Bas', { tabs: clo, tab: 1, glasses: true, sw: COL, items: ['Pantalon', 'Jean', 'Jupe', 'Short', 'Cargo', 'Jogging'], sel: 0 }),
+        scr('45 · Chaussures', { tabs: clo, tab: 2, glasses: true, sw: COL, items: ['Baskets', 'Baskets 2', 'Espadrilles', 'Bottines', 'Sandales', 'Mocassins'], sel: 1 }),
+        scr('46 · Tenues', { tabs: clo, tab: 3, glasses: true, items: ['Ensemble cuir', 'Costume', 'Robe', 'Combinaison', 'Tailleur', 'Survêtement'], sel: 1 }),
+        scr('47 · Peau', { tabs: body, tab: 0, glasses: true, h: 380, sw: SKIN, swa: 2, items: ['Teint 1', 'Teint 2', 'Teint 3'], sel: 2 }),
+        scr('48 · Coiffure', { tabs: body, tab: 1, glasses: true, sw: HAIR, swa: 2, items: ['Balayé court', 'Coupe bol', 'Bouclé court', 'Long', 'Tresses', 'Rasé'], sel: 0 }),
+        scr('49 · Expression', { tabs: body, tab: 2, glasses: true, items: ['Joyeux', 'Sourire', 'Rire', 'Normal', 'Choqué', 'Clin d’œil'], sel: 1 }),
+        scr('50 · Barbe', { tabs: body, tab: 3, glasses: true, items: ['Aucune', 'Moustache', 'Collier', 'Bouc', 'Bouc court', 'Barbe complète'], sel: 0 })
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>

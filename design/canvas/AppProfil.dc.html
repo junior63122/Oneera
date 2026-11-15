@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>App — Profil, réglages et compte</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div style="width: 3448px; height: 940px; box-sizing: border-box; background: #E9EBF3; padding: 24px; display: flex; gap: 40px; font-family: Inter, system-ui, sans-serif">
+<sc-for list="{{screens}}" as="s" hint-placeholder-count="8">
+<div style="display: flex; flex-direction: column; gap: 10px; flex-shrink: 0">
+<span style="font: 700 15px Inter, sans-serif; color: #1A1C2B">{{s.n}}</span>
+<div style="width: 390px; height: 844px; border-radius: 36px; overflow: hidden; box-shadow: 0 10px 30px rgba(30,40,90,0.18)"><dc-import name="Screen" spec="{{s.spec}}" hint-size="390px,844px"></dc-import></div>
+</div>
+</sc-for>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":3448,"height":940}}'>
+class Component extends DCLogic {
+  renderVals() {
+    var perms1 = [
+      { t: 'Localisation', s: 'Affichez votre position sur la carte, retrouvez vos amis en temps réel.', toggle: true },
+      { t: 'Bluetooth', s: 'Détectez les balises du lieu pour une position précise en intérieur.', toggle: true },
+      { t: 'Activité / pas', s: 'Calcule vos pas et améliore la fluidité de votre position.', toggle: true },
+      { t: 'Appareil photo', s: 'Photo de profil, scan des QR codes.', toggle: true },
+      { t: 'Micro', s: 'Messages vocaux à vos amis.', toggle: false },
+      { t: 'Notifications', s: 'Alertes de sécurité, messages des organisateurs, activité des amis.', toggle: true }
+    ];
+    return {
+      screens: [
+        { n: '19 · Diagnostic balises (staff / test uniquement)', spec: { bg: 'light', blocks: [
+          { t: 'top', title: 'Diagnostic balises', back: true },
+          { t: 'note', tone: 'warn', text: 'Écran réservé aux équipes techniques : il n’apparaît jamais aux visiteurs (en V1, il était visible).' },
+          { t: 'stats', cols: 3, items: [{ l: 'Balises vues', v: '19 / 20' }, { l: 'Précision', v: '± 3 m' }, { l: 'Étage', v: 'RDC' }] },
+          { t: 'rows', items: [
+            { av: '1', t: 'Balise 1 · Hall', s: '−64 dBm · pile 92 %', v: 'vue', ok: true },
+            { av: '2', t: 'Balise 2 · Dancefloor', s: '−71 dBm · pile 88 %', v: 'vue', ok: true },
+            { av: '3', t: 'Balise 3 · Bar', s: '−78 dBm · pile 90 %', v: 'vue', ok: true },
+            { av: '7', t: 'Balise 7 · Terrasse', s: 'Non vue depuis 12 min', v: 'absente', warn: true, avBg: '#FFF4E0', avFg: '#8A5300' }
+          ] },
+          { t: 'btn', text: 'Lancer une calibration', kind: 'secondary' }
+        ] } },
+        { n: '20 · Mon profil', spec: { bg: 'light', nav: 'config', blocks: [
+          { t: 'top', title: '@alex', right: '≡' },
+          { t: 'avatar', h: 170 },
+          { t: 'stats', cols: 2, items: [{ l: 'Profil', v: 'Modifier' }, { l: 'Partager mon profil', v: 'QR code' }] },
+          { t: 'section', text: 'Localisation partagée' },
+          { t: 'card', title: 'Aucun événement actif', text: 'Votre position apparaîtra ici dès qu’un événement sera sélectionné. Visible uniquement par les amis que vous choisissez.' },
+          { t: 'rows', items: [{ av: '☺', t: 'Mes amis', s: '5 amis', chev: true }] }
+        ] } },
+        { n: '21 · Modifier mon profil', spec: { bg: 'light', sheet: true, blocks: [
+          { t: 'top', title: 'Modifier mon profil', back: true },
+          { t: 'avatar', h: 100 },
+          { t: 'input', label: 'Pseudo (affiché à vos amis)', value: 'alex' },
+          { t: 'input', label: 'Prénom', value: 'Alex' },
+          { t: 'input', label: 'Tranche d’âge (facultatif)', value: '25 – 34 ans' },
+          { t: 'input', label: 'Description', value: 'Je suis Alex', tall: true },
+          { t: 'note', tone: 'info', text: 'V2 : plus de date de naissance complète ni de téléphone obligatoire. Une tranche d’âge facultative suffit pour les statistiques.' }
+        ] } },
+        { n: '22 · Paramètres et activités', spec: { bg: 'light', sheet: true, blocks: [
+          { t: 'top', title: 'Paramètres et activités', back: true },
+          { t: 'section', text: 'Compte' },
+          { t: 'rows', items: [{ t: 'Mon compte', chev: true }, { t: 'Mon avatar', chev: true }] },
+          { t: 'section', text: 'Activités' },
+          { t: 'rows', items: [{ t: 'Historique d’événements', chev: true }, { t: 'Mes signalements', chev: true }] },
+          { t: 'section', text: 'Paramètres' },
+          { t: 'rows', items: [{ t: 'Notifications', chev: true }, { t: 'Ma localisation', chev: true }, { t: 'Autorisations', chev: true }, { t: 'Bloqués', chev: true }] }
+        ] } },
+        { n: '23 · Paramètres (suite)', spec: { bg: 'light', sheet: true, blocks: [
+          { t: 'top', title: 'Paramètres et activités', back: true },
+          { t: 'section', text: 'Paramètres' },
+          { t: 'rows', items: [{ t: 'Notifications', chev: true }, { t: 'Ma localisation', chev: true }, { t: 'Autorisations', chev: true }, { t: 'Bloqués', chev: true }] },
+          { t: 'section', text: 'Juridique' },
+          { t: 'rows', items: [{ t: 'Politique de confidentialité', chev: true }, { t: 'Conditions d’utilisation', chev: true }] },
+          { t: 'section', text: 'Mes données' },
+          { t: 'rows', items: [{ t: 'Télécharger mes données', chev: true }, { t: 'Supprimer mon compte', danger: true, chev: true }] }
+        ] } },
+        { n: '24 · Autorisations', spec: { bg: 'light', sheet: true, blocks: [
+          { t: 'top', title: 'Autorisations', back: true },
+          { t: 'note', tone: 'info', text: 'ONEERA utilise ces autorisations pour améliorer votre expérience pendant l’événement. Chacune peut être retirée à tout moment.' },
+          { t: 'rows', items: perms1 }
+        ] } },
+        { n: '25 · Autorisations (suite)', spec: { bg: 'light', sheet: true, blocks: [
+          { t: 'top', title: 'Autorisations', back: true },
+          { t: 'rows', items: [
+            { t: 'Presse-papiers', s: 'Coller rapidement un lien ou un code pour rejoindre un événement ou des amis.', toggle: true },
+            { t: 'Contacts', s: 'Retrouver vos amis déjà sur ONEERA et les inviter.', toggle: false },
+            { t: 'Photos', s: 'Partager des photos avec vos amis et personnaliser votre profil.', toggle: false }
+          ] },
+          { t: 'section', text: 'Statistiques de l’établissement' },
+          { t: 'rows', items: [{ t: 'Contribuer aux statistiques anonymes', s: 'Votre position, sans identité, aide l’établissement à fluidifier les zones (groupes de 5 personnes minimum).', toggle: true }] }
+        ] } },
+        { n: '51 · Mon compte', spec: { bg: 'light', sheet: true, blocks: [
+          { t: 'top', title: 'Mon compte', back: true },
+          { t: 'rows', items: [{ t: 'E-mail', s: 'a•••@exemple.fr', chev: true }, { t: 'Connexion', s: 'Apple / Google / lien par e-mail', chev: true }] },
+          { t: 'rows', items: [
+            { t: 'Formulaire d’aide', chev: true },
+            { t: 'Télécharger mes données', s: 'Une copie de toutes vos données ONEERA', chev: true },
+            { t: 'Supprimer mon compte', danger: true, chev: true },
+            { t: 'Se déconnecter', chev: true }
+          ] }
+        ] } }
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>

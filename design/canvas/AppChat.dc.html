@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>App — Chat</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div style="width: 868px; height: 940px; box-sizing: border-box; background: #E9EBF3; padding: 24px; display: flex; gap: 40px; font-family: Inter, system-ui, sans-serif">
+<sc-for list="{{screens}}" as="s" hint-placeholder-count="2">
+<div style="display: flex; flex-direction: column; gap: 10px; flex-shrink: 0">
+<span style="font: 700 15px Inter, sans-serif; color: #1A1C2B">{{s.n}}</span>
+<div style="width: 390px; height: 844px; border-radius: 36px; overflow: hidden; box-shadow: 0 10px 30px rgba(30,40,90,0.18)"><dc-import name="Screen" spec="{{s.spec}}" hint-size="390px,844px"></dc-import></div>
+</div>
+</sc-for>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":868,"height":940}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {
+      screens: [
+        { n: '17 · Conversation', spec: { bg: 'light', blocks: [
+          { t: 'top', title: 'Léa', back: true, right: '☏' },
+          { t: 'note', tone: 'ok', text: 'Léa partage sa position avec vous · Bar · ≈ 20 m' },
+          { t: 'msg', text: 'T’es où ?' },
+          { t: 'msg', text: 'Au bar, viens !', me: false },
+          { t: 'msg', text: 'J’arrive 🙂', me: true },
+          { t: 'spacer' },
+          { t: 'rows', items: [{ av: '⌖', t: 'Envoyer ma position', s: 'Partage pour 1 h', chev: true }] },
+          { t: 'input', label: '', value: 'Écrivez votre message', ph: true }
+        ] } },
+        { n: '18 · Discussions', spec: { bg: 'light', nav: 'chat', blocks: [
+          { t: 'top', title: 'Discussions', right: '+' },
+          { t: 'search', ph: 'Votre recherche' },
+          { t: 'card', title: 'Retrouvez vos amis', text: 'Autorisez l’accès à vos contacts pour retrouver vos amis déjà sur ONEERA. Facultatif.' },
+          { t: 'rows', items: [
+            { av: 'L', t: 'Léa', s: 'Au bar, viens !', v: '20:14' },
+            { av: 'E', t: 'Emma', s: 'Rejoins-moi', v: '30/07' },
+            { av: '★', t: '[ORGANISATEUR]', s: 'Aucun message pour le moment', v: '28/07' },
+            { av: 'J', t: 'Jules', s: 'Aucun message pour le moment', v: '23/07' },
+            { av: 'T', t: 'Tom', s: 'Aucun message pour le moment', v: '15/07' }
+          ] }
+        ] } }
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>

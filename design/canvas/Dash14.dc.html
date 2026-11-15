@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Dashboard — Partenaires (global)</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div style="width: 1440px; min-height: 1000px"><dc-import name="DashPage" spec="{{spec}}" hint-size="1440px,1000px"></dc-import></div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1000}}'>
+class Component extends DCLogic {
+  renderVals() {
+    var p = function (n, c, e) { return [n, { b: c, tone: 'info' }, e, '⋯']; };
+    return { spec: { scope: 'global', active: 'Partenaires', h: 1000, title: 'Partenaires', sub: 'Tous les partenaires, sur l’ensemble des événements · total : 2 000', actions: ['Exporter', '+ Créer un partenaire'], rows: [
+      [{ t: 'table', w: 2, tpl: '1fr 0.8fr 2fr 0.4fr', cols: ['Nom', 'Catégorie', 'Événements', 'Action'], hl: 0, rows: [
+        p('[PARTENAIRE 1]', 'Bar', '[ÉVÉNEMENT A] · [ÉVÉNEMENT B]'), p('[PARTENAIRE 2]', 'Food', '[ÉVÉNEMENT A]'), p('[PARTENAIRE 3]', 'Sponsor', '4 événements'), p('[PARTENAIRE 4]', 'Bar', '[ÉVÉNEMENT C]'), p('[PARTENAIRE 5]', 'Stand', '2 événements'), p('[PARTENAIRE 6]', 'Bar', '[ÉVÉNEMENT D]'), p('[PARTENAIRE 7]', 'Sponsor', '6 événements')
+      ] },
+       { t: 'list', w: 1, title: '[PARTENAIRE 1] · actif', items: [{ t: 'Description', s: 'Cocktails signature', tone: 'info' }, { t: 'Événements', s: '[ÉVÉNEMENT A] · [ÉVÉNEMENT B]', tone: 'purple' }, { t: 'Réseaux sociaux', s: 'Instagram · TikTok · Facebook · site web', tone: 'neutral' }, { t: 'Carte / menu', s: 'menu.pdf · carte.png', tone: 'neutral' }, { t: 'Mesure d’audience', s: 'Passages estimés par événement (agrégés, anonymes)', tone: 'ok' }] }]
+    ] } };
+  }
+}
+</script>
+</body>
+</html>

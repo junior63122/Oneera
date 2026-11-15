@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Dashboard — Vue globale</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div style="width: 1440px; min-height: 1500px"><dc-import name="DashPage" spec="{{spec}}" hint-size="1440px,1500px"></dc-import></div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1500}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return { spec: { active: 'Vue globale', h: 1500, rows: [
+      [{ t: 'kpi', l: 'Pic du jour (présence comptée)', v: '1 386', s: 'à 1 h 10 · contrôle d’accès' }, { t: 'kpi', l: 'Temps moyen sur zone', v: '38 min', s: 'échantillon de 312 localisés' }, { t: 'kpi', l: 'Présence actuelle', v: '1 240', s: 'mesure : entrées − sorties' }, { t: 'kpi', l: 'Qualité de localisation', v: '± 3 m', c: '#0B5A50', s: '19 / 20 balises actives' }],
+      [{ t: 'map', w: 2, h: 420, sel: true, heat: true, panel: { title: 'Zone sélectionnée : Zone A', stats: [{ v: '≈ 2,6', l: 'pers / m² (estimé)', c: '#D98A00' }, { v: '12', l: 'agents actifs', c: '#3B54E0' }, { v: '≈ 640', l: 'estimés (156 localisés)' }, { v: '1', l: 'alerte', c: '#C2282F' }] }, tabs: ['TOUT', 'ÉQUIPE', 'INCIDENTS', 'HEATMAP', 'FLUX'] },
+       { t: 'bars', title: 'Répartition par zone', link: 'Total estimé ≈ 1 240', items: [{ l: 'Zone A', v: '≈ 640', p: 92 }, { l: 'Zone B', v: '≈ 300', p: 48 }, { l: 'Zone C', v: '≈ 210', p: 34 }, { l: 'Zone D', v: '≈ 85', p: 16 }, { l: 'Zone E', v: '< 5', p: 2 }] }],
+      [{ t: 'note', w: 1, tone: 'info', text: 'Les répartitions par zone sont des estimations : 312 visiteurs localisés par l’app (couverture 25 %) redressés sur la présence comptée, ± 15 %. Les zones de moins de 5 personnes localisées sont masquées.' }],
+      [{ t: 'table', title: 'Alertes en cours : Zone A', link: 'Voir tout', tpl: '1.2fr 2fr 1fr 1fr 1.4fr', cols: ['Priorité', 'Description', 'Zone', 'Catégorie', 'Assigné'], rows: [
+        [{ b: 'Critique', tone: 'danger' }, 'Malaise signalé par un visiteur', 'Bar nord', { b: 'Médical', tone: 'neutral' }, 'Sécurité · en route'],
+        [{ b: 'Moyenne', tone: 'warn' }, 'Rupture de stock signalée', 'Bar nord', { b: 'Déstockage', tone: 'warn' }, 'Non assigné'],
+        [{ b: 'Majeure', tone: 'danger' }, 'Saturation > 90 % depuis 12 min', 'Zone A', { b: 'Affluence', tone: 'purple' }, 'Manager · notifié']
+      ] }],
+      [{ t: 'list', title: 'Staff assigné : Zone A', items: [{ t: 'Sécurité', s: '24 agents', tone: 'info' }, { t: 'Médical', s: '12 agents', tone: 'danger' }, { t: 'Technique', s: '6 agents', tone: 'warn' }, { t: 'Managers', s: '3', tone: 'ok' }] },
+       { t: 'line', title: 'Affluence (présence comptée)', y: [5, 12, 28, 55, 80, 95, 88, 60], axis: ['18 h', '20 h', '22 h', '0 h', '2 h', '4 h'] },
+       { t: 'list', title: 'Programmation : Zone A', items: [{ t: '23:00 · [ARTISTE 1]', s: 'Scène principale · en direct', tag: 'En direct', tone: 'danger' }, { t: '01:00 · [ARTISTE 2]', s: 'Scène principale · à venir', tone: 'info' }, { t: '03:00 · [ARTISTE 3]', s: 'Scène principale · à venir', tone: 'info' }] }]
+    ] } };
+  }
+}
+</script>
+</body>
+</html>

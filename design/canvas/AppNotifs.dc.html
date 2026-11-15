@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>App — Notifications</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div style="width: 868px; height: 940px; box-sizing: border-box; background: #E9EBF3; padding: 24px; display: flex; gap: 40px; font-family: Inter, system-ui, sans-serif">
+<sc-for list="{{screens}}" as="s" hint-placeholder-count="2">
+<div style="display: flex; flex-direction: column; gap: 10px; flex-shrink: 0">
+<span style="font: 700 15px Inter, sans-serif; color: #1A1C2B">{{s.n}}</span>
+<div style="width: 390px; height: 844px; border-radius: 36px; overflow: hidden; box-shadow: 0 10px 30px rgba(30,40,90,0.18)"><dc-import name="Screen" spec="{{s.spec}}" hint-size="390px,844px"></dc-import></div>
+</div>
+</sc-for>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":868,"height":940}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {
+      screens: [
+        { n: '6 · Notifications', spec: { bg: 'light', blocks: [
+          { t: 'top', title: 'Notifications', back: true },
+          { t: 'chips', items: ['Tout', 'Live', 'Autour de moi', 'Amis', 'Événement'] },
+          { t: 'section', text: 'Récent' },
+          { t: 'rows', items: [{ av: '⌖', t: 'Localisation désactivée', s: 'Autorisez « Toujours » pour recevoir les alertes à proximité et utiliser la carte pendant l’événement.', btn: 'Réglages', warn: true }] },
+          { t: 'section', text: 'Plus tôt' },
+          { t: 'rows', items: [
+            { av: 'K', t: 'Kim a accepté ta demande', s: 'Vous êtes maintenant amis · 6 août', btn: 'Voir' },
+            { av: '★', t: 'Ton récap est disponible', s: 'Le récap de [ÉVÉNEMENT] est prêt : temps forts, zones visitées, parcours.', btn: 'Voir le récap' },
+            { av: 'E', t: 'Emma', s: 'Rejoins-moi · 30 juil.', btn: 'Répondre' },
+            { av: '★', t: 'Ton récap est disponible', s: '[ÉVÉNEMENT] · 30 juil.', btn: 'Voir le récap' }
+          ] }
+        ] } },
+        { n: '7 · Notifications (suite)', spec: { bg: 'light', blocks: [
+          { t: 'top', title: 'Notifications', back: true },
+          { t: 'rows', items: [
+            { av: 'A', t: 'Alex a accepté ta demande', s: 'Vous êtes maintenant amis · 27 juil.', btn: 'Voir' },
+            { av: '★', t: 'Ton récap est disponible', s: '[ÉVÉNEMENT] · 12 juil.', btn: 'Voir le récap' },
+            { av: 'S', t: 'Sam', s: 'Rejoins-moi · 3 juil.', btn: 'Répondre' },
+            { av: 'L', t: 'Léa', s: 'Événement partagé : [ÉVÉNEMENT] · 14 juin', btn: 'Rejoindre' },
+            { av: 'N', t: 'Nina', s: 'Nouvelle localisation partagée · 13 juin', btn: 'Voir la map' },
+            { av: 'T', t: 'Tom', s: 'Tes ka ? · 13 juin', btn: 'Répondre' },
+            { av: 'N', t: 'Nina', s: 'Nouvelle localisation partagée · 2 juin', btn: 'Voir la map' }
+          ] },
+          { t: 'note', tone: 'info', text: 'V2 : une seule notification par action (plus de doublons), et un badge compteur sur l’icône.' }
+        ] } }
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>

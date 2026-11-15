@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Dashboard — Événements</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div style="width: 1440px; min-height: 1150px"><dc-import name="DashPage" spec="{{spec}}" hint-size="1440px,1150px"></dc-import></div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1150}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return { spec: { scope: 'global', active: 'Événements', h: 1150, title: 'Événements', sub: 'Gérez et surveillez vos événements en temps réel. Sélectionnez un événement pour ouvrir son centre de contrôle.', actions: ['+ Créer un nouvel événement'], rows: [
+      [{ t: 'kpi', l: 'Au total', v: '6' }, { t: 'kpi', l: 'Actifs', v: '1', c: '#0B5A50' }, { t: 'kpi', l: 'À venir', v: '2' }, { t: 'kpi', l: 'Terminés', v: '3', c: '#1A1C2B' }],
+      [{ t: 'map', w: 1, h: 230 }, { t: 'list', w: 2, title: '[ÉVÉNEMENT ACTIF] · en direct', link: 'Publier l’événement', items: [
+        { t: 'Visiteurs localisés par l’app', s: '312 (couverture 25 % de la présence comptée)', tone: 'info' },
+        { t: 'Incidents', s: '3 dont 1 critique', tone: 'danger' },
+        { t: 'Durée', s: '14:22:05 depuis l’ouverture', tone: 'purple' },
+        { t: 'Occupation', s: '62 % de la capacité (comptage d’entrée)', tone: 'warn' }
+      ] }],
+      [{ t: 'cards', title: 'Catalogue d’événements', link: 'Grille · Liste', cols: 3, h: 150, items: [
+        { tag: 'À venir · 12 mai', tone: 'info', t: '[ÉVÉNEMENT A]', s: '2 500 invités prévus\nDétails ›' },
+        { tag: 'À venir · 20 juin', tone: 'info', t: '[ÉVÉNEMENT B]', s: '2 500 invités prévus\nDétails ›' },
+        { tag: 'Archive · mars', tone: 'neutral', bg: '#F4F5F8', t: '[ÉVÉNEMENT C]', s: 'Présence comptée 12 k · 27 incidents\nClôturé le 15/03 · Détails ›' },
+        { tag: 'Archive · mars', tone: 'neutral', bg: '#F4F5F8', t: '[ÉVÉNEMENT D]', s: 'Présence comptée 12 k · 27 incidents\nDétails ›' },
+        { tag: 'Archive · mars', tone: 'neutral', bg: '#F4F5F8', t: '[ÉVÉNEMENT E]', s: 'Présence comptée 12 k · 27 incidents\nDétails ›' },
+        { tag: 'Nouveau', tone: 'info', t: '+ Nouvel événement', s: 'Initialiser un nouvel événement' }
+      ] }]
+    ] } };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>App — Carte d'événement, zones, récap, replay</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div style="width: 3018px; height: 940px; box-sizing: border-box; background: #E9EBF3; padding: 24px; display: flex; gap: 40px; font-family: Inter, system-ui, sans-serif">
+<sc-for list="{{screens}}" as="s" hint-placeholder-count="7">
+<div style="display: flex; flex-direction: column; gap: 10px; flex-shrink: 0">
+<span style="font: 700 15px Inter, sans-serif; color: #1A1C2B">{{s.n}}</span>
+<div style="width: 390px; height: 844px; border-radius: 36px; overflow: hidden; box-shadow: 0 10px 30px rgba(30,40,90,0.18)"><dc-import name="Screen" spec="{{s.spec}}" hint-size="390px,844px"></dc-import></div>
+</div>
+</sc-for>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":3018,"height":940}}'>
+class Component extends DCLogic {
+  renderVals() {
+    var zoneRows = { t: 'rows', items: [
+      { av: '⌖', t: 'Dancefloor', s: '2 h 42 · 9 visites', btn: 'Localiser', btnAlt: true },
+      { av: '⌖', t: 'Bar', s: '56 min · 6 visites', btn: 'Localiser', btnAlt: true },
+      { av: '⌖', t: 'Terrasse', s: '50 min · 4 visites', btn: 'Localiser', btnAlt: true },
+      { av: '⌖', t: 'Carré VIP', s: '28 min · 2 visites', btn: 'Localiser', btnAlt: true }
+    ] };
+    return {
+      screens: [
+        { n: '31 · Historique d’événements', spec: { bg: 'sky', sheet: true, blocks: [
+          { t: 'top', title: 'Historique d’événements', back: true },
+          { t: 'rows', items: [
+            { av: '★', t: '[ÉVÉNEMENT A]', s: '4 juin – 31 août 2026', v: '↗' },
+            { av: '★', t: '[ÉVÉNEMENT B]', s: '30 juil. 2026', v: '↗' },
+            { av: '★', t: '[ÉVÉNEMENT C]', s: '30 août 2026', v: '↗' },
+            { av: '★', t: '[ÉVÉNEMENT D]', s: '1 – 30 août 2026', v: '↗' }
+          ] },
+          { t: 'note', tone: 'info', text: 'Aucun autre événement pour le moment. Découvrez les prochains événements disponibles.' }
+        ] } },
+        { n: '32 · Carte de l’événement', spec: { bg: 'sky', nav: 'map', blocks: [
+          { t: 'chips', items: ['[NOM DU LIEU] · en direct', 'RDC', 'Mezz.'] },
+          { t: 'map', h: 420, people: true },
+          { t: 'rows', items: [
+            { av: 'L', avBg: '#DDF4EF', avFg: '#0E8A7A', t: 'Léa', s: 'Bar · ≈ 20 m · à l’instant', btn: 'Rejoindre' },
+            { av: 'I', avBg: '#FFF4E0', avFg: '#8A5300', t: 'Inès', s: 'Vue il y a 4 min · terrasse', warn: true, btn: 'Écrire', btnAlt: true }
+          ] },
+          { t: 'seg', items: ['Zones', 'Récap', 'Replay', 'Signaler'] }
+        ] } },
+        { n: '33 · Zones fréquentées', spec: { bg: 'sky', sheet: true, blocks: [
+          { t: 'top', title: 'Zones fréquentées', back: true },
+          { t: 'stats', cols: 2, items: [{ l: 'Horaires', v: '23 h 04 – 4 h 16', s: 'Total 5 h 12' }, { l: 'Mouvement', v: '41 % mobile', s: '59 % immobile' }] },
+          { t: 'stats', cols: 1, items: [{ l: 'Arrêt moyen', v: '6 min', s: 'surtout au dancefloor' }] },
+          zoneRows
+        ] } },
+        { n: '34 · Temps par zone', spec: { bg: 'sky', sheet: true, blocks: [
+          { t: 'top', title: 'Zones fréquentées', back: true },
+          { t: 'donut', center: '5 h 12', items: [{ l: 'Dancefloor 52 %', p: 52 }, { l: 'Bar 18 %', p: 18 }, { l: 'Terrasse 16 %', p: 16 }, { l: 'VIP 9 %', p: 9 }, { l: 'Autres 5 %', p: 5 }] },
+          zoneRows,
+          { t: 'note', tone: 'info', text: 'Temps estimés à partir de votre position (précision ± 3 m).' }
+        ] } },
+        { n: '35 · Récap de l’événement', spec: { bg: 'sky', sheet: true, blocks: [
+          { t: 'top', title: 'Le récap de ta soirée', back: true, right: '↗' },
+          { t: 'avatar', h: 120 },
+          { t: 'stats', cols: 2, items: [{ l: 'Temps sur place', v: '5 h 12' }, { l: 'Zones visitées', v: '6' }, { l: 'Distance estimée', v: '≈ 2,1 km' }, { l: 'Pas', v: '3 140' }] },
+          { t: 'hero', title: 'Zone la plus visitée : Dancefloor', sub: '2 h 42 · revoir dans le replay', h: 90 }
+        ] } },
+        { n: '36 · Récap (suite)', spec: { bg: 'sky', sheet: true, blocks: [
+          { t: 'top', title: 'Le récap de ta soirée', back: true, right: '↗' },
+          { t: 'section', text: 'Ta soirée' },
+          { t: 'rows', items: [{ av: '→', t: 'Arrivée', v: '23 h 04' }, { av: '←', t: 'Départ', v: '4 h 16' }, { av: '◷', t: 'Temps immobile', v: '3 h 04' }, { av: '◎', t: 'Arrêts fréquents', v: 'Dancefloor' }] },
+          { t: 'bars', title: 'Répartition de ton activité', items: [{ l: '23 h – 1 h', v: 'très mobile', p: 80 }, { l: '1 h – 3 h', v: 'au dancefloor', p: 45 }, { l: '3 h – 4 h', v: 'calme', p: 20 }] },
+          { t: 'btn', text: 'Partager mon récap' }
+        ] } },
+        { n: '37 · Replay de ma soirée', spec: { bg: 'sky', blocks: [
+          { t: 'chips', items: ['[NOM DU LIEU] · Replay'] },
+          { t: 'map', h: 470, people: true },
+          { t: 'stats', cols: 3, items: [{ l: 'Heure', v: '1 h 45' }, { l: 'Zone', v: 'Dancefloor' }, { l: 'Pas', v: '1 820' }] },
+          { t: 'timeline', from: '23:04', to: '04:16', p: 46 },
+          { t: 'seg', items: ['Zones', 'Récap', 'Replay'], active: 2 }
+        ] } }
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>

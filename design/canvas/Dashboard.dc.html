@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Centre de contrôle — Vue globale</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#F4F6FB}
+a{color:#3B54E0}a:hover{color:#2A3FB8}
+</style>
+</helmet>
+<div style="min-height: 1000px; box-sizing: border-box; background: #F4F6FB; color: #1A1C2B; font-family: Inter, system-ui, sans-serif; display: flex; flex-wrap: wrap">
+<nav style="flex: 1 1 220px; max-width: 250px; background: #FFFFFF; padding: 22px 16px; display: flex; flex-direction: column; gap: 4px; box-sizing: border-box; border-right: 1px solid #E6E9F2">
+<span style="font: 800 24px Inter, sans-serif; letter-spacing: 2px">ONEERA</span>
+<span style="font-size: 10px; letter-spacing: 1px; color: #3B54E0; font-weight: 700; margin-bottom: 10px">CENTRE DE CONTRÔLE</span>
+<div style="display: flex; align-items: center; gap: 6px; border: 1px solid #E5484D; border-radius: 8px; padding: 8px 10px; margin-bottom: 14px; font: 600 11px Inter, sans-serif; color: #B3262C">[ÉVÉNEMENT EN COURS]</div>
+<sc-for list="{{menu}}" as="m" hint-placeholder-count="12">
+<a href="#" style="{{m.style}}">{{m.n}}</a>
+</sc-for>
+</nav>
+<main style="flex: 999 1 560px; min-width: 0; padding: 18px; display: flex; flex-direction: column; gap: 14px; box-sizing: border-box">
+<div style="display: flex; flex-wrap: wrap; align-items: center; gap: 12px; background: #FFFFFF; border-radius: 16px; padding: 10px 14px">
+<label style="flex: 1 1 200px; display: flex; align-items: center; gap: 8px; background: #F4F6FB; border-radius: 10px; padding: 0 12px; height: 38px">
+<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#5A5F77" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="6.5"></circle><path d="M16 16l4 4"></path></svg>
+<input placeholder="Rechercher" aria-label="Rechercher" style="border: 0; background: transparent; font: 400 13px Inter, sans-serif; outline: none; flex: 1; min-width: 0">
+</label>
+<span style="font: 700 11px Inter, sans-serif; color: #0B5A50; display: flex; align-items: center; gap: 6px"><span style="width: 8px; height: 8px; border-radius: 4px; background: #12A38F"></span>EN DIRECT · données il y a 4 s</span>
+<span style="font: 700 12px Inter, sans-serif; color: #3B54E0; background: #ECEFFD; border-radius: 999px; padding: 6px 10px">App connectée : 312</span>
+<span style="font: 700 12px Inter, sans-serif; color: #8A5300; background: #FFF4E0; border-radius: 999px; padding: 6px 10px">Occupation : 62 % (comptage entrées)</span>
+<span style="font: 700 12px Inter, sans-serif; color: #B3262C; background: #FDE7E8; border-radius: 999px; padding: 6px 10px">Incidents : 2</span>
+</div>
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 12px">
+<div style="background: #FFFFFF; border-radius: 16px; padding: 14px; display: flex; flex-direction: column; gap: 4px"><span style="font-size: 12px; color: #5A5F77">Présence actuelle (entrées − sorties)</span><span style="font: 800 28px Inter, sans-serif; color: #3B54E0">1 240</span><span style="font-size: 11px; color: #5A5F77">source : contrôle d'accès · mesure</span></div>
+<div style="background: #FFFFFF; border-radius: 16px; padding: 14px; display: flex; flex-direction: column; gap: 4px"><span style="font-size: 12px; color: #5A5F77">Visiteurs localisés par l'app</span><span style="font: 800 28px Inter, sans-serif; color: #3B54E0">312</span><span style="font-size: 11px; color: #5A5F77">couverture 25 % de la présence</span></div>
+<div style="background: #FFFFFF; border-radius: 16px; padding: 14px; display: flex; flex-direction: column; gap: 4px"><span style="font-size: 12px; color: #5A5F77">Temps moyen sur zone</span><span style="font: 800 28px Inter, sans-serif; color: #3B54E0">38 min</span><span style="font-size: 11px; color: #5A5F77">sur l'échantillon localisé</span></div>
+<div style="background: #FFFFFF; border-radius: 16px; padding: 14px; display: flex; flex-direction: column; gap: 4px"><span style="font-size: 12px; color: #5A5F77">Qualité de localisation</span><span style="font: 800 28px Inter, sans-serif; color: #0B5A50">± 3 m</span><span style="font-size: 11px; color: #5A5F77">19 / 20 balises · médiane mesurée</span></div>
+</div>
+<div style="display: flex; flex-wrap: wrap; gap: 14px; align-items: flex-start">
+<div style="flex: 999 1 520px; min-width: 0; background: #FFFFFF; border: 2px solid #C9D1FA; border-radius: 18px; padding: 12px; display: flex; flex-direction: column; gap: 10px; box-sizing: border-box; position: relative">
+<div style="position: relative; border-radius: 12px; overflow: hidden; background: #EEF3EA">
+<svg viewBox="0 0 420 270" style="width: 100%; height: auto; display: block" role="img" aria-label="Plan isométrique avec la zone A sélectionnée et sa densité">
+<rect x="0" y="0" width="420" height="270" fill="#E9F0E3"></rect>
+<g transform="matrix(0.866 0.5 -0.866 0.5 200 30)">
+<rect x="0" y="9" width="250" height="170" rx="4" fill="#C7CBD6"></rect>
+<rect x="0" y="0" width="250" height="170" rx="4" fill="#F3F3F6"></rect>
+<g stroke="#FFFFFF" stroke-width="3">
+<rect x="0" y="0" width="50" height="70" fill="#EAB6D6"></rect>
+<rect x="50" y="0" width="150" height="110" fill="#E58BC2"></rect>
+<rect x="200" y="0" width="50" height="50" fill="#D7E3F4"></rect>
+<rect x="200" y="50" width="50" height="60" fill="#E9A9CF"></rect>
+<rect x="0" y="110" width="200" height="30" fill="#ECEAF2"></rect>
+<rect x="0" y="140" width="250" height="30" fill="#B9DDA8"></rect>
+</g>
+<rect x="48" y="-2" width="154" height="114" fill="none" stroke="#3B54E0" stroke-width="3"></rect>
+<g fill="#7DB86A"><circle cx="20" cy="155" r="7"></circle><circle cx="230" cy="152" r="8"></circle><circle cx="140" cy="158" r="6"></circle></g>
+</g>
+<g transform="translate(262 128)"><rect x="0" y="0" width="64" height="22" rx="11" fill="#FFFFFF"></rect><circle cx="12" cy="11" r="4" fill="#12A38F"></circle><text x="38" y="15" font-family="Inter, sans-serif" font-size="10" font-weight="700" fill="#1A1C2B" text-anchor="middle">Zone A</text></g>
+</svg>
+<div style="position: absolute; left: 12px; top: 12px; background: #FFFFFF; border-radius: 14px; padding: 12px; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px 18px; box-shadow: 0 6px 18px rgba(30, 40, 90, 0.12); max-width: 240px">
+<span style="grid-column: 1 / 3; font: 700 12px Inter, sans-serif">Zone sélectionnée : Zone A</span>
+<span style="display: flex; flex-direction: column"><span style="font: 800 22px Inter, sans-serif; color: #D98A00">≈ 2,6</span><span style="font-size: 10px; color: #5A5F77">pers / m² (estimé)</span></span>
+<span style="display: flex; flex-direction: column"><span style="font: 800 22px Inter, sans-serif; color: #3B54E0">12</span><span style="font-size: 10px; color: #5A5F77">agents actifs</span></span>
+<span style="display: flex; flex-direction: column"><span style="font: 800 22px Inter, sans-serif">≈ 640</span><span style="font-size: 10px; color: #5A5F77">estimés (156 localisés)</span></span>
+<span style="display: flex; flex-direction: column"><span style="font: 800 22px Inter, sans-serif; color: #C2282F">1</span><span style="font-size: 10px; color: #5A5F77">alerte</span></span>
+</div>
+</div>
+<div style="display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px">
+<button style="height: 54px; border: 0; border-radius: 12px; background: #3B54E0; color: #FFFFFF; font: 700 11px Inter, sans-serif">TOUT</button>
+<button style="height: 54px; border: 1px solid #E6E9F2; border-radius: 12px; background: #FFFFFF; color: #3A3F55; font: 600 11px Inter, sans-serif">ÉQUIPE</button>
+<button style="height: 54px; border: 1px solid #E6E9F2; border-radius: 12px; background: #FFFFFF; color: #3A3F55; font: 600 11px Inter, sans-serif">INCIDENTS</button>
+<button style="height: 54px; border: 1px solid #E6E9F2; border-radius: 12px; background: #FFFFFF; color: #3A3F55; font: 600 11px Inter, sans-serif">HEATMAP</button>
+<button style="height: 54px; border: 1px solid #E6E9F2; border-radius: 12px; background: #FFFFFF; color: #3A3F55; font: 600 11px Inter, sans-serif">FLUX</button>
+</div>
+</div>
+<div style="flex: 1 1 300px; min-width: 0; background: #FFFFFF; border-radius: 18px; padding: 16px; display: flex; flex-direction: column; gap: 12px">
+<span style="font: 800 17px Inter, sans-serif">Répartition par zone</span>
+<span style="font-size: 11px; color: #5A5F77">Estimations redressées sur la présence comptée (± 15 %) · zones de moins de 5 localisés masquées</span>
+<sc-for list="{{zones}}" as="z" hint-placeholder-count="5">
+<div style="display: flex; flex-direction: column; gap: 4px">
+<div style="display: flex; justify-content: space-between; font-size: 13px"><span style="font-weight: 700">{{z.n}}</span><span style="color: #3A3F55">{{z.v}}</span></div>
+<div style="height: 8px; border-radius: 4px; background: #EEF0F6"><div style="{{z.bar}}"></div></div>
+<span style="font-size: 11px; color: {{z.c}}; font-weight: 600">{{z.s}}</span>
+</div>
+</sc-for>
+</div>
+</div>
+<div style="background: #FFFFFF; border-radius: 18px; padding: 16px; display: flex; flex-direction: column; gap: 10px; overflow-x: auto">
+<span style="font: 800 17px Inter, sans-serif">Alertes en cours</span>
+<table style="width: 100%; border-collapse: collapse; font-size: 13px; min-width: 640px">
+<thead><tr style="text-align: left; color: #5A5F77"><th style="padding: 8px 6px; font-weight: 500">Priorité</th><th style="padding: 8px 6px; font-weight: 500">Description</th><th style="padding: 8px 6px; font-weight: 500">Zone</th><th style="padding: 8px 6px; font-weight: 500">Source</th><th style="padding: 8px 6px; font-weight: 500">Assigné</th></tr></thead>
+<tbody>
+<tr style="background: #FDF0F0"><td style="padding: 10px 6px"><span style="background: #C2282F; color: #FFFFFF; border-radius: 999px; padding: 3px 8px; font: 700 11px Inter, sans-serif">Critique</span></td><td style="padding: 10px 6px; font-weight: 600">Malaise signalé</td><td style="padding: 10px 6px">Bar</td><td style="padding: 10px 6px">Signalement visiteur</td><td style="padding: 10px 6px">Sécurité · en route</td></tr>
+<tr style="background: #FFF7E8"><td style="padding: 10px 6px"><span style="background: #D98A00; color: #FFFFFF; border-radius: 999px; padding: 3px 8px; font: 700 11px Inter, sans-serif">Moyenne</span></td><td style="padding: 10px 6px; font-weight: 600">Saturation &gt; 90 % depuis 12 min</td><td style="padding: 10px 6px">Zone A</td><td style="padding: 10px 6px">Automatique · confiance moyenne</td><td style="padding: 10px 6px">Non assignée</td></tr>
+</tbody>
+</table>
+</div>
+</main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1000}}'>
+class Component extends DCLogic {
+  renderVals() {
+    var names = ['Vue globale', 'Programmation', 'Balises', 'Utilisateurs', 'Artistes', 'Organisateurs', 'Partenaires', 'Équipe', 'Système social', 'Incidents', 'Communication', 'Replay'];
+    return {
+      menu: names.map(function (n) {
+        var a = n === 'Vue globale';
+        return { n: n, style: 'display:block;padding:10px 12px;border-radius:10px;text-decoration:none;font:' + (a ? '700' : '500') + ' 13px Inter,sans-serif;color:' + (a ? '#FFFFFF' : '#3A3F55') + ';background:' + (a ? '#3B54E0' : 'transparent') };
+      }),
+      zones: [
+        { n: 'Zone A · Dancefloor', v: '≈ 640 · 92 %', bar: 'width:92%;height:8px;border-radius:4px;background:#C2282F', s: 'Plein', c: '#B3262C' },
+        { n: 'Zone B · Bar', v: '≈ 85 · 71 %', bar: 'width:71%;height:8px;border-radius:4px;background:#D98A00', s: 'Chargé', c: '#8A5300' },
+        { n: 'Zone C · Terrasse', v: '≈ 210 · 42 %', bar: 'width:42%;height:8px;border-radius:4px;background:#12A38F', s: 'Fluide', c: '#0B5A50' },
+        { n: 'Zone D · Toilettes', v: '≈ 20 · 30 %', bar: 'width:30%;height:8px;border-radius:4px;background:#12A38F', s: 'Fluide', c: '#0B5A50' },
+        { n: 'Zone E · VIP', v: 'moins de 5', bar: 'width:0%;height:8px', s: 'Masqué (anonymat)', c: '#5A5F77' }
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>

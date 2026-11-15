@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Dashboard — Communication temps réel</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div style="width: 1440px; min-height: 1400px"><dc-import name="DashPage" spec="{{spec}}" hint-size="1440px,1400px"></dc-import></div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1400}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return { spec: { active: 'Communication', h: 1400, title: 'Communication temps réel', sub: 'Diffusez des alertes et des messages critiques instantanément', actions: ['Enregistrer la configuration', 'Diffuser l’alerte'], rows: [
+      [{ t: 'form', cols: 4, title: 'Nouveau message', fields: [
+        { l: 'Message', v: 'Entrez votre message ici…', ph: true, wide: true, tall: 90 },
+        { l: 'Audience', v: 'Sécurité · Médical · Groupe 3' }, { l: 'Nature', v: 'Assistance' }, { l: 'Priorité', v: 'Haute' }, { l: 'Zones', v: 'Zone A · Zone B' },
+        { l: 'Canaux', v: 'Notification app · SMS de secours', wide: true }
+      ] }],
+      [{ t: 'list', w: 1, title: 'Modèles et bibliothèque', link: 'Voir tous les modèles', items: [{ t: 'Alerte météo', s: 'Attention, orage prévu dans la zone [X] : activez le protocole.', tone: 'info' }, { t: 'Évacuation d’urgence', s: 'Évacuez calmement la zone [X] par la sortie [Y].', tone: 'danger' }, { t: 'Annonce maintenance', s: 'Maintenance prévue en zone [X] à [heure].', tone: 'neutral' }, { t: 'Direction flux', s: 'Merci de diriger le public vers la zone [X].', tone: 'purple' }] },
+       { t: 'list', w: 1, title: 'Diffusions actives', items: [{ t: '20 h 30 · Vérification périmètre nord', s: 'Tout le personnel de sécurité · en cours', tag: 'Envoyé', tone: 'info' }, { t: 'URGENT : obstruction voie 2', s: 'Zone A · haute priorité', tag: 'Urgent', tone: 'danger', bg: true }] }],
+      [{ t: 'table', w: 1, title: 'Groupes de diffusion staff', link: '+ Créer un groupe', tpl: '2fr 1fr 1.6fr 0.6fr', cols: ['Nom / type', 'Membres', 'Signalements reçus', 'Actions'], rows: [['Sécurité Alpha', '12', { b: 'Médical · Sécurité', tone: 'danger' }, '✎'], ['Sécurité Bêta', '12', { b: 'Sécurité', tone: 'info' }, '✎'], ['Technique', '8', { b: 'Technique', tone: 'warn' }, '✎']] }],
+      [{ t: 'note', tone: 'warn', text: 'WhatsApp : l’API officielle ne permet pas d’écrire dans des groupes ordinaires. Les groupes de diffusion passent par les notifications de l’app staff, avec un SMS de secours (choix à valider).' }],
+      [{ t: 'table', title: 'Historique de la communication', link: 'Voir tout l’historique', tpl: '2fr 1fr 1fr 1fr 0.8fr', cols: ['Contenu', 'Destinataires', 'Taux d’ouverture', 'Horodatage', 'Statut'], rows: [['Urgence', 'Sécurité Alpha', '78 %', '09/06 · 14 h 04', { b: 'Lu', tone: 'ok' }], ['Assistance', 'Sécurité Bêta', '90 %', '08/06 · 17 h 01', { b: 'Lu', tone: 'ok' }], ['Information', 'Sécurité Alpha', '42 %', '08/06 · 15 h 25', { b: 'Envoyé', tone: 'info' }]] }]
+    ] } };
+  }
+}
+</script>
+</body>
+</html>

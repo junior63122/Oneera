@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>App — Amis</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div style="width: 3448px; height: 940px; box-sizing: border-box; background: #E9EBF3; padding: 24px; display: flex; gap: 40px; font-family: Inter, system-ui, sans-serif">
+<sc-for list="{{screens}}" as="s" hint-placeholder-count="8">
+<div style="display: flex; flex-direction: column; gap: 10px; flex-shrink: 0">
+<span style="font: 700 15px Inter, sans-serif; color: #1A1C2B">{{s.n}}</span>
+<div style="width: 390px; height: 844px; border-radius: 36px; overflow: hidden; box-shadow: 0 10px 30px rgba(30,40,90,0.18)"><dc-import name="Screen" spec="{{s.spec}}" hint-size="390px,844px"></dc-import></div>
+</div>
+</sc-for>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":3448,"height":940}}'>
+class Component extends DCLogic {
+  renderVals() {
+    var notFriend = function (name, handle) {
+      return [
+        { t: 'top', title: 'Amis', back: true, right: '⋯' },
+        { t: 'avatar', h: 150 },
+        { t: 'h', text: name },
+        { t: 'note', tone: 'info', text: handle },
+        { t: 'card', tint: '#FFFFFF', title: 'Vous n’êtes pas encore amis', text: 'Ajoutez-vous pour mieux vous retrouver pendant l’événement.' },
+        { t: 'btn', text: 'Ajouter' }
+      ];
+    };
+    var enBref = { t: 'rows', items: [{ av: '☺', t: 'Amis', s: '4' }, { av: '◷', t: 'Inscrit depuis', s: '3 mois' }, { av: '★', t: 'Dernier événement', s: '[ÉVÉNEMENT]' }] };
+    var friendProfile = [
+      { t: 'top', title: 'Amis', back: true, right: '⋯' },
+      { t: 'avatar', h: 150, glasses: true },
+      { t: 'h', text: 'Léa' },
+      { t: 'tiles', cols: 3, h: 70, items: [{ l: 'Inviter ici', ico: '⌖' }, { l: 'Écrire', ico: '✉' }, { l: 'Partager', ico: '↗' }] },
+      { t: 'section', text: 'Événement actuel' },
+      { t: 'card', text: 'Aucun événement actif.' },
+      { t: 'section', text: 'En bref' },
+      enBref
+    ];
+    return {
+      screens: [
+        { n: '9 · Mes amis', spec: { bg: 'light', nav: 'amis', blocks: [
+          { t: 'top', title: 'Amis', right: '+' },
+          { t: 'search', ph: 'Rechercher dans mes amis' },
+          { t: 'h', text: 'Tous vos amis · 5' },
+          { t: 'rows', items: [
+            { av: 'L', t: 'Léa', s: 'Au [ÉVÉNEMENT] · partage actif', ok: true, v: '⋮' },
+            { av: 'E', t: 'Emma', s: 'Vue hier', v: '⋮' },
+            { av: 'J', t: 'Jules', s: '—', v: '⋮' },
+            { av: 'T', t: 'Tom', s: '—', v: '⋮' },
+            { av: 'O', t: 'ONEERA', s: 'Compte officiel', v: '⋮' }
+          ] }
+        ] } },
+        { n: '10 · Suggestions', spec: { bg: 'light', blocks: [
+          { t: 'top', title: 'Suggestions', back: true },
+          { t: 'search', ph: 'Prénom, nom ou e-mail' },
+          { t: 'h', text: 'Connaissez-vous…' },
+          { t: 'rows', items: [
+            { av: '★', t: '[ORGANISATEUR]', s: 'Compte officiel', btn: 'Ajouter' },
+            { av: 'M', t: 'Maxime', s: 'Léa + 1 en commun', btn: 'Ajouter' },
+            { av: 'Y', t: 'Yanis', s: 'Emma en commun', btn: 'Ajouter' },
+            { av: 'N', t: 'Nora', s: '—', btn: 'Ajouter' },
+            { av: 'C', t: 'Chloé', s: 'Emma en commun', btn: 'Ajouter' },
+            { av: 'I', t: 'Inès', s: 'Emma en commun', btn: 'Ajouter' }
+          ] },
+          { t: 'btn', text: 'Ajouter par QR code', kind: 'secondary' }
+        ] } },
+        { n: '11 · Profil d’un organisateur', spec: { bg: 'light', blocks: notFriend('[ORGANISATEUR]', '@compte-officiel · Compte officiel de l’événement') } },
+        { n: '12 · Profil d’une personne', spec: { bg: 'light', blocks: notFriend('Maxime', '@maxime') } },
+        { n: '13 · Profil (suite)', spec: { bg: 'light', blocks: [
+          { t: 'top', title: 'Amis', back: true, right: '⋯' },
+          { t: 'card', title: 'Vous n’êtes pas encore amis', text: 'Ajoutez-vous pour mieux vous retrouver pendant l’événement.' },
+          { t: 'btn', text: 'Ajouter' },
+          { t: 'section', text: 'En bref' },
+          enBref
+        ] } },
+        { n: '14 · Bloquer / Signaler', spec: { bg: 'sky', sheet: true, blocks: [
+          { t: 'avatar', h: 160 },
+          { t: 'h', text: 'Maxime' },
+          { t: 'spacer' },
+          { t: 'rows', items: [{ av: '⊘', t: 'Bloquer', danger: true, avBg: '#FDE7E8', avFg: '#C2282F' }, { av: '⚑', t: 'Signaler', danger: true, avBg: '#FDE7E8', avFg: '#C2282F' }] },
+          { t: 'btn', text: 'Annuler', kind: 'link' }
+        ] } },
+        { n: '15 · Profil d’un ami', spec: { bg: 'light', blocks: friendProfile } },
+        { n: '16 · Supprimer / Bloquer / Signaler', spec: { bg: 'sky', sheet: true, blocks: [
+          { t: 'avatar', h: 160, glasses: true },
+          { t: 'h', text: 'Léa' },
+          { t: 'spacer' },
+          { t: 'rows', items: [{ av: '−', t: 'Supprimer de mes amis', danger: true, avBg: '#FDE7E8', avFg: '#C2282F' }, { av: '⊘', t: 'Bloquer', danger: true, avBg: '#FDE7E8', avFg: '#C2282F' }, { av: '⚑', t: 'Signaler', danger: true, avBg: '#FDE7E8', avFg: '#C2282F' }] },
+          { t: 'btn', text: 'Annuler', kind: 'link' }
+        ] } }
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>

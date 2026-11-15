@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Avancement réel ONEERA V2</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Space+Grotesk:wght@500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#4B5EE8}a:hover{color:#3346C9}
+</style>
+</helmet>
+<div style="width: 900px; height: 844px; box-sizing: border-box; background: #F6F7FB; color: #1A1C2B; font-family: Inter, system-ui, sans-serif; padding: 44px; display: flex; flex-direction: column; gap: 22px">
+<div style="display: flex; flex-direction: column; gap: 6px">
+<span style="font-family: 'Inter', sans-serif; font-size: 32px; font-weight: 700">Où en est ONEERA V2</span>
+<span style="font-size: 14px; color: #5A5F77">État au 15/11/2026 · chiffres issus des tests et du banc de simulation, pas encore de mesure sur site</span>
+</div>
+<div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px">
+<div style="background: #FFFFFF; border: 1px solid #E3E5EE; border-radius: 16px; padding: 18px; display: flex; flex-direction: column; gap: 6px">
+<span style="font-size: 12px; color: #5A5F77">Erreur médiane (simulation, foule dense)</span>
+<span style="font-family: 'Inter', sans-serif; font-size: 34px; font-weight: 700">1,7–1,8 m</span>
+<span style="font-size: 12px; color: #3A3F55">V1 type « balise la plus proche » : 3,7–4,2 m</span>
+</div>
+<div style="background: #FFFFFF; border: 1px solid #E3E5EE; border-radius: 16px; padding: 18px; display: flex; flex-direction: column; gap: 6px">
+<span style="font-size: 12px; color: #5A5F77">Téléportations / traversées de murs</span>
+<span style="font-family: 'Inter', sans-serif; font-size: 34px; font-weight: 700">0 / 0</span>
+<span style="font-size: 12px; color: #3A3F55">V1 type : ~700–1 000 sauts et ~300 murs par heure</span>
+</div>
+<div style="background: #FFFFFF; border: 1px solid #E3E5EE; border-radius: 16px; padding: 18px; display: flex; flex-direction: column; gap: 6px">
+<span style="font-size: 12px; color: #5A5F77">Utilisateurs simultanés testés</span>
+<span style="font-family: 'Inter', sans-serif; font-size: 34px; font-weight: 700">5 000</span>
+<span style="font-size: 12px; color: #3A3F55">100 % livrés · p95 113 ms (hors réseau mobile)</span>
+</div>
+</div>
+<div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; flex-grow: 1">
+<div style="background: #FFFFFF; border: 1px solid #E3E5EE; border-radius: 16px; padding: 18px; display: flex; flex-direction: column; gap: 12px">
+<span style="font-family: 'Inter', sans-serif; font-size: 18px; font-weight: 600; color: #0E8A7A">Construit et testé</span>
+<sc-for list="{{done}}" as="d" hint-placeholder-count="6">
+<div style="display: flex; gap: 10px; align-items: flex-start">
+<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#0E8A7A" stroke-width="2.2" stroke-linecap="round" aria-hidden="true" style="flex-shrink: 0; margin-top: 1px"><path d="M5 12l5 5 9-10"></path></svg>
+<span style="display: flex; flex-direction: column; gap: 2px"><span style="font: 600 14px Inter, sans-serif">{{d.t}}</span><span style="font: 400 12px Inter, sans-serif; color: #5A5F77">{{d.s}}</span></span>
+</div>
+</sc-for>
+</div>
+<div style="display: flex; flex-direction: column; gap: 14px">
+<div style="background: #FFFFFF; border: 1px solid #E3E5EE; border-radius: 16px; padding: 18px; display: flex; flex-direction: column; gap: 12px">
+<span style="font-family: 'Inter', sans-serif; font-size: 18px; font-weight: 600; color: #9A5B00">Écrit, à valider sur appareil</span>
+<sc-for list="{{wip}}" as="d" hint-placeholder-count="2">
+<div style="display: flex; gap: 10px; align-items: flex-start">
+<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#9A5B00" stroke-width="2.2" stroke-linecap="round" aria-hidden="true" style="flex-shrink: 0; margin-top: 1px"><circle cx="12" cy="12" r="8"></circle></svg>
+<span style="display: flex; flex-direction: column; gap: 2px"><span style="font: 600 14px Inter, sans-serif">{{d.t}}</span><span style="font: 400 12px Inter, sans-serif; color: #5A5F77">{{d.s}}</span></span>
+</div>
+</sc-for>
+</div>
+<div style="background: #FFFFFF; border: 1px solid #E3E5EE; border-radius: 16px; padding: 18px; display: flex; flex-direction: column; gap: 12px; flex-grow: 1">
+<span style="font-family: 'Inter', sans-serif; font-size: 18px; font-weight: 600; color: #3A3F55">Pas encore commencé</span>
+<sc-for list="{{todo}}" as="d" hint-placeholder-count="5">
+<div style="display: flex; gap: 10px; align-items: center">
+<span style="width: 18px; height: 2px; background: #9095AB; flex-shrink: 0"></span>
+<span style="font: 500 14px Inter, sans-serif; color: #1A1C2B">{{d}}</span>
+</div>
+</sc-for>
+</div>
+</div>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":900,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {
+      done: [
+        { t: 'Moteur de localisation', s: 'Bluetooth + GPS + pas + baromètre, murs et escaliers respectés · 17 tests' },
+        { t: 'Banc de mesure et rejeu de sessions', s: 'Compare V2 et approches V1 ; rejoue les futures mesures terrain' },
+        { t: 'Base de données multi-établissements', s: 'Protections dans la base, RGPD (purge, export, suppression) · 21 tests' },
+        { t: 'Canal temps réel des amis', s: 'Arrêt du partage propagé en ~0,4 s · test de charge 5 000' },
+        { t: 'Audit V1 et grille de validation chiffrée', s: 'Seuils cibles et bloquants pour la mise en production' },
+        { t: 'Ces maquettes', s: 'Proposition visuelle, à valider avec vous' }
+      ],
+      wip: [
+        { t: 'App de mesure terrain (iOS / Android)', s: 'Code prêt, lecture des balises jamais compilée : il faut un téléphone' },
+        { t: 'Réutilisation des 43 balises CP28', s: 'Test des 5 balises à faire (guide fourni)' }
+      ],
+      todo: ['App visiteur (ces écrans)', 'Dashboard organisateur', 'App staff et incidents', 'Mesure sur un vrai lieu', 'Publication App Store / Google Play']
+    };
+  }
+}
+</script>
+</body>
+</html>
