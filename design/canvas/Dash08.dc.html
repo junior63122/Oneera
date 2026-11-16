@@ -13,13 +13,13 @@
 body{margin:0}
 </style>
 </helmet>
-<div style="width: 1440px; min-height: 1000px"><dc-import name="DashPage" spec="{{spec}}" hint-size="1440px,1000px"></dc-import></div>
+<div style="width: 1440px; min-height: 900px"><dc-import name="DashPage" spec="{{spec}}" hint-size="1440px,900px"></dc-import></div>
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1000}}'>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":900}}'>
 class Component extends DCLogic {
   renderVals() {
     var p = function (n, c, d) { return [n, { b: c, tone: 'info' }, d, '⋯']; };
-    return { spec: { active: 'Partenaires', h: 1000, title: 'Partenaires', sub: 'Bars, stands et sponsors présents sur la carte · nombre total : 24', actions: ['Exporter', '+ Créer un partenaire'], rows: [
+    return { spec: { active: 'Partenaires', h: 900, title: 'Partenaires', sub: 'Bars, stands et sponsors présents sur la carte · nombre total : 24', actions: ['Exporter', '+ Créer un partenaire'], rows: [
       [{ t: 'table', w: 2, tpl: '1fr 0.8fr 2fr 0.4fr', cols: ['Nom', 'Catégorie', 'Description', 'Action'], hl: 0, rows: [
         p('[PARTENAIRE 1]', 'Bar', 'Cocktails signature'), p('[PARTENAIRE 2]', 'Food', 'Street food'), p('[PARTENAIRE 3]', 'Sponsor', 'Espace photo'), p('[PARTENAIRE 4]', 'Bar', 'Bières artisanales'), p('[PARTENAIRE 5]', 'Stand', 'Merchandising'), p('[PARTENAIRE 6]', 'Bar', 'Sans alcool')
       ] },

@@ -29,7 +29,7 @@ class Component extends DCLogic {
     var SKIN = ['#F6D2B5', '#EDBE98', '#E6B48C', '#D69A6A', '#B8794A', '#8E5A34', '#6B3F22', '#4A2A16'];
     var HAIR = ['#2A1B12', '#5A3A22', '#1E1E24', '#8A5A34', '#B87A3A', '#D8B86A', '#B9B6B0'];
     function scr(title, opts) {
-      var b = [{ t: 'top', title: 'Mon avatar', back: true, right: '✓' }, { t: 'avatar', h: opts.h || 340, glasses: opts.glasses, top: opts.top }, { t: 'seg', items: opts.tabs, active: opts.tab }];
+      var b = [{ t: 'top', title: 'Mon avatar', back: true, right: '✓' }, { t: 'avatar', h: opts.h || 380, img: 'moi' }, { t: 'seg', items: opts.tabs, active: opts.tab }];
       if (opts.sw) b.push({ t: 'swatches', items: opts.sw, active: opts.swa || 0 });
       b.push({ t: 'tiles', cols: 3, h: 86, items: opts.items, active: opts.sel });
       return { n: title, spec: { bg: 'sky', blocks: b } };
@@ -41,7 +41,7 @@ class Component extends DCLogic {
       screens: [
         { n: '38 · Mon avatar', spec: { bg: 'sky', blocks: [
           { t: 'top', title: 'Mon avatar', back: true, right: '✓' },
-          { t: 'avatar', h: 520, glasses: true },
+          { t: 'avatar', h: 560, img: 'moi' },
           { t: 'seg', items: ['Corps', 'Vêtements', 'Accessoires'] },
           { t: 'note', tone: 'info', text: 'Votre avatar représente votre position sur la carte, visible seulement par vos amis.' }
         ] } },

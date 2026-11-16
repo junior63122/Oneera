@@ -13,12 +13,12 @@
 body{margin:0}
 </style>
 </helmet>
-<div style="width: 1440px; min-height: 1500px"><dc-import name="DashPage" spec="{{spec}}" hint-size="1440px,1500px"></dc-import></div>
+<div style="width: 1440px; min-height: 1336px"><dc-import name="DashPage" spec="{{spec}}" hint-size="1440px,1336px"></dc-import></div>
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1500}}'>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1336}}'>
 class Component extends DCLogic {
   renderVals() {
-    return { spec: { active: 'Vue globale', h: 1500, rows: [
+    return { spec: { active: 'Vue globale', h: 1336, rows: [
       [{ t: 'kpi', l: 'Pic du jour (présence comptée)', v: '1 386', s: 'à 1 h 10 · contrôle d’accès' }, { t: 'kpi', l: 'Temps moyen sur zone', v: '38 min', s: 'échantillon de 312 localisés' }, { t: 'kpi', l: 'Présence actuelle', v: '1 240', s: 'mesure : entrées − sorties' }, { t: 'kpi', l: 'Qualité de localisation', v: '± 3 m', c: '#0B5A50', s: '19 / 20 balises actives' }],
       [{ t: 'map', w: 2, h: 420, sel: true, heat: true, panel: { title: 'Zone sélectionnée : Zone A', stats: [{ v: '≈ 2,6', l: 'pers / m² (estimé)', c: '#D98A00' }, { v: '12', l: 'agents actifs', c: '#3B54E0' }, { v: '≈ 640', l: 'estimés (156 localisés)' }, { v: '1', l: 'alerte', c: '#C2282F' }] }, tabs: ['TOUT', 'ÉQUIPE', 'INCIDENTS', 'HEATMAP', 'FLUX'] },
        { t: 'bars', title: 'Répartition par zone', link: 'Total estimé ≈ 1 240', items: [{ l: 'Zone A', v: '≈ 640', p: 92 }, { l: 'Zone B', v: '≈ 300', p: 48 }, { l: 'Zone C', v: '≈ 210', p: 34 }, { l: 'Zone D', v: '≈ 85', p: 16 }, { l: 'Zone E', v: '< 5', p: 2 }] }],

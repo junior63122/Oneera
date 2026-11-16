@@ -13,12 +13,12 @@
 body{margin:0}
 </style>
 </helmet>
-<div style="width: 1440px; min-height: 1150px"><dc-import name="DashPage" spec="{{spec}}" hint-size="1440px,1150px"></dc-import></div>
+<div style="width: 1440px; min-height: 971px"><dc-import name="DashPage" spec="{{spec}}" hint-size="1440px,971px"></dc-import></div>
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1150}}'>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":971}}'>
 class Component extends DCLogic {
   renderVals() {
-    return { spec: { scope: 'global', active: 'Événements', h: 1150, title: 'Événements', sub: 'Gérez et surveillez vos événements en temps réel. Sélectionnez un événement pour ouvrir son centre de contrôle.', actions: ['+ Créer un nouvel événement'], rows: [
+    return { spec: { scope: 'global', active: 'Événements', h: 971, title: 'Événements', sub: 'Gérez et surveillez vos événements en temps réel. Sélectionnez un événement pour ouvrir son centre de contrôle.', actions: ['+ Créer un nouvel événement'], rows: [
       [{ t: 'kpi', l: 'Au total', v: '6' }, { t: 'kpi', l: 'Actifs', v: '1', c: '#0B5A50' }, { t: 'kpi', l: 'À venir', v: '2' }, { t: 'kpi', l: 'Terminés', v: '3', c: '#1A1C2B' }],
       [{ t: 'map', w: 1, h: 230 }, { t: 'list', w: 2, title: '[ÉVÉNEMENT ACTIF] · en direct', link: 'Publier l’événement', items: [
         { t: 'Visiteurs localisés par l’app', s: '312 (couverture 25 % de la présence comptée)', tone: 'info' },

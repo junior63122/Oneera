@@ -13,13 +13,13 @@
 body{margin:0}
 </style>
 </helmet>
-<div style="width: 1440px; min-height: 1000px"><dc-import name="DashPage" spec="{{spec}}" hint-size="1440px,1000px"></dc-import></div>
+<div style="width: 1440px; min-height: 900px"><dc-import name="DashPage" spec="{{spec}}" hint-size="1440px,900px"></dc-import></div>
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1000}}'>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":900}}'>
 class Component extends DCLogic {
   renderVals() {
     var row = function (p, a, s) { return [p, a, s, { b: 'Actif', tone: 'ok' }, '⋯']; };
-    return { spec: { active: 'Utilisateurs', h: 1000, title: 'Utilisateurs', sub: 'Comptes visiteurs de l’événement · nombre total : 2 500', actions: ['Exporter', 'Filtrer'], rows: [
+    return { spec: { active: 'Utilisateurs', h: 900, title: 'Utilisateurs', sub: 'Comptes visiteurs de l’événement · nombre total : 2 500', actions: ['Exporter', 'Filtrer'], rows: [
       [{ t: 'table', w: 2, tpl: '1.4fr 1fr 1fr 0.8fr 0.6fr', cols: ['Pseudo', 'Tranche d’âge', 'Signalements', 'Statut', 'Action'], hl: 4, rows: [
         row('@theo', '18-24', '0'), row('@lina', '25-34', '0'), row('@max', '18-24', '1'), row('@ines', '25-34', '0'), row('@yanis', '18-24', '2'), row('@nora', 'non renseigné', '0'), row('@sam', '25-34', '0'), row('@kim', '35-44', '0')
       ] },

@@ -45,10 +45,10 @@ class Component extends DCLogic {
         ] } },
         { n: '32 · Carte de l’événement', spec: { bg: 'sky', nav: 'map', blocks: [
           { t: 'chips', items: ['[NOM DU LIEU] · en direct', 'RDC', 'Mezz.'] },
-          { t: 'map', h: 420, people: true },
+          { t: 'map', h: 430, img: 'bdf', pos: '38% 42%', pins: [{ k: 'me', x: 50, y: 52, txt: 'Moi', r: 30 }, { k: 'friend', x: 64, y: 64, head: 'lea_h', label: 'Léa · ± 3 m' }, { k: 'stale', x: 34, y: 70, head: 'emma_h', label: 'Inès · il y a 4 min' }] },
           { t: 'rows', items: [
-            { av: 'L', avBg: '#DDF4EF', avFg: '#0E8A7A', t: 'Léa', s: 'Bar · ≈ 20 m · à l’instant', btn: 'Rejoindre' },
-            { av: 'I', avBg: '#FFF4E0', avFg: '#8A5300', t: 'Inès', s: 'Vue il y a 4 min · terrasse', warn: true, btn: 'Écrire', btnAlt: true }
+            { img: 'lea_h', t: 'Léa', s: 'Bar · ≈ 20 m · à l’instant', btn: 'Rejoindre' },
+            { img: 'emma_h', stale: true, t: 'Inès', s: 'Vue il y a 4 min · terrasse', warn: true, btn: 'Écrire', btnAlt: true }
           ] },
           { t: 'seg', items: ['Zones', 'Récap', 'Replay', 'Signaler'] }
         ] } },
@@ -66,7 +66,7 @@ class Component extends DCLogic {
         ] } },
         { n: '35 · Récap de l’événement', spec: { bg: 'sky', sheet: true, blocks: [
           { t: 'top', title: 'Le récap de ta soirée', back: true, right: '↗' },
-          { t: 'avatar', h: 120 },
+          { t: 'pic', img: 'duo', h: 130 },
           { t: 'stats', cols: 2, items: [{ l: 'Temps sur place', v: '5 h 12' }, { l: 'Zones visitées', v: '6' }, { l: 'Distance estimée', v: '≈ 2,1 km' }, { l: 'Pas', v: '3 140' }] },
           { t: 'hero', title: 'Zone la plus visitée : Dancefloor', sub: '2 h 42 · revoir dans le replay', h: 90 }
         ] } },
@@ -79,7 +79,7 @@ class Component extends DCLogic {
         ] } },
         { n: '37 · Replay de ma soirée', spec: { bg: 'sky', blocks: [
           { t: 'chips', items: ['[NOM DU LIEU] · Replay'] },
-          { t: 'map', h: 470, people: true },
+          { t: 'map', h: 470, img: 'bdf', pos: '38% 42%', pins: [{ k: 'me', x: 50, y: 55, txt: 'Moi', r: 22 }] },
           { t: 'stats', cols: 3, items: [{ l: 'Heure', v: '1 h 45' }, { l: 'Zone', v: 'Dancefloor' }, { l: 'Pas', v: '1 820' }] },
           { t: 'timeline', from: '23:04', to: '04:16', p: 46 },
           { t: 'seg', items: ['Zones', 'Récap', 'Replay'], active: 2 }

@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>App — Carte et lieux</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div style="width: 2588px; height: 940px; box-sizing: border-box; background: #E9EBF3; padding: 24px; display: flex; gap: 40px; font-family: Inter, system-ui, sans-serif">
+<sc-for list="{{screens}}" as="s" hint-placeholder-count="6">
+<div style="display: flex; flex-direction: column; gap: 10px; flex-shrink: 0">
+<span style="font: 700 15px Inter, sans-serif; color: #1A1C2B">{{s.n}}</span>
+<div style="width: 390px; height: 844px; border-radius: 36px; overflow: hidden; box-shadow: 0 10px 30px rgba(30,40,90,0.18)"><dc-import name="Screen" spec="{{s.spec}}" hint-size="390px,844px"></dc-import></div>
+</div>
+</sc-for>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":2588,"height":940}}'>
+class Component extends DCLogic {
+  renderVals() {
+    var poi = [{ k: 'poi', x: 30, y: 38, head: 'bar' }, { k: 'poi', x: 58, y: 30, head: 'dj' }, { k: 'poi', x: 72, y: 58, head: 'infirmerie' }, { k: 'poi', x: 22, y: 72, head: 'vestiaire' }, { k: 'poi', x: 84, y: 34, head: 'sortie' }];
+    return {
+      screens: [
+        { n: 'C-1 · Carte avec points d’intérêt', spec: { bg: 'map', nav: 'map', blocks: [
+          { t: 'search', ph: 'Bar, toilettes, scène, ami…' },
+          { t: 'chips', items: ['Tout', 'Bars', 'Scènes', 'Services', 'Sécurité'] },
+          { t: 'map', h: 520, img: 'bdf', pos: '42% 40%', pins: poi.concat([{ k: 'me', x: 48, y: 56, txt: 'Moi', r: 30 }, { k: 'friend', x: 62, y: 70, head: 'lea_h', label: 'Léa' }]) },
+          { t: 'note', tone: 'ok', text: 'Position précise · ± 3 m · RDC' }
+        ] } },
+        { n: 'C-2 · Fiche d’un lieu (bar)', spec: { bg: 'map', sheet: true, blocks: [
+          { t: 'map', h: 240, img: 'bdf', pos: '30% 38%', flush: true, pins: [{ k: 'poi', x: 50, y: 55, head: 'bar', label: 'Bar principal' }] },
+          { t: 'top', title: 'Bar principal', right: '✕' },
+          { t: 'stats', cols: 2, items: [{ l: 'Horaires', v: '23 h – 4 h 30' }, { l: 'Affluence estimée', v: 'Forte', s: '≈ 10 min d’attente (estimation)' }] },
+          { t: 'rows', items: [{ img: 'cocktail', t: 'Cocktails', s: 'À partir de 9 €', chev: true }, { img: 'eau', t: 'Eau gratuite', s: 'Demande au comptoir', chev: true }] },
+          { t: 'btn', text: 'Y aller · ≈ 40 m · 1 min' },
+          { t: 'note', tone: 'info', text: 'L’affluence est une estimation calculée sur les visiteurs qui partagent des statistiques anonymes.' }
+        ] } },
+        { n: 'C-3 · Rechercher sur la carte', spec: { bg: 'light', blocks: [
+          { t: 'top', title: 'Rechercher', back: true },
+          { t: 'search', ph: 'Que cherches-tu ?' },
+          { t: 'section', text: 'Catégories' },
+          { t: 'tiles', cols: 3, h: 92, items: [{ l: 'Bar', img: 'bar' }, { l: 'Scène', img: 'scene' }, { l: 'Dancefloor', img: 'dancefloor' }, { l: 'Toilettes', img: 'info' }, { l: 'Infirmerie', img: 'infirmerie' }, { l: 'Sécurité', img: 'securite' }, { l: 'Vestiaire', img: 'vestiaire' }, { l: 'Food', img: 'food' }, { l: 'Recharge', img: 'recharge' }, { l: 'Espace fumeur', img: 'fumeur' }, { l: 'Objets trouvés', img: 'objets' }, { l: 'Sortie', img: 'sortie' }] }
+        ] } },
+        { n: 'C-4 · Programme sur la carte', spec: { bg: 'map', nav: 'map', blocks: [
+          { t: 'seg', items: ['Carte', 'Programme'], active: 1 },
+          { t: 'map', h: 250, img: 'bdf', pos: '58% 30%', pins: [{ k: 'poi', x: 50, y: 50, head: 'scene', label: 'Scène principale' }, { k: 'me', x: 30, y: 78, txt: 'Moi', r: 24 }] },
+          { t: 'section', text: 'Scène principale · ce soir' },
+          { t: 'rows', items: [
+            { av: '♪', t: '[ARTISTE 1]', s: '23 h – 0 h 30 · terminé', v: '' },
+            { av: '♪', t: '[ARTISTE 2]', s: 'En cours · jusqu’à 2 h', ok: true, hl: true, btn: 'Y aller' },
+            { av: '♪', t: '[ARTISTE 3]', s: '2 h – 4 h', btn: 'Me rappeler', btnAlt: true }
+          ] }
+        ] } },
+        { n: 'C-5 · Ami introuvable', spec: { bg: 'map', nav: 'map', blocks: [
+          { t: 'map', h: 430, img: 'bdf', pos: '40% 50%', pins: [{ k: 'me', x: 46, y: 52, txt: 'Moi', r: 30 }, { k: 'stale', x: 70, y: 66, head: 'emma_h', label: 'Inès · vue il y a 18 min', r: 40 }] },
+          { t: 'rows', items: [{ img: 'emma_h', stale: true, t: 'Inès · position ancienne', s: 'Dernière position connue : terrasse, il y a 18 min. Son téléphone ne partage plus (batterie, réseau ou partage coupé).', warn: true }] },
+          { t: 'btn', text: 'Lui écrire' },
+          { t: 'btn', text: 'Proposer un point de rendez-vous', kind: 'secondary' },
+          { t: 'note', tone: 'warn', text: 'Nous n’inventons jamais une position : on affiche la dernière position connue d’Inès et depuis combien de temps.' }
+        ] } },
+        { n: 'C-6 · Point de rendez-vous', spec: { bg: 'map', sheet: true, blocks: [
+          { t: 'map', h: 300, img: 'bdf', pos: '25% 70%', flush: true, pins: [{ k: 'poi', x: 50, y: 50, head: 'rdv', label: 'Point RDV · Vestiaire' }, { k: 'me', x: 30, y: 72, txt: 'Moi', r: 22 }, { k: 'friend', x: 72, y: 30, head: 'lea_h', label: 'Léa' }] },
+          { t: 'top', title: 'Point de rendez-vous' },
+          { t: 'rows', items: [{ img: 'vestiaire', t: 'Devant le vestiaire', s: 'Endroit calme et facile à trouver', radio: true }, { img: 'entree', t: 'Entrée principale', s: 'Près du contrôle', radio: false }, { img: 'bar', t: 'Bar principal', s: 'Très fréquenté', radio: false }] },
+          { t: 'btn', text: 'Envoyer à Léa et Inès' }
+        ] } }
+      ]
+    };
+
+  }
+}
+</script>
+</body>
+</html>

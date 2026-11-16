@@ -13,12 +13,12 @@
 body{margin:0}
 </style>
 </helmet>
-<div style="width: 1440px; min-height: 1400px"><dc-import name="DashPage" spec="{{spec}}" hint-size="1440px,1400px"></dc-import></div>
+<div style="width: 1440px; min-height: 1289px"><dc-import name="DashPage" spec="{{spec}}" hint-size="1440px,1289px"></dc-import></div>
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1400}}'>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1289}}'>
 class Component extends DCLogic {
   renderVals() {
-    return { spec: { active: 'Communication', h: 1400, title: 'Communication temps réel', sub: 'Diffusez des alertes et des messages critiques instantanément', actions: ['Enregistrer la configuration', 'Diffuser l’alerte'], rows: [
+    return { spec: { active: 'Communication', h: 1289, title: 'Communication temps réel', sub: 'Diffusez des alertes et des messages critiques instantanément', actions: ['Enregistrer la configuration', 'Diffuser l’alerte'], rows: [
       [{ t: 'form', cols: 4, title: 'Nouveau message', fields: [
         { l: 'Message', v: 'Entrez votre message ici…', ph: true, wide: true, tall: 90 },
         { l: 'Audience', v: 'Sécurité · Médical · Groupe 3' }, { l: 'Nature', v: 'Assistance' }, { l: 'Priorité', v: 'Haute' }, { l: 'Zones', v: 'Zone A · Zone B' },

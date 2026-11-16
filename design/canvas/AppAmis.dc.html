@@ -28,7 +28,7 @@ class Component extends DCLogic {
     var notFriend = function (name, handle) {
       return [
         { t: 'top', title: 'Amis', back: true, right: '⋯' },
-        { t: 'avatar', h: 150 },
+        { t: 'avatar', h: 170, img: 'emma' },
         { t: 'h', text: name },
         { t: 'note', tone: 'info', text: handle },
         { t: 'card', tint: '#FFFFFF', title: 'Vous n’êtes pas encore amis', text: 'Ajoutez-vous pour mieux vous retrouver pendant l’événement.' },
@@ -38,7 +38,7 @@ class Component extends DCLogic {
     var enBref = { t: 'rows', items: [{ av: '☺', t: 'Amis', s: '4' }, { av: '◷', t: 'Inscrit depuis', s: '3 mois' }, { av: '★', t: 'Dernier événement', s: '[ÉVÉNEMENT]' }] };
     var friendProfile = [
       { t: 'top', title: 'Amis', back: true, right: '⋯' },
-      { t: 'avatar', h: 150, glasses: true },
+      { t: 'avatar', h: 170, img: 'lea' },
       { t: 'h', text: 'Léa' },
       { t: 'tiles', cols: 3, h: 70, items: [{ l: 'Inviter ici', ico: '⌖' }, { l: 'Écrire', ico: '✉' }, { l: 'Partager', ico: '↗' }] },
       { t: 'section', text: 'Événement actuel' },
@@ -53,8 +53,8 @@ class Component extends DCLogic {
           { t: 'search', ph: 'Rechercher dans mes amis' },
           { t: 'h', text: 'Tous vos amis · 5' },
           { t: 'rows', items: [
-            { av: 'L', t: 'Léa', s: 'Au [ÉVÉNEMENT] · partage actif', ok: true, v: '⋮' },
-            { av: 'E', t: 'Emma', s: 'Vue hier', v: '⋮' },
+            { img: 'lea_h', t: 'Léa', s: 'Au [ÉVÉNEMENT] · partage actif', ok: true, v: '⋮' },
+            { img: 'emma_h', t: 'Emma', s: 'Vue hier', v: '⋮' },
             { av: 'J', t: 'Jules', s: '—', v: '⋮' },
             { av: 'T', t: 'Tom', s: '—', v: '⋮' },
             { av: 'O', t: 'ONEERA', s: 'Compte officiel', v: '⋮' }
@@ -65,8 +65,8 @@ class Component extends DCLogic {
           { t: 'search', ph: 'Prénom, nom ou e-mail' },
           { t: 'h', text: 'Connaissez-vous…' },
           { t: 'rows', items: [
-            { av: '★', t: '[ORGANISATEUR]', s: 'Compte officiel', btn: 'Ajouter' },
-            { av: 'M', t: 'Maxime', s: 'Léa + 1 en commun', btn: 'Ajouter' },
+            { img: 'staff_h', t: '[ORGANISATEUR]', s: 'Compte officiel', btn: 'Ajouter' },
+            { img: 'moi_h', t: 'Maxime', s: 'Léa + 1 en commun', btn: 'Ajouter' },
             { av: 'Y', t: 'Yanis', s: 'Emma en commun', btn: 'Ajouter' },
             { av: 'N', t: 'Nora', s: '—', btn: 'Ajouter' },
             { av: 'C', t: 'Chloé', s: 'Emma en commun', btn: 'Ajouter' },
@@ -84,7 +84,7 @@ class Component extends DCLogic {
           enBref
         ] } },
         { n: '14 · Bloquer / Signaler', spec: { bg: 'sky', sheet: true, blocks: [
-          { t: 'avatar', h: 160 },
+          { t: 'avatar', h: 200, img: 'emma' },
           { t: 'h', text: 'Maxime' },
           { t: 'spacer' },
           { t: 'rows', items: [{ av: '⊘', t: 'Bloquer', danger: true, avBg: '#FDE7E8', avFg: '#C2282F' }, { av: '⚑', t: 'Signaler', danger: true, avBg: '#FDE7E8', avFg: '#C2282F' }] },
@@ -92,7 +92,7 @@ class Component extends DCLogic {
         ] } },
         { n: '15 · Profil d’un ami', spec: { bg: 'light', blocks: friendProfile } },
         { n: '16 · Supprimer / Bloquer / Signaler', spec: { bg: 'sky', sheet: true, blocks: [
-          { t: 'avatar', h: 160, glasses: true },
+          { t: 'avatar', h: 200, img: 'lea' },
           { t: 'h', text: 'Léa' },
           { t: 'spacer' },
           { t: 'rows', items: [{ av: '−', t: 'Supprimer de mes amis', danger: true, avBg: '#FDE7E8', avFg: '#C2282F' }, { av: '⊘', t: 'Bloquer', danger: true, avBg: '#FDE7E8', avFg: '#C2282F' }, { av: '⚑', t: 'Signaler', danger: true, avBg: '#FDE7E8', avFg: '#C2282F' }] },

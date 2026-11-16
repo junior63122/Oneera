@@ -14,7 +14,7 @@ body{margin:0}
 </style>
 </helmet>
 <div style="{{rootStyle}}">
-<nav style="width: 236px; flex-shrink: 0; background: #FFFFFF; padding: 22px 14px; display: flex; flex-direction: column; gap: 3px; box-sizing: border-box; border-right: 1px solid #E6E9F2">
+<sc-if value="{{withNav}}" hint-placeholder-val="{{ true }}"><nav style="width: 236px; flex-shrink: 0; background: #FFFFFF; padding: 22px 14px; display: flex; flex-direction: column; gap: 3px; box-sizing: border-box; border-right: 1px solid #E6E9F2">
 <span style="font: 800 24px Inter, sans-serif; letter-spacing: 2px; color: #1A1C2B">ONEERA</span>
 <span style="font: 700 10px Inter, sans-serif; letter-spacing: 1px; color: #3B54E0; margin-bottom: 10px">CENTRE DE CONTRÔLE</span>
 <sc-if value="{{eventScope}}" hint-placeholder-val="{{ true }}"><span style="display: block; border: 1px solid #E5484D; border-radius: 8px; padding: 8px 10px; margin-bottom: 12px; font: 600 11px Inter, sans-serif; color: #B3262C">[ÉVÉNEMENT EN COURS] ▾</span></sc-if>
@@ -23,14 +23,16 @@ body{margin:0}
 <span style="display: block; padding: 9px 12px; font: 500 13px Inter, sans-serif; color: #3A3F55">Paramètres</span>
 <span style="display: flex; align-items: center; gap: 8px; background: #F4F6FB; border-radius: 12px; padding: 10px"><span style="width: 32px; height: 32px; border-radius: 16px; background: #E8EBFD; color: #3B54E0; display: flex; align-items: center; justify-content: center; font: 800 13px Inter, sans-serif">A</span><span style="display: flex; flex-direction: column"><span style="font: 700 12px Inter, sans-serif">Admin</span><span style="font: 500 10px Inter, sans-serif; color: #3B54E0">Accès niveau 4</span></span></span>
 </nav>
+</sc-if>
 <main style="flex: 1; min-width: 0; padding: 16px 18px; display: flex; flex-direction: column; gap: 14px; box-sizing: border-box">
-<div style="display: flex; align-items: center; gap: 10px; background: #FFFFFF; border-radius: 16px; padding: 10px 14px; flex-wrap: wrap">
+<sc-if value="{{withNav}}" hint-placeholder-val="{{ true }}"><div style="display: flex; align-items: center; gap: 10px; background: #FFFFFF; border-radius: 16px; padding: 10px 14px; flex-wrap: wrap">
 <span style="flex: 1 1 200px; display: flex; align-items: center; gap: 8px; background: #F4F6FB; border-radius: 10px; padding: 0 12px; height: 36px; font: 400 13px Inter, sans-serif; color: #6B7088">⌕ Rechercher</span>
 <span style="font: 700 11px Inter, sans-serif; color: #0B5A50">● EN DIRECT · il y a 4 s</span>
 <span style="font: 700 12px Inter, sans-serif; color: #3B54E0; background: #ECEFFD; border-radius: 999px; padding: 6px 10px">App connectée : 312</span>
 <span style="font: 700 12px Inter, sans-serif; color: #8A5300; background: #FFF4E0; border-radius: 999px; padding: 6px 10px">Occupation : 62 %</span>
 <span style="font: 700 12px Inter, sans-serif; color: #B3262C; background: #FDE7E8; border-radius: 999px; padding: 6px 10px">Incidents : 2</span>
 </div>
+</sc-if>
 <sc-if value="{{hasTitle}}" hint-placeholder-val="{{ true }}">
 <div style="display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; flex-wrap: wrap">
 <div style="display: flex; flex-direction: column; gap: 4px"><span style="font: 800 30px Inter, sans-serif; color: #3B54E0">{{title}}</span><span style="font: 500 13px Inter, sans-serif; color: #5A5F77">{{sub}}</span></div>
@@ -45,6 +47,11 @@ body{margin:0}
 <sc-if value="{{b.isKpi}}" hint-placeholder-val="{{ false }}"><span style="font: 500 12px Inter, sans-serif; color: #5A5F77">{{b.l}}</span><span style="{{b.vStyle}}">{{b.v}}</span><sc-if value="{{b.s}}" hint-placeholder-val="{{ true }}"><span style="font: 500 11px Inter, sans-serif; color: #5A5F77">{{b.s}}</span></sc-if></sc-if>
 <sc-if value="{{b.isMap}}" hint-placeholder-val="{{ false }}">
 <div style="{{b.mapStyle}}">
+<img src="{{b.imgSrc}}" alt="Plan isométrique du lieu" style="{{b.imgStyle}}">
+<sc-if value="{{b.heat}}" hint-placeholder-val="{{ false }}"><span style="position: absolute; left: 44%; top: 30%; width: 26%; height: 26%; border-radius: 50%; background: radial-gradient(circle, rgba(229,72,77,0.55) 0%, rgba(229,72,77,0) 70%)"></span><span style="position: absolute; left: 58%; top: 46%; width: 18%; height: 18%; border-radius: 50%; background: radial-gradient(circle, rgba(242,169,59,0.6) 0%, rgba(242,169,59,0) 70%)"></span><span style="position: absolute; left: 30%; top: 52%; width: 18%; height: 18%; border-radius: 50%; background: radial-gradient(circle, rgba(18,163,143,0.45) 0%, rgba(18,163,143,0) 70%)"></span></sc-if>
+<sc-if value="{{b.sel}}" hint-placeholder-val="{{ false }}"><span style="position: absolute; left: 50%; top: 40%; background: #FFFFFF; border-radius: 999px; padding: 4px 10px; font: 700 11px Inter, sans-serif; color: #1A1C2B; box-shadow: 0 2px 8px rgba(0,0,0,0.15)">● Zone A</span></sc-if>
+<sc-if value="{{b.incident}}" hint-placeholder-val="{{ false }}"><span style="position: absolute; left: 62%; top: 55%; width: 30px; height: 30px; border-radius: 15px; background: #C2282F; border: 3px solid #FFFFFF; color: #FFFFFF; display: flex; align-items: center; justify-content: center; font: 800 14px Inter, sans-serif; box-shadow: 0 3px 10px rgba(0,0,0,0.25)">!</span></sc-if>
+<sc-if value="{{b.legacy}}" hint-placeholder-val="{{ false }}">
 <svg viewBox="0 0 420 270" style="width: 100%; height: 100%; display: block" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Plan isométrique du lieu">
 <rect width="420" height="270" fill="#E9F0E3"></rect>
 <g transform="matrix(0.866 0.5 -0.866 0.5 200 30)">
@@ -55,8 +62,9 @@ body{margin:0}
 <sc-if value="{{b.heat}}" hint-placeholder-val="{{ false }}"><g opacity="0.55"><circle cx="120" cy="40" r="30" fill="#E5484D"></circle><circle cx="225" cy="80" r="18" fill="#F2A93B"></circle><circle cx="140" cy="155" r="20" fill="#12A38F"></circle></g></sc-if>
 <sc-if value="{{b.sel}}" hint-placeholder-val="{{ false }}"><rect x="48" y="-2" width="154" height="114" fill="none" stroke="#3B54E0" stroke-width="3"></rect></sc-if>
 </g>
-<sc-if value="{{b.incident}}" hint-placeholder-val="{{ false }}"><circle cx="318" cy="170" r="12" fill="#C2282F" stroke="#FFFFFF" stroke-width="3"></circle><text x="318" y="175" font-family="Inter, sans-serif" font-size="13" font-weight="800" fill="#FFFFFF" text-anchor="middle">!</text></sc-if>
+<sc-if value="{{b.legacyIncident}}" hint-placeholder-val="{{ false }}"><circle cx="318" cy="170" r="12" fill="#C2282F" stroke="#FFFFFF" stroke-width="3"></circle><text x="318" y="175" font-family="Inter, sans-serif" font-size="13" font-weight="800" fill="#FFFFFF" text-anchor="middle">!</text></sc-if>
 </svg>
+</sc-if>
 <sc-if value="{{b.panel}}" hint-placeholder-val="{{ false }}">
 <div style="position: absolute; left: 12px; top: 12px; background: #FFFFFF; border-radius: 14px; padding: 12px; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px 16px; box-shadow: 0 6px 18px rgba(30,40,90,0.12); width: 230px">
 <span style="grid-column: 1 / 3; font: 700 12px Inter, sans-serif">{{b.panel.title}}</span>
@@ -139,7 +147,7 @@ class Component extends DCLogic {
         o.cellStyle = 'flex:' + (b.w || 1) + ' 1 0;min-width:0;display:flex;flex-direction:column;gap:10px;box-sizing:border-box;' + (bare ? '' : 'background:' + (b.tint || '#FFFFFF') + ';border-radius:16px;padding:14px;') + (b.t === 'map' ? 'border:2px solid #C9D1FA;' : '');
         if (b.t === 'kpi') o.vStyle = 'font:800 28px Inter,sans-serif;color:' + (b.c || P);
         if (b.t === 'map') {
-          o.mapStyle = 'position:relative;height:' + (b.h || 360) + 'px;border-radius:12px;overflow:hidden';
+          o.mapStyle = 'position:relative;height:' + (b.h || 360) + 'px;border-radius:12px;overflow:hidden;background:#BFE0F2'; var MAPS = { bdf: '896ed144719afefc9fc33da6e187b468', selva: '78f784f354c4092882b6721c9710ed01', bisous: '0f2d42ff8c03a17b50812d0fccee9733' }; o.imgSrc = '/_blob/' + MAPS[b.img || 'bdf']; o.imgStyle = 'position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:' + (b.pos || '40% 45%'); o.legacy = false;
           if (b.panel) o.panel = { title: b.panel.title, stats: b.panel.stats.map(function (s) { return { v: s.v, l: s.l, style: 'font:800 20px Inter,sans-serif;color:' + (s.c || '#1A1C2B') }; }) };
           o.tabItems = (b.tabs || []).map(function (l, i) { return { l: l, style: 'text-align:center;padding:14px 4px;border-radius:12px;font:700 11px Inter,sans-serif;' + (i === 0 ? 'background:' + P + ';color:#FFFFFF' : 'background:#FFFFFF;color:#3A3F55;border:1px solid #E6E9F2') }; });
         }
@@ -164,7 +172,7 @@ class Component extends DCLogic {
     });
     return {
       rootStyle: 'width:1440px;min-height:' + (spec.h || 1000) + 'px;box-sizing:border-box;display:flex;background:#F4F6FB;color:#1A1C2B;font-family:Inter,system-ui,sans-serif',
-      eventScope: spec.scope !== 'global', menu: menu, hasTitle: !!spec.title, title: spec.title, sub: spec.sub || '', actions: actions, rows: rows
+      withNav: !spec.bare, eventScope: spec.scope !== 'global', menu: menu, hasTitle: !!spec.title, title: spec.title, sub: spec.sub || '', actions: actions, rows: rows
     };
   }
 }

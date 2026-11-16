@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>App — Réglages et confidentialité</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div style="width: 2588px; height: 940px; box-sizing: border-box; background: #E9EBF3; padding: 24px; display: flex; gap: 40px; font-family: Inter, system-ui, sans-serif">
+<sc-for list="{{screens}}" as="s" hint-placeholder-count="6">
+<div style="display: flex; flex-direction: column; gap: 10px; flex-shrink: 0">
+<span style="font: 700 15px Inter, sans-serif; color: #1A1C2B">{{s.n}}</span>
+<div style="width: 390px; height: 844px; border-radius: 36px; overflow: hidden; box-shadow: 0 10px 30px rgba(30,40,90,0.18)"><dc-import name="Screen" spec="{{s.spec}}" hint-size="390px,844px"></dc-import></div>
+</div>
+</sc-for>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":2588,"height":940}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {
+      screens: [
+        { n: 'R-1 · Notifications', spec: { bg: 'light', blocks: [
+          { t: 'top', title: 'Notifications', back: true },
+          { t: 'rows', items: [
+            { t: 'Alertes de sécurité du lieu', s: 'Évacuation, incident proche (recommandé)', toggle: true },
+            { t: 'Demandes d’amis', s: 'Invitations et acceptations', toggle: true },
+            { t: 'Un ami est arrivé', s: 'Quand un ami rejoint le même lieu', toggle: true },
+            { t: 'Messages', s: 'Chat avec tes amis', toggle: true },
+            { t: 'Programmation', s: 'Rappels d’artistes que tu suis', toggle: false },
+            { t: 'Offres des partenaires', s: 'Désactivé par défaut', toggle: false }
+          ] },
+          { t: 'note', tone: 'info', text: 'Jamais de notification après 6 h du matin sauf alerte de sécurité.' }
+        ] } },
+        { n: 'R-2 · Ma localisation', spec: { bg: 'light', blocks: [
+          { t: 'top', title: 'Ma localisation', back: true },
+          { t: 'rows', items: [
+            { t: 'Partage avec mes amis', s: 'Actif · Léa, Inès, Tom', toggle: true },
+            { t: 'Mode fantôme', s: 'Tu vois tes amis, ils ne te voient pas', toggle: false },
+            { t: 'Arrêter automatiquement', s: 'À la sortie du lieu', toggle: true }
+          ] },
+          { t: 'section', text: 'Qualité en ce moment' },
+          { t: 'stats', cols: 2, items: [{ l: 'Précision', v: '± 3 m', s: 'balises + capteurs' }, { l: 'Étage', v: 'RDC' }] },
+          { t: 'note', tone: 'info', text: 'Tes positions détaillées sont effacées 24 h après la fin de l’événement. Seul ton récap reste (si tu le gardes).' }
+        ] } },
+        { n: 'R-3 · Utilisateurs bloqués', spec: { bg: 'light', blocks: [
+          { t: 'top', title: 'Bloqués', back: true },
+          { t: 'rows', items: [{ av: 'X', t: '@xenon_99', s: 'Bloqué le 03/11', btn: 'Débloquer', btnAlt: true }, { av: 'K', t: '@kiki', s: 'Bloqué le 12/10', btn: 'Débloquer', btnAlt: true }] },
+          { t: 'note', tone: 'info', text: 'Une personne bloquée ne voit plus ta position, ne peut plus t’écrire ni t’inviter. Elle n’est pas prévenue.' }
+        ] } },
+        { n: 'R-4 · Mes signalements', spec: { bg: 'light', blocks: [
+          { t: 'top', title: 'Mes signalements', back: true },
+          { t: 'rows', items: [
+            { img: 'securite', t: 'Comportement dangereux · Bar', s: 'Pris en charge par la sécurité · 01 h 12', ok: true },
+            { img: 'objets', t: 'Objet perdu · téléphone', s: 'En attente · objets trouvés', warn: true },
+            { av: '!', t: 'Message signalé · @xenon_99', s: 'Traité : utilisateur averti', ok: true }
+          ] },
+          { t: 'btn', text: 'Faire un nouveau signalement' }
+        ] } },
+        { n: 'R-5 · Télécharger mes données', spec: { bg: 'light', blocks: [
+          { t: 'top', title: 'Mes données', back: true },
+          { t: 'card', text: 'Tu peux récupérer toutes les données que ONEERA conserve sur toi : profil, amis, messages, récaps et autorisations.' },
+          { t: 'rows', items: [{ t: 'Profil et autorisations', s: '≈ 4 Ko', radio: true }, { t: 'Amis et messages', s: '≈ 120 Ko', radio: true }, { t: 'Récaps d’événements', s: '≈ 36 Ko', radio: true }] },
+          { t: 'btn', text: 'Préparer mon export' },
+          { t: 'note', tone: 'ok', text: 'Fichier prêt sous 24 h maximum, envoyé par lien sécurisé sur ton e-mail.' }
+        ] } },
+        { n: 'R-6 · Supprimer mon compte', spec: { bg: 'light', blocks: [
+          { t: 'top', title: 'Supprimer mon compte', back: true },
+          { t: 'note', tone: 'danger', text: 'Cette action est définitive. Ton profil, ton avatar, tes amis, tes messages et tes récaps seront supprimés.' },
+          { t: 'rows', items: [{ t: 'Télécharger mes données avant', s: 'Recommandé', chev: true }] },
+          { t: 'input', label: 'Écris SUPPRIMER pour confirmer', value: 'SUPPRIMER' },
+          { t: 'spacer' },
+          { t: 'btn', text: 'Supprimer définitivement', kind: 'danger' },
+          { t: 'btn', text: 'Annuler', kind: 'link' }
+        ] } }
+      ]
+    };
+
+  }
+}
+</script>
+</body>
+</html>

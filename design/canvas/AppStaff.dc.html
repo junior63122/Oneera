@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>App — Staff</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div style="width: 2588px; height: 940px; box-sizing: border-box; background: #E9EBF3; padding: 24px; display: flex; gap: 40px; font-family: Inter, system-ui, sans-serif">
+<sc-for list="{{screens}}" as="s" hint-placeholder-count="6">
+<div style="display: flex; flex-direction: column; gap: 10px; flex-shrink: 0">
+<span style="font: 700 15px Inter, sans-serif; color: #1A1C2B">{{s.n}}</span>
+<div style="width: 390px; height: 844px; border-radius: 36px; overflow: hidden; box-shadow: 0 10px 30px rgba(30,40,90,0.18)"><dc-import name="Screen" spec="{{s.spec}}" hint-size="390px,844px"></dc-import></div>
+</div>
+</sc-for>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":2588,"height":940}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {
+      screens: [
+        { n: 'S-1 · Carte staff', spec: { bg: 'map', nav: 'map', staff: true, blocks: [
+          { t: 'chips', items: ['Sécurité · 6', 'Médical · 2', 'Bar · 8'] },
+          { t: 'map', h: 520, img: 'bdf', pos: '45% 45%', pins: [
+            { k: 'me', x: 46, y: 54, head: 'staff_h', r: 26 }, { k: 'staff', x: 30, y: 40, head: 'staff_h', label: 'Nadia · sécu' }, { k: 'staff', x: 70, y: 36, head: 'staff_h', label: 'Hugo · sécu' },
+            { k: 'staff', x: 62, y: 72, head: 'staff_h', label: 'Sarah · médical' }, { k: 'poi', x: 80, y: 60, head: 'infirmerie' }] },
+          { t: 'note', tone: 'warn', text: '1 alerte ouverte · Zone A · bousculade signalée' }
+        ] } },
+        { n: 'S-2 · Détail d’une alerte', spec: { bg: 'light', staff: true, nav: 'alertes', blocks: [
+          { t: 'top', title: 'Alerte #12', back: true },
+          { t: 'note', tone: 'danger', text: 'Malaise signalé · Dancefloor, près de la scène · il y a 2 min' },
+          { t: 'map', h: 200, img: 'bdf', pos: '58% 35%', pins: [{ k: 'me', x: 30, y: 70, head: 'staff_h', r: 20 }, { k: 'poi', x: 62, y: 40, head: 'secours', label: 'Ici' }] },
+          { t: 'rows', items: [{ t: 'Signalé par', s: 'Un visiteur (anonyme pour vous)' }, { t: 'Distance', s: '≈ 35 m · 1 min' }, { t: 'Équipe prévenue', s: 'Médical, sécurité' }] },
+          { t: 'btn', text: 'Je prends en charge' },
+          { t: 'btn', text: 'Itinéraire', kind: 'secondary' }
+        ] } },
+        { n: 'S-3 · Statut de l’intervention', spec: { bg: 'light', staff: true, nav: 'alertes', blocks: [
+          { t: 'top', title: 'Alerte #12', back: true },
+          { t: 'timeline', from: 'Reçue 01:12', to: 'Clôture', p: 66 },
+          { t: 'rows', items: [{ t: 'En route', s: '01:13 · Nadia', radio: true }, { t: 'Sur place', s: '01:14', radio: true }, { t: 'Résolue', s: 'Choisir à la fin', radio: false }] },
+          { t: 'input', label: 'Note (facultatif)', value: 'Personne prise en charge par le poste médical', tall: true },
+          { t: 'btn', text: 'Clôturer l’alerte' },
+          { t: 'btn', text: 'Demander du renfort', kind: 'danger' }
+        ] } },
+        { n: 'S-4 · C’est envoyé !', spec: { bg: 'sky', blocks: [
+          { t: 'spacer' },
+          { t: 'pic', img: 'secu', h: 300 },
+          { t: 'h', text: 'C’est envoyé !' },
+          { t: 'card', text: 'L’équipe de sécurité a reçu ton signalement et arrive. Reste en lieu sûr si tu le peux.' },
+          { t: 'btn', text: 'Retour à la carte' },
+          { t: 'spacer' }
+        ] } },
+        { n: 'S-5 · Mon équipe', spec: { bg: 'light', staff: true, nav: 'equipe', blocks: [
+          { t: 'top', title: 'Mon équipe', big: true },
+          { t: 'seg', items: ['En service · 16', 'Pause · 3'] },
+          { t: 'rows', items: [
+            { img: 'secu', t: 'Nadia K.', s: 'Sécurité · Dancefloor · en intervention', warn: true, btn: '☏', btnAlt: true },
+            { img: 'secu', t: 'Hugo P.', s: 'Sécurité · Entrée · disponible', ok: true, btn: '☏', btnAlt: true },
+            { img: 'sante', t: 'Sarah E.', s: 'Médical · Poste de secours · disponible', ok: true, btn: '☏', btnAlt: true },
+            { img: 'staff', t: 'Lucas M.', s: 'Bar · Bar principal', btn: '☏', btnAlt: true }
+          ] }
+        ] } },
+        { n: 'S-6 · Mon service', spec: { bg: 'light', staff: true, nav: 'staff', blocks: [
+          { t: 'top', title: 'Mon service', big: true },
+          { t: 'avatar', h: 200, img: 'secu' },
+          { t: 'stats', cols: 2, items: [{ l: 'Poste', v: 'Dancefloor' }, { l: 'Fin de service', v: '05 h 00' }, { l: 'Interventions', v: '3' }, { l: 'Batterie', v: '64 %' }] },
+          { t: 'rows', items: [{ t: 'Je suis en pause', s: 'Ta position n’est plus partagée pendant la pause', toggle: false }] },
+          { t: 'note', tone: 'info', text: 'Ta position est visible par le staff uniquement pendant ton service et effacée après 7 jours.' }
+        ] } }
+      ]
+    };
+
+  }
+}
+</script>
+</body>
+</html>

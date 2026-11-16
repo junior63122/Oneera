@@ -13,13 +13,13 @@
 body{margin:0}
 </style>
 </helmet>
-<div style="width: 1440px; min-height: 1050px"><dc-import name="DashPage" spec="{{spec}}" hint-size="1440px,1050px"></dc-import></div>
+<div style="width: 1440px; min-height: 900px"><dc-import name="DashPage" spec="{{spec}}" hint-size="1440px,900px"></dc-import></div>
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1050}}'>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":900}}'>
 class Component extends DCLogic {
   renderVals() {
     var st = function (s, t) { return { b: s, tone: t }; };
-    return { spec: { scope: 'global', active: 'Organisateurs', h: 1050, title: 'Liste des organisateurs', sub: 'Profils, niveaux d’accès et déploiements actifs', actions: ['Exporter', '+ Ajouter un organisateur'], rows: [
+    return { spec: { scope: 'global', active: 'Organisateurs', h: 900, title: 'Liste des organisateurs', sub: 'Profils, niveaux d’accès et déploiements actifs', actions: ['Exporter', '+ Ajouter un organisateur'], rows: [
       [{ t: 'kpi', l: 'Total', v: '35' }, { t: 'kpi', l: 'Actifs', v: '28', c: '#0B5A50' }, { t: 'kpi', l: 'Inactifs', v: '7', c: '#C2282F' }],
       [{ t: 'table', tpl: '1.4fr 0.8fr 1fr 1fr 1.4fr 0.6fr', cols: ['Organisateur', 'Statut', 'Événements', 'Accès', 'Activité récente', 'Actions'], hl: 2, rows: [
         ['[ORGANISATEUR 1]', st('Actif', 'ok'), '4 en cours', 'Niveau 3', 'Connexion secteur 4-B', '✎ ⋯'],

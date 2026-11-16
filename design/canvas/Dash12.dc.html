@@ -13,12 +13,12 @@
 body{margin:0}
 </style>
 </helmet>
-<div style="width: 1440px; min-height: 1400px"><dc-import name="DashPage" spec="{{spec}}" hint-size="1440px,1400px"></dc-import></div>
+<div style="width: 1440px; min-height: 1143px"><dc-import name="DashPage" spec="{{spec}}" hint-size="1440px,1143px"></dc-import></div>
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1400}}'>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1143}}'>
 class Component extends DCLogic {
   renderVals() {
-    return { spec: { scope: 'global', active: 'Comparaison', h: 1400, title: 'Comparaison de données', sub: 'Analysez la performance croisée de deux événements ou de deux dates du même événement', actions: ['Exporter', '+ Modifier la sélection'], rows: [
+    return { spec: { scope: 'global', active: 'Comparaison', h: 1143, title: 'Comparaison de données', sub: 'Analysez la performance croisée de deux événements ou de deux dates du même événement', actions: ['Exporter', '+ Modifier la sélection'], rows: [
       [{ t: 'kpi', l: 'Événement A', v: '[ÉVÉNEMENT A]', c: '#1A1C2B', s: 'présence comptée 12 k · couverture 22 %' }, { t: 'kpi', l: 'Événement B', v: '[ÉVÉNEMENT B]', c: '#1A1C2B', s: 'présence comptée 9 k · couverture 28 %' }],
       [{ t: 'line', w: 2, title: 'Pics d’affluence (présence comptée) — A en bleu, B en violet', y: [10, 30, 70, 95, 60, 30, 20], y2: [5, 15, 35, 50, 85, 90, 40], axis: ['18 h', '20 h', '22 h', '0 h', '2 h', '4 h'] },
        { t: 'donuts', w: 1, title: 'Répartition des incidents', items: [{ l: 'Événement A · 41', center: '41', segs: [{ p: 40 }, { p: 30 }, { p: 20 }, { p: 10 }] }, { l: 'Événement B · 60', center: '60', segs: [{ p: 25 }, { p: 35 }, { p: 25 }, { p: 15 }] }] }],

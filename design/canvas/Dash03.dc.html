@@ -13,12 +13,12 @@
 body{margin:0}
 </style>
 </helmet>
-<div style="width: 1440px; min-height: 1100px"><dc-import name="DashPage" spec="{{spec}}" hint-size="1440px,1100px"></dc-import></div>
+<div style="width: 1440px; min-height: 1121px"><dc-import name="DashPage" spec="{{spec}}" hint-size="1440px,1121px"></dc-import></div>
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1100}}'>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1121}}'>
 class Component extends DCLogic {
   renderVals() {
-    return { spec: { active: 'Replay', h: 1100, rows: [
+    return { spec: { active: 'Replay', h: 1121, rows: [
       [{ t: 'list', w: 1, title: 'Alertes', items: [{ t: 'Saturation Zone A', s: 'Déclenchée à 19 h 42', tone: 'danger', bg: true }, { t: 'Assistance médicale', s: 'Résolue à 18 h 15', tone: 'warn', bg: true }] },
        { t: 'map', w: 3, h: 640, heat: true, incident: true, floats: [{ t: 'AFFLUENCE', x: 'Présence comptée : 1 240\nPic : 1 386 à 1 h 10' }, { t: 'RÉPARTITION PAR ZONE', x: 'Zone A ≈ 640 · Zone B ≈ 300\nZone C ≈ 210 · Zone D ≈ 85\n(estimations ± 15 %)' }] },
        { t: 'toggles', w: 1, title: 'Paramètres de lecture', items: [{ l: 'Staff' }, { l: 'Flux' }, { l: 'Heatmap' }, { l: 'Répartition par zone' }, { l: 'Affluence' }, { l: 'Alertes', on: false }, { l: 'Communication', on: false }, { l: 'Icônes' }, { l: 'Balises', on: false }, { l: 'Zones repos / stagnation' }, { l: 'Programmation' }] }],

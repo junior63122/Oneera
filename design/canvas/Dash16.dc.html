@@ -13,13 +13,13 @@
 body{margin:0}
 </style>
 </helmet>
-<div style="width: 1440px; min-height: 1000px"><dc-import name="DashPage" spec="{{spec}}" hint-size="1440px,1000px"></dc-import></div>
+<div style="width: 1440px; min-height: 900px"><dc-import name="DashPage" spec="{{spec}}" hint-size="1440px,900px"></dc-import></div>
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1000}}'>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":900}}'>
 class Component extends DCLogic {
   renderVals() {
     var r = function (n, role, t, i) { return [n, { b: role, tone: t }, { b: 'Actif', tone: 'ok' }, i, '☏ ⋯']; };
-    return { spec: { scope: 'global', active: 'Équipe', h: 1000, title: 'Staff', sub: 'Tous les membres du staff, sur l’ensemble des événements · total : 1 250', actions: ['Exporter', '+ Ajouter un staff'], rows: [
+    return { spec: { scope: 'global', active: 'Équipe', h: 900, title: 'Staff', sub: 'Tous les membres du staff, sur l’ensemble des événements · total : 1 250', actions: ['Exporter', '+ Ajouter un staff'], rows: [
       [{ t: 'table', w: 2, tpl: '1.4fr 1fr 0.8fr 1fr 0.6fr', cols: ['Membre', 'Rôle', 'Statut', 'Interventions', 'Action'], hl: 3, rows: [
         r('Marc B.', 'Admin', 'warn', '12'), r('Sarah E.', 'Médical', 'danger', '24'), r('Lucas M.', 'Serveur', 'purple', '3'), r('Nadia K.', 'Sécurité', 'info', '18'), r('Hugo P.', 'Sécurité', 'info', '9'), r('Léo T.', 'Manager', 'warn', '6'), r('Emma R.', 'Technique', 'neutral', '4')
       ] },

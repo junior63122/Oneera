@@ -13,13 +13,13 @@
 body{margin:0}
 </style>
 </helmet>
-<div style="width: 1440px; min-height: 1000px"><dc-import name="DashPage" spec="{{spec}}" hint-size="1440px,1000px"></dc-import></div>
+<div style="width: 1440px; min-height: 900px"><dc-import name="DashPage" spec="{{spec}}" hint-size="1440px,900px"></dc-import></div>
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1000}}'>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":900}}'>
 class Component extends DCLogic {
   renderVals() {
     var s = function (n, st) { return { b: n, tone: st }; };
-    return { spec: { active: 'Programmation', h: 1000, title: 'Gestion de la programmation', sub: 'Suivi en temps réel des sessions et coordination des scènes', actions: ['Exporter', '+ Ajouter une session'], rows: [
+    return { spec: { active: 'Programmation', h: 900, title: 'Gestion de la programmation', sub: 'Suivi en temps réel des sessions et coordination des scènes', actions: ['Exporter', '+ Ajouter une session'], rows: [
       [{ t: 'kpi', l: 'Actuellement en live', v: '5 scènes' }, { t: 'kpi', l: 'Sessions ce soir', v: '28' }, { t: 'kpi', l: 'Scène la plus chargée', v: 'Principale', c: '#C2282F', s: '≈ 92 % de capacité (estimé)' }, { t: 'kpi', l: 'Retards', v: '1', c: '#D98A00', s: 'Jazz & Trio · 15 min' }],
       [{ t: 'table', title: 'Timeline de la soirée — samedi 14 oct.', link: 'Modifier', tpl: '1.1fr repeat(6, minmax(0,1fr))', cols: ['Scène / heure', '18:00', '19:00', '20:00', '21:00 (live)', '22:00', '23:00'], hl: 0, rows: [
         ['Scène principale', 'Neon Pulse', '', 'Cyber Echo', s('Sand & Bass', 'danger'), '', 'Clôture'],

@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Dashboard — Connexion</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div style="width: 1440px; min-height: 900px"><dc-import name="DashPage" spec="{{spec}}" hint-size="1440px,900px"></dc-import></div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return { spec: { bare: true, h: 900, title: 'Connexion à l’espace organisateur', sub: 'ONEERA · tableau de bord des établissements et événements', rows: [
+      [{ t: 'form', w: 1, title: 'Se connecter', cols: 1, fields: [
+        { l: 'E-mail professionnel', v: 'prenom@etablissement.fr', ph: true },
+        { l: 'Mot de passe', v: '••••••••••••' },
+        { l: 'Code de vérification (2FA)', v: '_ _ _   _ _ _   · application d’authentification', ph: true }
+      ] },
+       { t: 'list', w: 1, title: 'Sécurité du compte', items: [
+        { t: 'Double authentification obligatoire', s: 'Application TOTP ou clé de sécurité', tone: 'ok' },
+        { t: 'Accès par rôle', s: 'Propriétaire · Manager · Sécurité · Lecture seule', tone: 'info' },
+        { t: 'Mot de passe oublié ?', s: 'Lien de réinitialisation envoyé par e-mail (valable 30 min)', tone: 'neutral' },
+        { t: 'Connexion inhabituelle', s: 'Nouvel appareil ou pays : vous êtes prévenu par e-mail', tone: 'warn' }
+      ] }],
+      [{ t: 'note', tone: 'info', text: 'Pas encore de compte ? L’accès est créé par ONEERA lors de la signature avec votre établissement, puis vous invitez votre équipe.' }]
+    ] } };
+  }
+}
+</script>
+</body>
+</html>

@@ -13,13 +13,13 @@
 body{margin:0}
 </style>
 </helmet>
-<div style="width: 1440px; min-height: 1000px"><dc-import name="DashPage" spec="{{spec}}" hint-size="1440px,1000px"></dc-import></div>
+<div style="width: 1440px; min-height: 900px"><dc-import name="DashPage" spec="{{spec}}" hint-size="1440px,900px"></dc-import></div>
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1000}}'>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":900}}'>
 class Component extends DCLogic {
   renderVals() {
     var r = function (p, a, e, s) { return [p, a, e, s, { b: 'Actif', tone: 'ok' }, '⋯']; };
-    return { spec: { scope: 'global', active: 'Utilisateurs', h: 1000, title: 'Utilisateurs', sub: 'Tous les comptes visiteurs ONEERA · total : 25 000', actions: ['Exporter', 'Filtrer'], rows: [
+    return { spec: { scope: 'global', active: 'Utilisateurs', h: 900, title: 'Utilisateurs', sub: 'Tous les comptes visiteurs ONEERA · total : 25 000', actions: ['Exporter', 'Filtrer'], rows: [
       [{ t: 'kpi', l: 'Comptes', v: '25 000' }, { t: 'kpi', l: 'Actifs ce mois', v: '6 400', c: '#0B5A50' }, { t: 'kpi', l: 'Invités (sans compte)', v: '9 800', c: '#7C5BD6', s: 'sessions temporaires' }, { t: 'kpi', l: 'Suppressions demandées', v: '12', c: '#C2282F', s: 'traitées sous 30 jours' }],
       [{ t: 'table', w: 2, tpl: '1.2fr 1fr 1.6fr 0.8fr 0.8fr 0.5fr', cols: ['Pseudo', 'Tranche d’âge', 'Événements', 'Signalements', 'Statut', 'Action'], hl: 2, rows: [
         r('@theo', '18-24', '3', '0'), r('@lina', '25-34', '1', '0'), r('@max', '18-24', '5', '1'), r('@ines', '25-34', '2', '0'), r('@yanis', '18-24', '4', '2'), r('@nora', 'non renseigné', '1', '0')

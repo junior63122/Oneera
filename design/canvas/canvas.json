@@ -1,484 +1,563 @@
 {
- "v": 3,
- "createdOnFiles": {
-  "v": 1,
-  "at": "2026-11-15T09:00:00Z"
- },
- "title": "ONEERA V2 — Maquettes",
- "launch": {
-  "view": "canvas",
-  "page": "app"
- },
- "pages": [
-  {
-   "id": "app",
-   "name": "App — design complet"
+  "v": 3,
+  "attachments": {},
+  "boards": {
+    "AppAmis.dc.html": {
+      "h": 940,
+      "page": "app",
+      "title": "Amis — 8 écrans",
+      "w": 3448,
+      "x": 0,
+      "y": 4240
+    },
+    "AppAvatar.dc.html": {
+      "h": 940,
+      "page": "app",
+      "title": "Création d'avatar — 13 écrans",
+      "w": 5598,
+      "x": 0,
+      "y": 10600
+    },
+    "AppChat.dc.html": {
+      "h": 940,
+      "page": "app",
+      "title": "Chat — 2 écrans",
+      "w": 868,
+      "x": 0,
+      "y": 5300
+    },
+    "AppDecouverte.dc.html": {
+      "h": 940,
+      "page": "app",
+      "title": "Découverte des événements — 6 écrans",
+      "w": 2588,
+      "x": 0,
+      "y": 1060
+    },
+    "AppEvenement.dc.html": {
+      "h": 940,
+      "page": "app",
+      "title": "Carte d'événement, zones, récap, replay — 7 écrans",
+      "w": 3018,
+      "x": 0,
+      "y": 7420
+    },
+    "AppNotifs.dc.html": {
+      "h": 940,
+      "page": "app",
+      "title": "Notifications — 2 écrans",
+      "w": 868,
+      "x": 0,
+      "y": 2120
+    },
+    "AppPartage.dc.html": {
+      "h": 940,
+      "page": "app",
+      "title": "Partager ma localisation — 5 écrans",
+      "w": 2158,
+      "x": 0,
+      "y": 6360
+    },
+    "AppProfil.dc.html": {
+      "h": 940,
+      "page": "app",
+      "title": "Profil, réglages et compte — 8 écrans",
+      "w": 3448,
+      "x": 0,
+      "y": 8480
+    },
+    "AppV2.dc.html": {
+      "h": 940,
+      "page": "app",
+      "title": "Nouveaux écrans V2 — 5 écrans",
+      "w": 2158,
+      "x": 0,
+      "y": 12720
+    },
+    "Dash01.dc.html": {
+      "h": 1336,
+      "page": "dash",
+      "title": "01 · Vue globale",
+      "w": 1440,
+      "x": 0,
+      "y": 0
+    },
+    "Dash02.dc.html": {
+      "h": 1078,
+      "page": "dash",
+      "title": "02 · Centre d'alertes",
+      "w": 1440,
+      "x": 1520,
+      "y": 0
+    },
+    "Dash03.dc.html": {
+      "h": 1121,
+      "page": "dash",
+      "title": "03 · Replay",
+      "w": 1440,
+      "x": 3040,
+      "y": 0
+    },
+    "Dash04.dc.html": {
+      "h": 900,
+      "page": "dash",
+      "title": "04 · Programmation",
+      "w": 1440,
+      "x": 0,
+      "y": 1536
+    },
+    "Dash05.dc.html": {
+      "h": 1263,
+      "page": "dash",
+      "title": "05 · Gestion du staff",
+      "w": 1440,
+      "x": 1520,
+      "y": 1536
+    },
+    "Dash06.dc.html": {
+      "h": 900,
+      "page": "dash",
+      "title": "06 · Utilisateurs",
+      "w": 1440,
+      "x": 3040,
+      "y": 1536
+    },
+    "Dash07.dc.html": {
+      "h": 1289,
+      "page": "dash",
+      "title": "07 · Communication temps réel",
+      "w": 1440,
+      "x": 0,
+      "y": 2999
+    },
+    "Dash08.dc.html": {
+      "h": 900,
+      "page": "dash",
+      "title": "08 · Partenaires",
+      "w": 1440,
+      "x": 1520,
+      "y": 2999
+    },
+    "Dash09.dc.html": {
+      "h": 900,
+      "page": "dash",
+      "title": "09 · Paramètres du système",
+      "w": 1440,
+      "x": 3040,
+      "y": 2999
+    },
+    "Dash10.dc.html": {
+      "h": 971,
+      "page": "dash",
+      "title": "10 · Événements",
+      "w": 1440,
+      "x": 0,
+      "y": 4488
+    },
+    "Dash11.dc.html": {
+      "h": 900,
+      "page": "dash",
+      "title": "11 · Créer un événement",
+      "w": 1440,
+      "x": 1520,
+      "y": 4488
+    },
+    "Dash12.dc.html": {
+      "h": 1143,
+      "page": "dash",
+      "title": "12 · Comparaison d'événements",
+      "w": 1440,
+      "x": 3040,
+      "y": 4488
+    },
+    "Dash13.dc.html": {
+      "h": 900,
+      "page": "dash",
+      "title": "13 · Organisateurs",
+      "w": 1440,
+      "x": 0,
+      "y": 5831
+    },
+    "Dash14.dc.html": {
+      "h": 900,
+      "page": "dash",
+      "title": "14 · Partenaires (global)",
+      "w": 1440,
+      "x": 1520,
+      "y": 5831
+    },
+    "Dash15.dc.html": {
+      "h": 900,
+      "page": "dash",
+      "title": "15 · Utilisateurs (global)",
+      "w": 1440,
+      "x": 3040,
+      "y": 5831
+    },
+    "Dash16.dc.html": {
+      "h": 900,
+      "page": "dash",
+      "title": "16 · Staff (global)",
+      "w": 1440,
+      "x": 0,
+      "y": 6931
+    },
+    "Dash17.dc.html": {
+      "h": 900,
+      "page": "dash",
+      "title": "17 · Modération des signalements",
+      "w": 1440,
+      "x": 1520,
+      "y": 6931
+    },
+    "Dash18.dc.html": {
+      "h": 1016,
+      "page": "dash",
+      "title": "18 · Balises et qualité de localisation",
+      "w": 1440,
+      "x": 3040,
+      "y": 6931
+    },
+    "DashPage.dc.html": {
+      "h": 1000,
+      "page": "comp",
+      "title": "Composant : page dashboard",
+      "w": 1440,
+      "x": 500,
+      "y": 0
+    },
+    "Dashboard.dc.html": {
+      "expand": "fill",
+      "h": 1000,
+      "page": "v2",
+      "title": "Centre de contrôle — live",
+      "w": 1440,
+      "x": 0,
+      "y": 1224
+    },
+    "DesignSystem.dc.html": {
+      "h": 1000,
+      "page": "v2",
+      "title": "Design system",
+      "w": 1200,
+      "x": 1520,
+      "y": 1224
+    },
+    "Friend.dc.html": {
+      "h": 844,
+      "page": "v2",
+      "title": "4 · Rejoindre un ami",
+      "w": 390,
+      "x": 1410,
+      "y": 0
+    },
+    "Invite.dc.html": {
+      "h": 844,
+      "page": "v2",
+      "title": "6 · Ajouter un ami",
+      "w": 390,
+      "x": 2350,
+      "y": 0
+    },
+    "Main.dc.html": {
+      "h": 844,
+      "page": "v2",
+      "title": "1 · Explorer les événements",
+      "w": 390,
+      "x": 0,
+      "y": 0
+    },
+    "Map.dc.html": {
+      "h": 844,
+      "page": "v2",
+      "title": "3 · Carte de l'événement",
+      "w": 390,
+      "x": 940,
+      "y": 0
+    },
+    "Permission.dc.html": {
+      "h": 844,
+      "page": "v2",
+      "title": "2 · Permission localisation",
+      "w": 390,
+      "x": 470,
+      "y": 0
+    },
+    "Progress.dc.html": {
+      "h": 844,
+      "page": "v2",
+      "title": "Avancement réel",
+      "w": 900,
+      "x": 3760,
+      "y": 0
+    },
+    "Recap.dc.html": {
+      "h": 844,
+      "page": "v2",
+      "title": "7 · Récap de ma soirée",
+      "w": 390,
+      "x": 2820,
+      "y": 0
+    },
+    "RefApp.dc.html": {
+      "h": 2240,
+      "page": "ref",
+      "title": "App ONEERA actuelle — 31 captures (sans données personnelles)",
+      "w": 1960,
+      "x": 0,
+      "y": 0
+    },
+    "RefDashboard.dc.html": {
+      "h": 3400,
+      "page": "ref",
+      "title": "Figma « Dashboard Oneera » — 18 écrans",
+      "w": 1960,
+      "x": 0,
+      "y": 2600
+    },
+    "Report.dc.html": {
+      "h": 844,
+      "page": "v2",
+      "title": "8 · Signaler un problème",
+      "w": 390,
+      "x": 3290,
+      "y": 0
+    },
+    "Screen.dc.html": {
+      "h": 844,
+      "page": "comp",
+      "title": "Composant : écran mobile",
+      "w": 390,
+      "x": 0,
+      "y": 0
+    },
+    "Share.dc.html": {
+      "h": 844,
+      "page": "v2",
+      "title": "5 · Partager ma localisation",
+      "w": 390,
+      "x": 1880,
+      "y": 0
+    },
+    "AppInscription.dc.html": {
+      "title": "Inscription et connexion — 7 écrans",
+      "page": "app",
+      "w": 3018,
+      "h": 940,
+      "x": 0,
+      "y": 0
+    },
+    "AppCarte.dc.html": {
+      "title": "Carte, lieux et rendez-vous — 6 écrans",
+      "page": "app",
+      "w": 2588,
+      "h": 940,
+      "x": 0,
+      "y": 3180
+    },
+    "AppReglagesPlus.dc.html": {
+      "title": "Réglages et confidentialité (RGPD) — 6 écrans",
+      "page": "app",
+      "w": 2588,
+      "h": 940,
+      "x": 0,
+      "y": 9540
+    },
+    "AppStaff.dc.html": {
+      "title": "App staff — 6 écrans",
+      "page": "app",
+      "w": 2588,
+      "h": 940,
+      "x": 0,
+      "y": 11660
+    },
+    "Dash19.dc.html": {
+      "title": "19 · Connexion (2FA)",
+      "page": "dash",
+      "w": 1440,
+      "h": 900,
+      "x": 0,
+      "y": 8147
+    },
+    "Dash20.dc.html": {
+      "title": "20 · Artistes",
+      "page": "dash",
+      "w": 1440,
+      "h": 900,
+      "x": 1520,
+      "y": 8147
+    },
+    "Dash21.dc.html": {
+      "title": "21 · Scènes",
+      "page": "dash",
+      "w": 1440,
+      "h": 1000,
+      "x": 3040,
+      "y": 8147
+    }
   },
-  {
-   "id": "dash",
-   "name": "Dashboard — design complet"
+  "createdOnFiles": {
+    "at": "2026-11-15T09:00:00Z",
+    "v": 1
   },
-  {
-   "id": "v2",
-   "name": "Concepts V2 (détails)"
+  "designSystems": [],
+  "launch": {
+    "page": "app",
+    "view": "canvas"
   },
-  {
-   "id": "ref",
-   "name": "Référence V1 (actuel)"
+  "noteOrder": [
+    "t1",
+    "t2",
+    "s1",
+    "s2",
+    "r1",
+    "r2",
+    "a1",
+    "d1"
+  ],
+  "notes": {
+    "a1": {
+      "kind": "title1",
+      "maxW": 5600,
+      "page": "app",
+      "text": "App ONEERA — design complet (81 écrans)",
+      "w": 240,
+      "x": 0,
+      "y": -260
+    },
+    "d1": {
+      "kind": "title1",
+      "maxW": 4480,
+      "page": "dash",
+      "text": "Dashboard ONEERA — design complet (21 écrans)",
+      "w": 240,
+      "x": 0,
+      "y": -260
+    },
+    "r1": {
+      "kind": "title1",
+      "maxW": 1960,
+      "page": "ref",
+      "text": "Référence : l'app et le dashboard actuels",
+      "w": 240,
+      "x": 0,
+      "y": -260
+    },
+    "r2": {
+      "fill": "blue",
+      "page": "ref",
+      "text": "20 autres captures (amis, chat, partage avec noms, profil, compte) contiennent des données personnelles : elles sont conservées hors ligne, pas dans ce canevas. Index complet des 51 captures : docs/references/v1-app-captures.md",
+      "w": 340,
+      "x": 2040,
+      "y": 0
+    },
+    "s1": {
+      "fill": "orange",
+      "page": "v2",
+      "text": "Ces écrans reprennent l'identité de l'app ONEERA actuelle (thème pastel, plans 2,5D, bouton bleu, barre flottante) et y ajoutent les améliorations V2 : rayon de précision, positions anciennes signalées, chiffres honnêtes. Ce sont des maquettes : l'app V2 n'est pas encore développée. Les chiffres sont des valeurs d'exemple.",
+      "w": 340,
+      "x": 4740,
+      "y": 0
+    },
+    "s2": {
+      "fill": "blue",
+      "page": "v2",
+      "text": "Les écrans des pages « App » et « Dashboard » utilisent les visuels ONEERA existants (plan isométrique, avatars 3D, icônes 3D). Avant la mise en production, vérifier par écrit qui détient les droits sur ces visuels.",
+      "w": 340,
+      "x": 4740,
+      "y": 470
+    },
+    "t1": {
+      "kind": "title1",
+      "maxW": 4660,
+      "page": "v2",
+      "text": "App visiteur — V2 dans l'identité ONEERA (proposition, non développée)",
+      "w": 240,
+      "x": 0,
+      "y": -260
+    },
+    "t2": {
+      "kind": "title1",
+      "maxW": 2720,
+      "page": "v2",
+      "text": "Centre de contrôle & design system",
+      "w": 240,
+      "x": 0,
+      "y": 964
+    }
   },
-  {
-   "id": "comp",
-   "name": "Composants"
-  }
- ],
- "boards": {
-  "Main.dc.html": {
-   "x": 0,
-   "y": 0,
-   "w": 390,
-   "h": 844,
-   "title": "1 · Explorer les événements",
-   "page": "v2"
-  },
-  "Permission.dc.html": {
-   "x": 470,
-   "y": 0,
-   "w": 390,
-   "h": 844,
-   "title": "2 · Permission localisation",
-   "page": "v2"
-  },
-  "Map.dc.html": {
-   "x": 940,
-   "y": 0,
-   "w": 390,
-   "h": 844,
-   "title": "3 · Carte de l'événement",
-   "page": "v2"
-  },
-  "Friend.dc.html": {
-   "x": 1410,
-   "y": 0,
-   "w": 390,
-   "h": 844,
-   "title": "4 · Rejoindre un ami",
-   "page": "v2"
-  },
-  "Share.dc.html": {
-   "x": 1880,
-   "y": 0,
-   "w": 390,
-   "h": 844,
-   "title": "5 · Partager ma localisation",
-   "page": "v2"
-  },
-  "Invite.dc.html": {
-   "x": 2350,
-   "y": 0,
-   "w": 390,
-   "h": 844,
-   "title": "6 · Ajouter un ami",
-   "page": "v2"
-  },
-  "Recap.dc.html": {
-   "x": 2820,
-   "y": 0,
-   "w": 390,
-   "h": 844,
-   "title": "7 · Récap de ma soirée",
-   "page": "v2"
-  },
-  "Report.dc.html": {
-   "x": 3290,
-   "y": 0,
-   "w": 390,
-   "h": 844,
-   "title": "8 · Signaler un problème",
-   "page": "v2"
-  },
-  "Progress.dc.html": {
-   "x": 3760,
-   "y": 0,
-   "w": 900,
-   "h": 844,
-   "title": "Avancement réel",
-   "page": "v2"
-  },
-  "Dashboard.dc.html": {
-   "x": 0,
-   "y": 1224,
-   "w": 1440,
-   "h": 1000,
-   "title": "Centre de contrôle — live",
-   "expand": "fill",
-   "page": "v2"
-  },
-  "DesignSystem.dc.html": {
-   "x": 1520,
-   "y": 1224,
-   "w": 1200,
-   "h": 1000,
-   "title": "Design system",
-   "page": "v2"
-  },
-  "RefApp.dc.html": {
-   "x": 0,
-   "y": 0,
-   "w": 1960,
-   "h": 2240,
-   "title": "App ONEERA actuelle — 31 captures (sans données personnelles)",
-   "page": "ref"
-  },
-  "RefDashboard.dc.html": {
-   "x": 0,
-   "y": 2600,
-   "w": 1960,
-   "h": 3400,
-   "title": "Figma « Dashboard Oneera » — 18 écrans",
-   "page": "ref"
-  },
-  "AppDecouverte.dc.html": {
-   "x": 0,
-   "y": 0,
-   "w": 2588,
-   "h": 940,
-   "title": "Découverte des événements — 6 écrans",
-   "page": "app"
-  },
-  "AppNotifs.dc.html": {
-   "x": 0,
-   "y": 1060,
-   "w": 868,
-   "h": 940,
-   "title": "Notifications — 2 écrans",
-   "page": "app"
-  },
-  "AppAmis.dc.html": {
-   "x": 0,
-   "y": 2120,
-   "w": 3448,
-   "h": 940,
-   "title": "Amis — 8 écrans",
-   "page": "app"
-  },
-  "AppChat.dc.html": {
-   "x": 0,
-   "y": 3180,
-   "w": 868,
-   "h": 940,
-   "title": "Chat — 2 écrans",
-   "page": "app"
-  },
-  "AppProfil.dc.html": {
-   "x": 0,
-   "y": 4240,
-   "w": 3448,
-   "h": 940,
-   "title": "Profil, réglages et compte — 8 écrans",
-   "page": "app"
-  },
-  "AppPartage.dc.html": {
-   "x": 0,
-   "y": 5300,
-   "w": 2158,
-   "h": 940,
-   "title": "Partager ma localisation — 5 écrans",
-   "page": "app"
-  },
-  "AppEvenement.dc.html": {
-   "x": 0,
-   "y": 6360,
-   "w": 3018,
-   "h": 940,
-   "title": "Carte d'événement, zones, récap, replay — 7 écrans",
-   "page": "app"
-  },
-  "AppAvatar.dc.html": {
-   "x": 0,
-   "y": 7420,
-   "w": 5598,
-   "h": 940,
-   "title": "Création d'avatar — 13 écrans",
-   "page": "app"
-  },
-  "AppV2.dc.html": {
-   "x": 0,
-   "y": 8480,
-   "w": 2158,
-   "h": 940,
-   "title": "Nouveaux écrans V2 — 5 écrans",
-   "page": "app"
-  },
-  "Dash01.dc.html": {
-   "x": 0,
-   "y": 0,
-   "w": 1440,
-   "h": 1500,
-   "title": "01 · Vue globale",
-   "page": "dash"
-  },
-  "Dash02.dc.html": {
-   "x": 1520,
-   "y": 0,
-   "w": 1440,
-   "h": 1300,
-   "title": "02 · Centre d'alertes",
-   "page": "dash"
-  },
-  "Dash03.dc.html": {
-   "x": 3040,
-   "y": 0,
-   "w": 1440,
-   "h": 1100,
-   "title": "03 · Replay",
-   "page": "dash"
-  },
-  "Dash04.dc.html": {
-   "x": 0,
-   "y": 1700,
-   "w": 1440,
-   "h": 1000,
-   "title": "04 · Programmation",
-   "page": "dash"
-  },
-  "Dash05.dc.html": {
-   "x": 1520,
-   "y": 1700,
-   "w": 1440,
-   "h": 1500,
-   "title": "05 · Gestion du staff",
-   "page": "dash"
-  },
-  "Dash06.dc.html": {
-   "x": 3040,
-   "y": 1700,
-   "w": 1440,
-   "h": 1000,
-   "title": "06 · Utilisateurs",
-   "page": "dash"
-  },
-  "Dash07.dc.html": {
-   "x": 0,
-   "y": 3400,
-   "w": 1440,
-   "h": 1400,
-   "title": "07 · Communication temps réel",
-   "page": "dash"
-  },
-  "Dash08.dc.html": {
-   "x": 1520,
-   "y": 3400,
-   "w": 1440,
-   "h": 1000,
-   "title": "08 · Partenaires",
-   "page": "dash"
-  },
-  "Dash09.dc.html": {
-   "x": 3040,
-   "y": 3400,
-   "w": 1440,
-   "h": 1100,
-   "title": "09 · Paramètres du système",
-   "page": "dash"
-  },
-  "Dash10.dc.html": {
-   "x": 0,
-   "y": 5100,
-   "w": 1440,
-   "h": 1150,
-   "title": "10 · Événements",
-   "page": "dash"
-  },
-  "Dash11.dc.html": {
-   "x": 1520,
-   "y": 5100,
-   "w": 1440,
-   "h": 1150,
-   "title": "11 · Créer un événement",
-   "page": "dash"
-  },
-  "Dash12.dc.html": {
-   "x": 3040,
-   "y": 5100,
-   "w": 1440,
-   "h": 1400,
-   "title": "12 · Comparaison d'événements",
-   "page": "dash"
-  },
-  "Dash13.dc.html": {
-   "x": 0,
-   "y": 6800,
-   "w": 1440,
-   "h": 1050,
-   "title": "13 · Organisateurs",
-   "page": "dash"
-  },
-  "Dash14.dc.html": {
-   "x": 1520,
-   "y": 6800,
-   "w": 1440,
-   "h": 1000,
-   "title": "14 · Partenaires (global)",
-   "page": "dash"
-  },
-  "Dash15.dc.html": {
-   "x": 3040,
-   "y": 6800,
-   "w": 1440,
-   "h": 1000,
-   "title": "15 · Utilisateurs (global)",
-   "page": "dash"
-  },
-  "Dash16.dc.html": {
-   "x": 0,
-   "y": 8500,
-   "w": 1440,
-   "h": 1000,
-   "title": "16 · Staff (global)",
-   "page": "dash"
-  },
-  "Dash17.dc.html": {
-   "x": 1520,
-   "y": 8500,
-   "w": 1440,
-   "h": 1100,
-   "title": "17 · Modération des signalements",
-   "page": "dash"
-  },
-  "Dash18.dc.html": {
-   "x": 3040,
-   "y": 8500,
-   "w": 1440,
-   "h": 1150,
-   "title": "18 · Balises et qualité de localisation",
-   "page": "dash"
-  },
-  "Screen.dc.html": {
-   "x": 0,
-   "y": 0,
-   "w": 390,
-   "h": 844,
-   "title": "Composant : écran mobile",
-   "page": "comp"
-  },
-  "DashPage.dc.html": {
-   "x": 500,
-   "y": 0,
-   "w": 1440,
-   "h": 1000,
-   "title": "Composant : page dashboard",
-   "page": "comp"
-  }
- },
- "order": [
-  "Main.dc.html",
-  "Permission.dc.html",
-  "Map.dc.html",
-  "Friend.dc.html",
-  "Share.dc.html",
-  "Invite.dc.html",
-  "Recap.dc.html",
-  "Report.dc.html",
-  "Progress.dc.html",
-  "Dashboard.dc.html",
-  "DesignSystem.dc.html",
-  "RefApp.dc.html",
-  "RefDashboard.dc.html",
-  "AppDecouverte.dc.html",
-  "AppNotifs.dc.html",
-  "AppAmis.dc.html",
-  "AppChat.dc.html",
-  "AppProfil.dc.html",
-  "AppPartage.dc.html",
-  "AppEvenement.dc.html",
-  "AppAvatar.dc.html",
-  "AppV2.dc.html",
-  "Dash01.dc.html",
-  "Dash02.dc.html",
-  "Dash03.dc.html",
-  "Dash04.dc.html",
-  "Dash05.dc.html",
-  "Dash06.dc.html",
-  "Dash07.dc.html",
-  "Dash08.dc.html",
-  "Dash09.dc.html",
-  "Dash10.dc.html",
-  "Dash11.dc.html",
-  "Dash12.dc.html",
-  "Dash13.dc.html",
-  "Dash14.dc.html",
-  "Dash15.dc.html",
-  "Dash16.dc.html",
-  "Dash17.dc.html",
-  "Dash18.dc.html",
-  "Screen.dc.html",
-  "DashPage.dc.html"
- ],
- "notes": {
-  "t1": {
-   "x": 0,
-   "y": -260,
-   "text": "App visiteur — V2 dans l'identité ONEERA (proposition, non développée)",
-   "kind": "title1",
-   "maxW": 4660,
-   "page": "v2"
-  },
-  "t2": {
-   "x": 0,
-   "y": 964,
-   "text": "Centre de contrôle & design system",
-   "kind": "title1",
-   "maxW": 2720,
-   "page": "v2"
-  },
-  "s1": {
-   "x": 4740,
-   "y": 0,
-   "w": 340,
-   "text": "Ces écrans reprennent l'identité de l'app ONEERA actuelle (thème pastel, plans 2,5D, bouton bleu, barre flottante) et y ajoutent les améliorations V2 : rayon de précision, positions anciennes signalées, chiffres honnêtes. Ce sont des maquettes : l'app V2 n'est pas encore développée. Les chiffres sont des valeurs d'exemple.",
-   "fill": "orange",
-   "page": "v2"
-  },
-  "s2": {
-   "x": 4740,
-   "y": 470,
-   "w": 340,
-   "text": "Les illustrations finales (plans isométriques détaillés, avatars 3D, icônes 3D) viendront des visuels ONEERA existants, après vérification juridique de qui en détient les droits. Ici, ce sont des esquisses vectorielles.",
-   "fill": "blue",
-   "page": "v2"
-  },
-  "r1": {
-   "x": 0,
-   "y": -260,
-   "text": "Référence : l'app et le dashboard actuels",
-   "kind": "title1",
-   "maxW": 1960,
-   "page": "ref"
-  },
-  "r2": {
-   "x": 2040,
-   "y": 0,
-   "w": 340,
-   "text": "20 autres captures (amis, chat, partage avec noms, profil, compte) contiennent des données personnelles : elles sont conservées hors ligne, pas dans ce canevas. Index complet des 51 captures : docs/references/v1-app-captures.md",
-   "fill": "blue",
-   "page": "ref"
-  },
-  "a1": {
-   "x": 0,
-   "y": -260,
-   "text": "App ONEERA — design complet (56 écrans)",
-   "kind": "title1",
-   "maxW": 5600,
-   "page": "app"
-  },
-  "d1": {
-   "x": 0,
-   "y": -260,
-   "text": "Dashboard ONEERA — design complet (18 écrans)",
-   "kind": "title1",
-   "maxW": 4480,
-   "page": "dash"
-  }
- },
- "designSystems": []
+  "order": [
+    "Main.dc.html",
+    "Permission.dc.html",
+    "Map.dc.html",
+    "Friend.dc.html",
+    "Share.dc.html",
+    "Invite.dc.html",
+    "Recap.dc.html",
+    "Report.dc.html",
+    "Progress.dc.html",
+    "Dashboard.dc.html",
+    "DesignSystem.dc.html",
+    "RefApp.dc.html",
+    "RefDashboard.dc.html",
+    "Dash01.dc.html",
+    "Dash02.dc.html",
+    "Dash03.dc.html",
+    "Dash04.dc.html",
+    "Dash05.dc.html",
+    "Dash06.dc.html",
+    "Dash07.dc.html",
+    "Dash08.dc.html",
+    "Dash09.dc.html",
+    "Dash10.dc.html",
+    "Dash11.dc.html",
+    "Dash12.dc.html",
+    "Dash13.dc.html",
+    "Dash14.dc.html",
+    "Dash15.dc.html",
+    "Dash16.dc.html",
+    "Dash17.dc.html",
+    "Dash18.dc.html",
+    "Screen.dc.html",
+    "DashPage.dc.html",
+    "AppDecouverte.dc.html",
+    "AppNotifs.dc.html",
+    "AppAmis.dc.html",
+    "AppChat.dc.html",
+    "AppProfil.dc.html",
+    "AppPartage.dc.html",
+    "AppEvenement.dc.html",
+    "AppAvatar.dc.html",
+    "AppV2.dc.html",
+    "AppInscription.dc.html",
+    "AppCarte.dc.html",
+    "AppReglagesPlus.dc.html",
+    "AppStaff.dc.html",
+    "Dash19.dc.html",
+    "Dash20.dc.html",
+    "Dash21.dc.html"
+  ],
+  "pages": [
+    {
+      "id": "app",
+      "name": "App — design complet"
+    },
+    {
+      "id": "dash",
+      "name": "Dashboard — design complet"
+    },
+    {
+      "id": "v2",
+      "name": "Concepts V2 (détails)"
+    },
+    {
+      "id": "ref",
+      "name": "Référence V1 (actuel)"
+    },
+    {
+      "id": "comp",
+      "name": "Composants"
+    }
+  ],
+  "title": "ONEERA V2 — Maquettes"
 }

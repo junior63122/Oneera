@@ -13,13 +13,13 @@
 body{margin:0}
 </style>
 </helmet>
-<div style="width: 1440px; min-height: 1500px"><dc-import name="DashPage" spec="{{spec}}" hint-size="1440px,1500px"></dc-import></div>
+<div style="width: 1440px; min-height: 1263px"><dc-import name="DashPage" spec="{{spec}}" hint-size="1440px,1263px"></dc-import></div>
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1500}}'>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1263}}'>
 class Component extends DCLogic {
   renderVals() {
     var role = function (r, t) { return { b: r, tone: t }; };
-    return { spec: { active: 'Équipe', h: 1500, title: 'Gestion du staff', sub: 'Accès opérationnels et hiérarchie de sécurité en temps réel', actions: ['Importer / exporter', '+ Ajouter un membre'], rows: [
+    return { spec: { active: 'Équipe', h: 1263, title: 'Gestion du staff', sub: 'Accès opérationnels et hiérarchie de sécurité en temps réel', actions: ['Importer / exporter', '+ Ajouter un membre'], rows: [
       [{ t: 'kpi', l: 'Au total', v: '130' }, { t: 'kpi', l: 'Actifs', v: '128' }, { t: 'kpi', l: 'En intervention', v: '12' }, { t: 'kpi', l: 'Inactifs', v: '2', c: '#1A1C2B' }, { t: 'kpi', l: 'Sécurité', v: '64' }, { t: 'kpi', l: 'Médical', v: '18', c: '#C2282F' }, { t: 'kpi', l: 'Managers', v: '18', c: '#D98A00' }],
       [{ t: 'table', title: 'Équipe', link: 'Tous · Actifs · Inactifs', tpl: '1.6fr 1fr 1fr 1.4fr 1fr 1fr', cols: ['Membre', 'Rôle', 'Statut', 'Secteurs assignés', 'Interventions', 'Actions'], hl: 1, rows: [
         ['Marc B.', role('Admin', 'warn'), role('Actif', 'ok'), 'Global · Hors-site', '12', '☏ ✉ ⋯'],

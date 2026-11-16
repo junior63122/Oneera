@@ -13,12 +13,12 @@
 body{margin:0}
 </style>
 </helmet>
-<div style="width: 1440px; min-height: 1100px"><dc-import name="DashPage" spec="{{spec}}" hint-size="1440px,1100px"></dc-import></div>
+<div style="width: 1440px; min-height: 900px"><dc-import name="DashPage" spec="{{spec}}" hint-size="1440px,900px"></dc-import></div>
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1100}}'>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":900}}'>
 class Component extends DCLogic {
   renderVals() {
-    return { spec: { active: 'none', h: 1100, title: 'Paramètres du système', sub: 'Sécurité de la plateforme, qualité de localisation et règles de gouvernance', actions: ['Annuler', 'Enregistrer'], rows: [
+    return { spec: { active: 'none', h: 900, title: 'Paramètres du système', sub: 'Sécurité de la plateforme, qualité de localisation et règles de gouvernance', actions: ['Annuler', 'Enregistrer'], rows: [
       [{ t: 'toggles', w: 1, title: 'Sécurité de la plateforme', items: [{ l: 'Authentification 2FA obligatoire' }, { l: 'Expiration des sessions après 12 h' }, { l: 'Alerte en cas de connexion inhabituelle' }] },
        { t: 'list', w: 1, title: 'Sessions actives', items: [{ t: 'Chrome · Paris, FR', s: 'Session actuelle', tone: 'ok' }, { t: 'iPhone 15 · Londres, UK', s: 'Il y a 2 h', tag: 'Révoquer', tone: 'danger' }] }],
       [{ t: 'hbars', w: 1, title: 'Qualité de localisation (remplace la « balance GPS / balise »)', items: [

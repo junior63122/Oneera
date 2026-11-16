@@ -13,12 +13,12 @@
 body{margin:0}
 </style>
 </helmet>
-<div style="width: 1440px; min-height: 1100px"><dc-import name="DashPage" spec="{{spec}}" hint-size="1440px,1100px"></dc-import></div>
+<div style="width: 1440px; min-height: 900px"><dc-import name="DashPage" spec="{{spec}}" hint-size="1440px,900px"></dc-import></div>
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1100}}'>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":900}}'>
 class Component extends DCLogic {
   renderVals() {
-    return { spec: { scope: 'global', active: 'Système social', h: 1100, title: 'Modération des signalements', sub: 'Signalements entre utilisateurs : messages, profils, photos', actions: ['⚙ Règles de modération'], rows: [
+    return { spec: { scope: 'global', active: 'Système social', h: 900, title: 'Modération des signalements', sub: 'Signalements entre utilisateurs : messages, profils, photos', actions: ['⚙ Règles de modération'], rows: [
       [{ t: 'kpi', l: 'Signalements', v: '5', c: '#7C5BD6' }, { t: 'kpi', l: 'Critiques', v: '3', c: '#1A1C2B' }, { t: 'kpi', l: 'Automatiques', v: '2', c: '#D98A00', s: 'filtre anti-spam' }, { t: 'kpi', l: 'Traités aujourd’hui', v: '45', c: '#0B5A50', tint: '#E7F5EF' }],
       [{ t: 'list', w: 1, title: 'Signalements actifs', link: 'Filtrer', items: [
         { t: 'Message signalé #02 · critique', s: 'Contenu suspect envoyé à 3 utilisateurs · signalé par @lina', tag: 'Critique', tone: 'danger', bg: true },

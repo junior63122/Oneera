@@ -28,7 +28,7 @@ class Component extends DCLogic {
     return {
       screens: [
         { n: 'V2-1 · Activer la localisation', spec: { bg: 'sky', blocks: [
-          { t: 'avatar', h: 260 },
+          { t: 'pic', img: 'trio', h: 250 },
           { t: 'h', text: 'Retrouvez vos amis, même à l’intérieur' },
           { t: 'card', text: '✓ Personne ne vous voit tant que vous ne partagez pas.\n✓ L’établissement ne voit que des statistiques anonymes.\n✓ Vous coupez tout en un geste.' },
           { t: 'note', tone: 'warn', text: 'Choisissez « Toujours » à l’étape suivante pour que vos amis vous voient même écran éteint.' },
@@ -38,7 +38,7 @@ class Component extends DCLogic {
         ] } },
         { n: 'V2-2 · Rejoindre un ami', spec: { bg: 'sky', blocks: [
           { t: 'top', title: 'Rejoindre Léa', back: true },
-          { t: 'map', h: 360, people: true },
+          { t: 'map', h: 360, img: 'bdf', pos: '38% 42%', pins: [{ k: 'me', x: 46, y: 50, txt: 'Moi', r: 26 }, { k: 'friend', x: 66, y: 68, head: 'lea_h', label: 'Léa' }] },
           { t: 'stats', cols: 2, items: [{ l: 'Distance', v: '≈ 20 m', s: 'précision ± 3 m' }, { l: 'À pied', v: '≈ 30 s', s: 'position à l’instant' }] },
           { t: 'rows', items: [{ av: '1', t: 'Traversez le dancefloor vers le bar' }, { av: '2', t: 'Passez la porte du bar' }, { av: '3', t: 'Léa est près du comptoir' }] },
           { t: 'btn', text: '« J’arrive »' }
@@ -56,7 +56,7 @@ class Component extends DCLogic {
         { n: 'V2-4 · Signaler un problème', spec: { bg: 'light', blocks: [
           { t: 'top', title: 'Créer un signalement', back: true },
           { t: 'note', tone: 'danger', text: 'Urgence vitale : appelez le 112. ONEERA alerte l’équipe du lieu mais ne remplace pas les secours.' },
-          { t: 'tiles', cols: 3, h: 86, active: 0, items: [{ l: 'Médical', ico: '+', bg: '#FDE7E8', fg: '#C2282F' }, { l: 'Danger', ico: '!', bg: '#FFF0DC', fg: '#9A5B00' }, { l: 'Affluence', ico: '≡', bg: '#EDE7FB', fg: '#6A3FA8' }, { l: 'Technique', ico: '⚙', bg: '#E4EEFB', fg: '#2C5BA8' }, { l: 'Objet perdu', ico: '?', bg: '#DDF4EF', fg: '#0B5A50' }, { l: 'Autre', ico: '…' }] },
+          { t: 'tiles', cols: 3, h: 86, active: 0, items: [{ l: 'Médical', img: 'infirmerie' }, { l: 'Danger', img: 'securite' }, { l: 'Affluence', ico: '≡', bg: '#EDE7FB', fg: '#6A3FA8' }, { l: 'Technique', ico: '⚙', bg: '#E4EEFB', fg: '#2C5BA8' }, { l: 'Objet perdu', img: 'objets' }, { l: 'Autre', ico: '…' }] },
           { t: 'rows', items: [{ av: '⌖', t: 'Bar · rez-de-chaussée', s: 'Votre position · précision ± 3 m', btn: 'Modifier', btnAlt: true }] },
           { t: 'input', label: 'Précisions (facultatif)', value: 'Ex. : une personne a fait un malaise', ph: true, tall: true },
           { t: 'spacer' },
@@ -66,7 +66,7 @@ class Component extends DCLogic {
           { t: 'top', title: 'Alertes', big: true },
           { t: 'chips', items: ['Toutes', 'Assignées à moi', 'Ma zone'] },
           { t: 'rows', items: [
-            { av: '+', avBg: '#FDE7E8', avFg: '#C2282F', t: 'Malaise · Bar', s: 'Critique · il y a 2 min · à 25 m', btn: 'Prendre' },
+            { img: 'sante', t: 'Malaise · Bar', s: 'Critique · il y a 2 min · à 25 m', btn: 'Prendre' },
             { av: '≡', avBg: '#FFF4E0', avFg: '#8A5300', t: 'Saturation · Zone A', s: 'Automatique · confiance moyenne', btn: 'Voir', btnAlt: true },
             { av: '?', t: 'Objet perdu · Terrasse', s: 'Info · il y a 14 min', btn: 'Voir', btnAlt: true }
           ] },

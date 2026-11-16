@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Dashboard — Artistes</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div style="width: 1440px; min-height: 900px"><dc-import name="DashPage" spec="{{spec}}" hint-size="1440px,900px"></dc-import></div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+  renderVals() {
+    var r = function (n, sc, h, st, t, a) { return [n, sc, h, { b: st, tone: t }, a, '⋯']; };
+    return { spec: { active: 'Artistes', h: 900, title: 'Artistes', sub: 'Line-up de l’événement, horaires et affluence estimée devant la scène', actions: ['Importer un line-up', '+ Ajouter un artiste'], rows: [
+      [{ t: 'kpi', l: 'Artistes', v: '14' }, { t: 'kpi', l: 'En cours', v: '[ARTISTE 2]', c: '#0B5A50', s: 'Scène principale · jusqu’à 2 h' }, { t: 'kpi', l: 'Pic devant la scène', v: '≈ 1 850', s: 'estimation · 01 h 20' }, { t: 'kpi', l: 'Retards', v: '1', c: '#D98A00', s: '[ARTISTE 5] · 15 min' }],
+      [{ t: 'table', w: 2, tpl: '1.2fr 1fr 1fr 0.9fr 1fr 0.4fr', cols: ['Artiste', 'Scène', 'Horaire', 'Statut', 'Affluence estimée', ''], hl: 1, rows: [
+        r('[ARTISTE 1]', 'Principale', '23:00 – 00:30', 'Terminé', 'neutral', '≈ 1 200'), r('[ARTISTE 2]', 'Principale', '00:30 – 02:00', 'En cours', 'ok', '≈ 1 850'), r('[ARTISTE 3]', 'Principale', '02:00 – 04:00', 'À venir', 'info', '—'),
+        r('[ARTISTE 4]', 'Club', '23:30 – 01:00', 'Terminé', 'neutral', '≈ 420'), r('[ARTISTE 5]', 'Club', '01:15 – 02:45', 'En retard', 'warn', '—'), r('[ARTISTE 6]', 'Terrasse', '00:00 – 03:00', 'En cours', 'ok', '≈ 260')
+      ] },
+       { t: 'list', w: 1, title: '[ARTISTE 2] · fiche', items: [
+        { t: 'Passage', s: 'Scène principale · 00:30 – 02:00', tone: 'info' },
+        { t: 'Notification aux visiteurs', s: '« Ça commence dans 10 min » · 640 abonnés', tone: 'purple' },
+        { t: 'Affluence', s: 'Estimée à partir des visiteurs qui partagent des stats anonymes (couverture 38 %)', tone: 'warn' },
+        { t: 'Loge et accès', s: 'Badge artiste · accès backstage B', tone: 'neutral' }
+      ] }]
+    ] } };
+  }
+}
+</script>
+</body>
+</html>

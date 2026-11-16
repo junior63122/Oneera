@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>App — Inscription et connexion</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div style="width: 3018px; height: 940px; box-sizing: border-box; background: #E9EBF3; padding: 24px; display: flex; gap: 40px; font-family: Inter, system-ui, sans-serif">
+<sc-for list="{{screens}}" as="s" hint-placeholder-count="7">
+<div style="display: flex; flex-direction: column; gap: 10px; flex-shrink: 0">
+<span style="font: 700 15px Inter, sans-serif; color: #1A1C2B">{{s.n}}</span>
+<div style="width: 390px; height: 844px; border-radius: 36px; overflow: hidden; box-shadow: 0 10px 30px rgba(30,40,90,0.18)"><dc-import name="Screen" spec="{{s.spec}}" hint-size="390px,844px"></dc-import></div>
+</div>
+</sc-for>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":3018,"height":940}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {
+      screens: [
+        { n: 'I-1 · Lancement', spec: { bg: 'sky', blocks: [
+          { t: 'spacer' },
+          { t: 'h', text: 'ONEERA' },
+          { t: 'pic', img: 'trio', h: 330 },
+          { t: 'note', tone: 'info', text: 'Explore. Retrouve. Partage.' },
+          { t: 'spacer' }
+        ] } },
+        { n: 'I-2 · Bienvenue (après le scan du QR)', spec: { bg: 'sky', blocks: [
+          { t: 'pic', img: 'duo', h: 260 },
+          { t: 'h', text: 'Bienvenue au [NOM DU LIEU]' },
+          { t: 'card', text: 'Le plan du lieu en direct, tes amis sur la carte, les infos de la soirée.' },
+          { t: 'spacer' },
+          { t: 'btn', text: ' Continuer avec Apple', kind: 'secondary' },
+          { t: 'btn', text: 'Continuer avec Google', kind: 'secondary' },
+          { t: 'btn', text: 'Recevoir un lien par e-mail', kind: 'secondary' },
+          { t: 'btn', text: 'Voir la carte sans compte', kind: 'link' }
+        ] } },
+        { n: 'I-3 · Lien de connexion par e-mail', spec: { bg: 'light', blocks: [
+          { t: 'top', title: 'Connexion', back: true },
+          { t: 'h', text: 'Ton adresse e-mail' },
+          { t: 'input', label: 'E-mail', value: 'alex@exemple.fr' },
+          { t: 'btn', text: 'Recevoir mon lien' },
+          { t: 'note', tone: 'ok', text: 'Lien envoyé ! Ouvre l’e-mail sur ce téléphone pour te connecter. Pas de mot de passe à retenir.' },
+          { t: 'spacer' },
+          { t: 'note', tone: 'info', text: 'Ton e-mail sert uniquement à te connecter. Il n’est jamais montré aux autres utilisateurs ni à l’établissement.' }
+        ] } },
+        { n: 'I-4 · Mon pseudo', spec: { bg: 'sky', blocks: [
+          { t: 'top', title: 'Ton profil', back: true },
+          { t: 'avatar', h: 260, img: 'moi' },
+          { t: 'input', label: 'Pseudo (visible par tes amis)', value: 'alex' },
+          { t: 'input', label: 'Tranche d’âge (facultatif)', value: 'Choisir ▾', ph: true },
+          { t: 'spacer' },
+          { t: 'btn', text: 'Continuer' },
+          { t: 'note', tone: 'info', text: '2 informations seulement. Tu pourras personnaliser ton avatar plus tard.' }
+        ] } },
+        { n: 'I-5 · Tes choix (RGPD)', spec: { bg: 'light', blocks: [
+          { t: 'top', title: 'Tes choix', back: true },
+          { t: 'note', tone: 'info', text: 'Chaque choix est indépendant et modifiable à tout moment dans Réglages › Autorisations.' },
+          { t: 'rows', items: [
+            { t: 'Partager ma position avec mes amis', s: 'Seulement quand tu l’actives, avec qui tu veux.', toggle: true },
+            { t: 'Statistiques anonymes du lieu', s: 'Aide l’établissement à fluidifier les zones (jamais ton identité).', toggle: true },
+            { t: 'Notifications', s: 'Alertes de sécurité, amis, programmation.', toggle: true },
+            { t: 'Offres des partenaires', s: 'Désactivé par défaut.', toggle: false }
+          ] },
+          { t: 'rows', items: [{ t: 'J’accepte les Conditions d’utilisation', s: 'Lire les CGU · Politique de confidentialité', radio: true }] },
+          { t: 'spacer' },
+          { t: 'btn', text: 'C’est parti' }
+        ] } },
+        { n: 'I-6 · Crée ton avatar', spec: { bg: 'sky', blocks: [
+          { t: 'spacer' },
+          { t: 'pic', img: 'groupe', h: 230 },
+          { t: 'h', text: 'Crée ton propre avatar !' },
+          { t: 'card', text: 'Personnalise ton avatar avant d’aller t’amuser : c’est lui que tes amis verront sur la carte.' },
+          { t: 'btn', text: 'Personnaliser' },
+          { t: 'btn', text: 'Une prochaine fois', kind: 'link' },
+          { t: 'spacer' }
+        ] } },
+        { n: 'I-7 · Scanner un QR code', spec: { bg: 'white', blocks: [
+          { t: 'top', title: 'Scanner', back: true },
+          { t: 'qr' },
+          { t: 'note', tone: 'info', text: 'Scanne le QR code à l’entrée du lieu, sur un flyer ou sur le téléphone d’un ami.' },
+          { t: 'tiles', cols: 2, h: 80, items: [{ l: 'Rejoindre un lieu', img: 'entree' }, { l: 'Ajouter un ami', img: 'rdv' }] }
+        ] } }
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>
