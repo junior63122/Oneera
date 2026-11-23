@@ -311,3 +311,28 @@ img[src*="a/ic/"]{object-fit:contain;aspect-ratio:1/1;height:auto}
   #dash .dmenu{display:flex!important}
 }
 #dash .dmenu{display:none}
+/* ---------- thème sombre de l'app (lisible en club, moins éblouissant) ---------- */
+#screen.night{background:#0F1118;color:#ECEEF6}
+#screen.night .scr{background:#0F1118;color:#ECEEF6}
+#screen.night .scr.sky{background:linear-gradient(180deg,#1B1838 0%,#2A1F4A 60%,#3A2350 100%)}
+#screen.night .scr.white{background:#141722}
+#screen.night .card,#screen.night .list,#screen.night .stat,#screen.night .sheet,#screen.night .inp,#screen.night .chip,#screen.night .rb,#screen.night .mini,#screen.night .evbar,#screen.night .ctrls .stack,#screen.night .nav .bar,#screen.night .nav .me,#screen.night .avpanel,#screen.night .items button,#screen.night .subtabs button,#screen.night .rail button,#screen.night .btn.white,#screen.night .suggest{background:#1E2230;color:#ECEEF6;border-color:#2E3242}
+#screen.night .row{border-color:#2A2E3D}
+#screen.night .seg{background:#262A39}#screen.night .seg button.on{background:#3A3F55;color:#fff}
+#screen.night .chip.on,#screen.night .subtabs button.on{background:var(--pri);color:#fff}
+#screen.night .small,#screen.night .row .s,#screen.night .lead,#screen.night .stat span{color:#A9AEC4}
+#screen.night .tiny,#screen.night .sec{color:#8E93AB}
+#screen.night .mk .lbl,#screen.night .mk .fr .name{background:#1E2230;color:#ECEEF6}
+#screen.night .mk .poi{background:#262A39;border-color:#262A39}
+#screen.night .ico{background:#262A39}
+#screen.night .pill.gray{background:#2A2E3D;color:#C9CDE0}
+#screen.night .map{background:linear-gradient(180deg,#1B1838,#2A1F4A)}
+#screen.night .map img.base{filter:brightness(.62) saturate(1.2) hue-rotate(-10deg)}
+#screen.night .bub.them{background:#1E2230;color:#ECEEF6}
+#screen.night .composer{background:#141722;border-color:#2A2E3D}
+#screen.night .composer .inp{background:#1E2230}
+#screen.night .kp{background:#1A1D28}#screen.night .kp button{background:#2A2E3D;color:#fff;box-shadow:none}
+#screen.night .link{color:#C9CDE0}
+#screen.night .h1,#screen.night .h2,#screen.night .row .t,#screen.night .topbar h1{color:#ECEEF6}
+#screen.night [style*="#E4F6EA"],#screen.night [style*="#DCE5FF"],#screen.night [style*="#FFF7E8"],#screen.night [style*="#F3F5FB"],#screen.night [style*="#EEF2FF"],#screen.night [style*="#FDECEC"],#screen.night [style*="#F1EBFE"],#screen.night [style*="#FFF4D6"]{color:#1C1F2A}
+#screen.night [style*="#E4F6EA"] *,#screen.night [style*="#DCE5FF"] *,#screen.night [style*="#FFF7E8"] *,#screen.night [style*="#F3F5FB"] *,#screen.night [style*="#EEF2FF"] *,#screen.night [style*="#FDECEC"] *,#screen.night [style*="#F1EBFE"] *,#screen.night [style*="#FFF4D6"] *{color:#1C1F2A}

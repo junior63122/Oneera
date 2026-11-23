@@ -1,7 +1,7 @@
 // ===== Moteur de carte : pan, pinch, molette, inertie, bornes, marqueurs, clusters, itinéraire =====
 class MapView {
   constructor(host, opts = {}) {
-    this.host = host; this.W = opts.w || 3000; this.H = opts.h || 1891; this.src = opts.src || A + 'bdf_fest.webp';
+    this.host = host; this.W = opts.w || VENUE.map.w; this.H = opts.h || VENUE.map.h; this.src = opts.src || VENUE.map.src;
     this.minS = 0; this.maxS = opts.maxS || 1.6; this.markers = new Map(); this.getMarkers = opts.markers || (() => []);
     this.onLong = opts.onLong; this.onTapEmpty = opts.onTapEmpty; this.routePts = null; this.cluster = opts.cluster !== false;
     host.classList.add('map'); host.innerHTML = `<div class="world"><img class="base" alt="Plan illustré du site" draggable="false" width="${this.W}" height="${this.H}" src="${this.src}"></div><svg class="ovs"></svg><div class="ov"></div>`;

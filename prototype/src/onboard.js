@@ -72,62 +72,8 @@ V.otp = (num) => {
   $('[data-back]', el).onclick = V.phone; show();
 };
 
-// Choix rapide d'avatar (1 touche) + accès à l'éditeur complet
-V.avatarQuick = () => {
-  const el = mount(`${statusBar()}<div style="padding:4px 18px 0"><div class="tiny" style="font-weight:700;color:var(--pri)">ÉTAPE 2 SUR 4</div><h1 class="h2">Choisis ton avatar</h1><p class="small" style="margin:2px 0 0">C’est lui que tes amis verront sur la carte. Tu pourras le peaufiner plus tard.</p></div>
-    <div class="avstage" style="min-height:300px">${clouds()}<div class="pedestal" style="bottom:16px"></div><img class="avimg" id="big" src="${AVB(ST.me.base)}" alt="Ton avatar" style="height:270px;margin-bottom:34px"></div>
-    <div class="avpanel" style="gap:10px;padding-bottom:24px"><div class="items" id="bases" style="grid-template-columns:repeat(6,1fr)">${BASES.map(b => `<button class="base ${b.k === ST.me.base ? 'on' : ''}" data-b="${b.k}" aria-label="${b.n}" style="aspect-ratio:.62;background:linear-gradient(#EEF2FF,#fff)"><img src="${AVB(b.k)}" alt=""></button>`).join('')}<button id="dice" aria-label="Au hasard" style="aspect-ratio:.62;display:flex;align-items:center;justify-content:center;color:var(--pri)">${I.dice}</button></div>
-    <button class="btn" id="go">C’est moi !</button><button class="link" id="edit" style="min-height:30px">Personnaliser en détail</button></div>`, 'sky');
-  const pick = k => { ST.me.base = k; $('#big', el).src = AVB(k); $$('#bases .base', el).forEach(b => b.classList.toggle('on', b.dataset.b === k)); };
-  $('#bases', el).onclick = e => { const b = e.target.closest('[data-b]'); if (b) pick(b.dataset.b); };
-  $('#dice', el).onclick = () => pick(BASES[Math.floor(Math.random() * BASES.length)].k);
-  $('#edit', el).onclick = () => V.avatarEditor(() => { markStep('avatar'); V.perms(); });
-  $('#go', el).onclick = () => { markStep('avatar'); V.perms(); };
-};
 const clouds = () => [[-40, 40, 220], [180, 10, 260], [60, 170, 200], [250, 220, 180], [-60, 300, 240]].map(([x, y, s]) => `<div class="cloud" style="left:${x}px;top:${y}px;width:${s}px;height:${s * .55}px"></div>`).join('');
 
-// Éditeur d'avatar complet (structure du Figma : Corps / Habits / Accessoires)
-V.avatarEditor = (onDone) => {
-  let cat = 'body', sub = 'skin'; const prev = { ...ST.me };
-  const SUBS = { body: [['skin', I.body, 'Peau'], ['hair', I.scissors, 'Coiffure'], ['face', I.smile, 'Visage']], clothes: [['top', I.shirt, 'Haut'], ['look', I.hanger, 'Tenue']], acc: [['glasses', I.glasses, 'Lunettes'], ['hat', I.hat, 'Chapeau'], ['jewel', I.ring, 'Bijoux']] };
-  const zoomFor = () => ({ hair: 'scale(1.8)', face: 'scale(2)', glasses: 'scale(2)', hat: 'scale(1.8)', top: 'scale(1.3)', jewel: 'scale(1.3)' }[sub] || 'none');
-  const originFor = () => ({ top: '50% 30%', jewel: '50% 40%' }[sub] || '50% 4%');
-  const el = mount(`<div class="avstage" style="position:absolute;inset:0;align-items:flex-start;padding-top:150px">${clouds()}<div class="pedestal" id="ped" style="top:520px"></div><img class="avimg" id="big" src="${AVB(ST.me.base)}" alt="Ton avatar" style="height:390px;transform-origin:50% 0"></div>
-    ${statusBar()}<div class="topbar" style="position:relative;z-index:6"><button class="rb" id="back" aria-label="Annuler">${I.back}</button><div style="flex:1;display:flex;justify-content:center"><div class="mini" style="width:auto;padding:6px 10px;font-size:12px;font-weight:650;gap:6px"><img src="${HEAD('rousse')}" style="width:22px;height:22px;border-radius:11px" alt="">Invite tes amis pour qu’ils aient eux aussi leur avatar !</div></div><button class="rb" id="ok" aria-label="Valider" style="color:var(--pri)">${I.check}</button></div>
-    <div class="rail">${[['body', I.user, 'Corps'], ['clothes', I.hanger, 'Habits'], ['acc', I.glasses, 'Accessoires']].map(c => `<button data-c="${c[0]}" aria-label="${c[2]}">${c[1]}</button>`).join('')}<div style="height:20px"></div><button id="dice" aria-label="Au hasard">${I.dice}</button><button id="reset" aria-label="Réinitialiser">${I.reset}</button></div>
-    <div style="flex:1"></div><div class="avpanel" id="avp" style="max-height:360px;overflow:auto"></div>`, 'sky');
-  const big = $('#big', el), panel = $('#avp', el);
-  const draw = () => {
-    $$('.rail [data-c]', el).forEach(b => b.classList.toggle('on', b.dataset.c === cat));
-    big.src = AVB(ST.me.base); big.style.transformOrigin = originFor(); big.style.transform = zoomFor();
-    let content = '';
-    if (sub === 'skin') content = `<div class="swatches">${SKIN.map((c, i) => `<button data-skin="${i}" class="${ST.me.skin === i ? 'on' : ''}" style="background:${c}" aria-label="Teinte ${i + 1}"></button>`).join('')}</div><div class="sec">Silhouettes avec cette teinte</div>`;
-    if (['skin', 'hair', 'face', 'look'].includes(sub)) {
-      let list = BASES; if (sub === 'skin') { list = BASES.filter(b => Math.abs(b.tone - ST.me.skin) <= 1); if (!list.length) list = BASES; }
-      content += `<div class="items">${list.map(b => `<button class="base ${b.k === ST.me.base ? 'on' : ''}" data-b="${b.k}" style="aspect-ratio:${sub === 'hair' || sub === 'face' ? '1' : '.7'};background:linear-gradient(#EEF2FF,#fff)"><img src="${sub === 'hair' || sub === 'face' ? HEAD(b.k) : AVB(b.k)}" alt=""><span>${sub === 'hair' ? b.hair : sub === 'look' ? b.st : b.n}</span></button>`).join('')}</div>`;
-    }
-    if (sub === 'top') content = `<div class="swatches">${TOP_COLORS.map((c, i) => `<button data-tc="${i}" class="${ST.me.topColor === i ? 'on' : ''}" style="background:${c}" aria-label="Couleur ${i + 1}"></button>`).join('')}</div><div class="items">${TOPS.map(t => `<button data-top="${t.k}" class="${ST.me.top === t.k ? 'on' : ''}"><img src="${A}it/${t.k}.webp" alt="" style="filter:hue-rotate(${[0, 25, 50, 85, 180, 215, 260][ST.me.topColor]}deg)"><span>${t.n}</span></button>`).join('')}</div>`;
-    if (sub === 'glasses') content = `<div class="items" style="grid-template-columns:repeat(3,1fr)"><button data-gl="" class="${!ST.me.glasses ? 'on' : ''}" style="aspect-ratio:1;align-items:center;font-weight:700;color:var(--ink2)">Aucune</button>${GLASSES.map(g => `<button data-gl="${g.k}" class="${ST.me.glasses === g.k ? 'on' : ''}" style="aspect-ratio:1"><img src="${A}it/${g.k}.webp" alt=""><span>${g.n}</span></button>`).join('')}</div>`;
-    if (sub === 'hat' || sub === 'jewel') content = `<div class="card" style="text-align:center;align-items:center"><img src="${IC(sub === 'hat' ? 'merchandise' : 'sunglasses')}" alt="" style="width:64px"><b>${sub === 'hat' ? 'Chapeaux' : 'Bijoux'} : bientôt</b><span class="small">Les modèles 3D de cette catégorie seront livrés avec la V2 de l’éditeur.</span></div>`;
-    const proto = ['top', 'glasses'].includes(sub) ? `<div class="small" style="text-align:center;background:#FFF7E8;border-radius:10px;padding:8px">Aperçu indisponible dans ce prototype : la pièce est enregistrée mais ne s’affiche pas encore sur l’avatar (moteur 3D de la V2).</div>` : '';
-    panel.innerHTML = `<div class="subtabs">${SUBS[cat].map(s => `<button data-s="${s[0]}" class="${sub === s[0] ? 'on' : ''}" aria-label="${s[2]}">${s[1]}</button>`).join('')}</div>${content}${proto}`;
-  };
-  el.addEventListener('click', e => {
-    const t = e.target.closest('button'); if (!t) return;
-    if (t.dataset.c) { cat = t.dataset.c; sub = SUBS[cat][0][0]; draw(); }
-    else if (t.dataset.s) { sub = t.dataset.s; draw(); }
-    else if (t.dataset.skin !== undefined) { ST.me.skin = +t.dataset.skin; const m = BASES.filter(b => Math.abs(b.tone - ST.me.skin) <= 1); if (m.length && !m.some(b => b.k === ST.me.base)) ST.me.base = m[0].k; draw(); }
-    else if (t.dataset.b) { ST.me.base = t.dataset.b; draw(); }
-    else if (t.dataset.tc !== undefined) { ST.me.topColor = +t.dataset.tc; draw(); }
-    else if (t.dataset.top) { ST.me.top = t.dataset.top; draw(); }
-    else if (t.dataset.gl !== undefined) { ST.me.glasses = t.dataset.gl || null; draw(); }
-    else if (t.id === 'dice') { ST.me.base = BASES[Math.floor(Math.random() * BASES.length)].k; ST.me.topColor = Math.floor(Math.random() * 7); draw(); }
-    else if (t.id === 'reset') { Object.assign(ST.me, { base: 'lins', skin: 1, top: null, glasses: null, topColor: 0 }); draw(); }
-    else if (t.id === 'back') { Object.assign(ST.me, prev); onDone ? onDone() : V.settings(); }
-    else if (t.id === 'ok') { emit(); if (!onDone) toast(`<img src="${meHead()}" alt="">Avatar enregistré`); onDone ? onDone() : V.settings(); }
-  });
-  draw();
-};
 
 const isAnd = () => ST.os === 'android';
 V.store = () => {
@@ -204,7 +150,7 @@ V.addFriends = (onboarding) => {
   const renderMatches = () => {
     $('#empty', el)?.remove(); const here = CONTACTS_ON.filter(c => !c.away), away = CONTACTS_ON.filter(c => c.away);
     const st = id => ST.friends.includes(id) ? 'ami' : ST.sent?.includes(id) ? 'sent' : '';
-    const row = c => `<div class="row"><img class="av" src="${HEAD(c.h)}" alt=""><div class="grow"><div class="t">${esc(c.n)}</div><div class="s">${c.away ? 'Pas à cet événement' : '<span style="color:#0B7A3B;font-weight:700">● Ici ce soir</span>'}</div></div>${st(c.id) === 'ami' ? '<span class="pill ok">Ami ✓</span>' : st(c.id) === 'sent' ? '<span class="pill gray">En attente</span>' : `<button class="btn sm" data-add="${c.id}">Ajouter</button>`}</div>`;
+    const row = c => `<div class="row"><img class="av" src="${fHead(c.id)}" alt=""><div class="grow"><div class="t">${esc(c.n)}</div><div class="s">${c.away ? 'Pas à cet événement' : '<span style="color:#0B7A3B;font-weight:700">● Ici ce soir</span>'}</div></div>${st(c.id) === 'ami' ? '<span class="pill ok">Ami ✓</span>' : st(c.id) === 'sent' ? '<span class="pill gray">En attente</span>' : `<button class="btn sm" data-add="${c.id}">Ajouter</button>`}</div>`;
     res.innerHTML = `<div class="sec" style="margin:0">${here.length} de tes contacts sont ici ce soir</div><button class="btn sm" id="addHere" style="width:100%" ${here.every(c => st(c.id)) ? 'disabled' : ''}>Ajouter les ${here.length} qui sont ici</button>
       <div class="tiny">Ils verront ta position pendant l’événement, et toi la leur quand ils acceptent.</div>
       <div class="list">${here.map(row).join('')}</div><div class="sec" style="margin:0">Ont ONEERA, pas ici ce soir</div><div class="list">${away.map(row).join('')}</div>
@@ -214,7 +160,7 @@ V.addFriends = (onboarding) => {
   const sendReq = async ids => {
     ST.sent = [...new Set([...(ST.sent || []), ...ids])]; renderMatches(); await askNotif();
     ids.forEach((id, i) => { const c = CONTACTS_ON.find(x => x.id === id); if (!c || c.away) return;
-      setTimeout(() => { if (!ST.friends.includes(id)) { ST.friends.push(id); emit(); toast(`<img src="${HEAD(c.h)}" alt="">${esc(c.n.split(' ')[0])} a accepté`); if (document.body.contains(res)) renderMatches(); } }, 4000 + i * 3500); });
+      setTimeout(() => { if (!ST.friends.includes(id)) { ST.friends.push(id); emit(); toast(`<img src="${fHead(c.id)}" alt="">${esc(c.n.split(' ')[0])} a accepté`); if (document.body.contains(res)) renderMatches(); } }, 4000 + i * 3500); });
   };
   res.addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return;
     if (b.dataset.add) sendReq([b.dataset.add]);
@@ -222,7 +168,7 @@ V.addFriends = (onboarding) => {
     if (b.id === 'inv') V.shareSheet('Rejoins-moi au Bal des Fous 👉 oneera.app/i/alexm (la carte s’ouvre sans installer)'); });
   $('#band', el).onclick = () => { V.shareSheet('On se retrouve sur la carte du Bal des Fous 👉 oneera.app/b/bande-alex (ajout automatique)', async () => {
     await askNotif(); toast('Lien envoyé dans « La bande du Bal »');
-    ['lea', 'tom', 'ines'].forEach((id, i) => setTimeout(() => { if (!ST.friends.includes(id)) { ST.friends.push(id); emit(); const c = CONTACTS_ON.find(x => x.id === id); toast(`<img src="${HEAD(c.h)}" alt="">${c.n.split(' ')[0]} a rejoint ta bande`); if (document.body.contains(res)) goLabel(); } }, 2500 + i * 2500)); }); };
+    ['lea', 'tom', 'ines'].forEach((id, i) => setTimeout(() => { if (!ST.friends.includes(id)) { ST.friends.push(id); emit(); const c = CONTACTS_ON.find(x => x.id === id); toast(`<img src="${fHead(c.id)}" alt="">${c.n.split(' ')[0]} a rejoint ta bande`); if (document.body.contains(res)) goLabel(); } }, 2500 + i * 2500)); }); };
   $('#contacts', el).onclick = async () => {
     if (ST.perms.contacts == null) {
       const v = await sysAlert(isAnd() ? { title: 'Autoriser ONEERA à accéder à vos contacts ?', text: '', buttons: [{ t: 'Autoriser', v: 'full', b: 1 }, { t: 'Ne pas autoriser', v: null }] } : { title: '« ONEERA » souhaite accéder à vos contacts', text: 'Pour te montrer quels amis utilisent déjà ONEERA. Les numéros sont comparés de façon sécurisée et ne sont jamais conservés.', buttons: [{ t: 'Autoriser l’accès complet', v: 'full', b: 1 }, { t: 'Sélectionner des contacts…', v: 'some' }, { t: 'Ne pas autoriser', v: null }] });
@@ -242,7 +188,7 @@ V.qrFriend = () => {
     $('#qv', sb).innerHTML = v === 'me' ? `<div style="display:flex;flex-direction:column;align-items:center;gap:10px;padding:8px"><div class="qr"><canvas id="qc"></canvas></div><b>@${esc(ST.me.pseudo)}</b><span class="small" style="text-align:center">Ton ami scanne ce code avec son appareil photo : vous êtes amis tout de suite, sans demande à accepter.</span></div>`
       : `<div style="height:300px;border-radius:20px;background:#111;position:relative;display:flex;align-items:center;justify-content:center"><div style="width:190px;height:190px;border:3px solid #fff;border-radius:22px;opacity:.85"></div><span style="position:absolute;bottom:14px;color:#fff;font-size:13px">Vise le code de ton ami</span></div><button class="btn" id="fake">Simuler : scanner le code de Chloé</button>`;
     if (v === 'me') drawQR($('#qc', sb), ST.me.pseudo);
-    const f = $('#fake', sb); if (f) f.onclick = () => { if (!ST.friends.includes('chloe')) ST.friends.push('chloe'); emit(); closeSheet(); toast(`<img src="${HEAD('short')}" alt="">Chloé et toi êtes amis`); };
+    const f = $('#fake', sb); if (f) f.onclick = () => { if (!ST.friends.includes('chloe')) ST.friends.push('chloe'); emit(); closeSheet(); toast(`<img src="${fHead('chloe')}" alt="">Chloé et toi êtes amis`); };
   };
   $('#sg', sb).onclick = e => { const b = e.target.closest('[data-v]'); if (b) draw(b.dataset.v); }; draw('me');
 };
@@ -250,7 +196,7 @@ V.searchPseudo = () => {
   const sb = openSheet(`<h2 class="h2">Ajouter par pseudo</h2><input class="inp" id="q" placeholder="@pseudo" autocomplete="off"><div id="r" class="list"></div>`);
   const q = $('#q', sb); q.focus();
   q.oninput = () => { const v = q.value.toLowerCase().replace('@', ''); const m = CONTACTS_ON.concat([{ id: 'nathan', n: 'Nathan', h: 'group_20' }]).filter(c => v && c.n.toLowerCase().includes(v));
-    $('#r', sb).innerHTML = m.map(c => `<div class="row"><img class="av" src="${HEAD(c.h)}" alt=""><div class="grow"><div class="t">${esc(c.n)}</div><div class="s">@${c.id}</div></div><button class="btn sm" data-a="${c.id}">${ST.friends.includes(c.id) ? 'Ami' : 'Ajouter'}</button></div>`).join('') || (v ? '<div class="row"><span class="small">Aucun résultat</span></div>' : ''); };
+    $('#r', sb).innerHTML = m.map(c => `<div class="row"><img class="av" src="${fHead(c.id)}" alt=""><div class="grow"><div class="t">${esc(c.n)}</div><div class="s">@${c.id}</div></div><button class="btn sm" data-a="${c.id}">${ST.friends.includes(c.id) ? 'Ami' : 'Ajouter'}</button></div>`).join('') || (v ? '<div class="row"><span class="small">Aucun résultat</span></div>' : ''); };
   $('#r', sb).onclick = e => { const b = e.target.closest('[data-a]'); if (!b) return; b.textContent = 'Envoyé'; b.disabled = true; setTimeout(() => { if (!ST.friends.includes(b.dataset.a)) ST.friends.push(b.dataset.a); emit(); toast('Demande acceptée'); }, 1500); };
 };
 V.shareSheet = (text, after) => {

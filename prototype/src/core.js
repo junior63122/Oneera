@@ -67,10 +67,12 @@ document.addEventListener('pointerdown', e => { if (e.target.closest('#screen') 
 function fmtClock(m) { m = ((Math.round(m) % 1440) + 1440) % 1440; return String(Math.floor(m / 60)).padStart(2, '0') + ':' + String(m % 60).padStart(2, '0'); }
 
 // ---------- graphe de circulation (A*) ----------
-const ADJ = {};
-const edgePair = e => e.includes('-') ? e.split('-') : [e[0], e.slice(1)];
-EDGES.forEach(e => { const [a, b] = edgePair(e); (ADJ[a] = ADJ[a] || []).push(b); (ADJ[b] = ADJ[b] || []).push(a); });
-const dist = (a, b) => Math.hypot((a[0] - b[0]) * 1.586, a[1] - b[1]); // l'image est 3000×1891
+function edgePair(e) { return e.includes('-') ? e.split('-') : [e[0], e.slice(1)]; }
+let ADJ = {};
+function buildGraph() { ADJ = {}; EDGES.forEach(e => { const [a, b] = edgePair(e); (ADJ[a] = ADJ[a] || []).push(b); (ADJ[b] = ADJ[b] || []).push(a); }); }
+
+let MAP_ASPECT = 3000 / 1891; // rapport largeur/hauteur du plan courant
+const dist = (a, b) => Math.hypot((a[0] - b[0]) * MAP_ASPECT, a[1] - b[1]);
 function nearestNode(p) { let best = null, bd = 1e9; for (const k in NODES) { const d = dist(NODES[k], p); if (d < bd) { bd = d; best = k; } } return best; }
 function route(from, to) {
   const open = new Set([from]), g = { [from]: 0 }, prev = {};
@@ -83,16 +85,19 @@ function route(from, to) {
   return [from, to];
 }
 function pathLen(nodes) { let L = 0; for (let i = 1; i < nodes.length; i++) L += dist(NODES[nodes[i - 1]], NODES[nodes[i]]); return L; }
-const PCT_TO_M = 4.1; // 1 % de largeur d'image ≈ 4,1 m sur ce plan
+let PCT_TO_M = 4.1; // mètres pour 1 % de largeur du plan courant
 function metersPath(nodes, fromPt) { let L = pathLen(nodes) * PCT_TO_M; if (fromPt) L += dist(fromPt, NODES[nodes[0]]) * PCT_TO_M; return Math.max(5, Math.round(L / 5) * 5); }
 const walkMin = m => Math.max(1, Math.round(m / 45)); // vitesse en foule ≈ 45 m/min
 
 // Positions des amis : déplacement le long des arêtes (jamais à travers un mur)
 const FR_STATE = {};
+function initFriends() { Object.keys(FR_STATE).forEach(k => delete FR_STATE[k]);
 FRIENDS.forEach(f => {
   if (f.loop) FR_STATE[f.id] = { seq: f.loop.match(/R2|[A-Z]/g), i: 0, t: Math.random(), pos: [...NODES[f.loop[0]]] };
-  else FR_STATE[f.id] = { pos: [...NODES[f.at]], stale: true };
+  else FR_STATE[f.id] = { pos: [...NODES[f.at]], stale: !!f.stale };
 });
+}
+buildGraph(); initFriends();
 function stepFriends(dt) {
   FRIENDS.forEach(f => {
     const s = FR_STATE[f.id]; if (!s.seq) return;
@@ -124,7 +129,7 @@ const nowMin = () => ((ST.clock - 20 * 60) + 1440) % 1440;
 const occAt = (z, minute) => { const peak = Math.exp(-Math.pow((minute - 300) / 140, 2)); const w = { fosse: 1, scene: 1.08, vip: .8, tables: .65, bars: .85, rotonde: .45, terrasse: .5 }[z.id] || .6; return Math.round(z.cap * Math.min(.98, (.18 + .8 * peak) * w)); };
 const occNow = z => occAt(z, nowMin());
 const zonesTotal = m => ZONES.reduce((a, z) => a + occAt(z, m), 0);
-const presentAt = m => Math.round(zonesTotal(m) * 1.26); // + circulation et hors zones (≈ 21 % des présents)
+const presentAt = m => Math.round(Math.min(EVENT.capacity * .94, zonesTotal(m) * 1.18)); // + circulation et hors zones, plafonné sous la jauge
 const appUsers = m => Math.round(presentAt(m) * .4);
 const contributors = m => Math.round(appUsers(m) * .68);
 const isLive = l => { const m = nowMin(); return toMin20(l.f) <= m && m < toMin20(l.t); };
@@ -139,7 +144,7 @@ function mount(html, cls = '') {
   if (MV && !/id="mv"/.test(html)) { MV.destroy(); MV = null; clearInterval(V._lbT); }
   const el = document.createElement('div'); el.className = 'scr ' + cls; el.innerHTML = html;
   SCREEN.querySelectorAll('.scr').forEach(s => s.remove());
-  SCREEN.prepend(el);
+  SCREEN.prepend(el); if (typeof applyTheme === 'function') { applyTheme(); applyLang(); }
   return el;
 }
 let sheetEl = null, sheetOnClose = null;

@@ -124,6 +124,7 @@ const STAFF = [
   { id: 'marc', n: 'Marc B.', role: 'Manager', h: 'staff_pro', node: 'E', col: '#E58A00', sector: 'Superviseur nuit', st: 'Dispo' },
   { id: 'lucas', n: 'Lucas M.', role: 'Bar', h: 'staff_pro', node: 'M', col: '#8B5CF6', sector: 'Bar Ouest', st: 'Dispo' }
 ];
+const staffNode = s => NODES[s.node] ? s.node : Object.keys(NODES)[0];
 const staffHead = s => HEAD(s.h === 'secu' ? 'secu' : s.h === 'valide_sante' ? 'valide_sante' : 'staff_pro');
 // Programmation : statut calculé depuis l'heure, jamais codé en dur
 const toMin20 = t => { const [h, m] = t.split(':').map(Number); return ((h * 60 + m) - 20 * 60 + 1440) % 1440 || (h === 20 && m === 0 ? 0 : 480); };
