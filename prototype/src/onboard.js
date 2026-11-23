@@ -30,11 +30,12 @@ V.welcome = () => {
       <p class="lead" style="font-size:14px">Un compte suffit pour toutes les soirées ONEERA. Pas de mot de passe.</p>
       <button class="btn dark" id="apple"><svg width="18" height="20" viewBox="0 0 17 20" fill="#fff"><path d="M14 10.6c0-2.6 2.1-3.8 2.2-3.9-1.2-1.8-3.1-2-3.7-2-1.6-.2-3.1.9-3.9.9-.8 0-2-.9-3.4-.9C3.5 4.8 1.9 5.8 1 7.4c-1.9 3.2-.5 8 1.3 10.6.9 1.3 1.9 2.7 3.3 2.6 1.3-.1 1.8-.8 3.4-.8s2 .8 3.4.8c1.4 0 2.3-1.3 3.2-2.6 1-1.5 1.4-2.9 1.4-3-.1 0-2.8-1.1-3-4.4zM11.5 3c.7-.9 1.2-2 1.1-3.2-1 0-2.3.7-3 1.6-.7.8-1.2 2-1.1 3.1 1.1.1 2.3-.6 3-1.5z"/></svg> Continuer avec Apple</button>
       <div class="grid2"><button class="btn white" id="google"><b style="color:#4285F4">G</b> Google</button><button class="btn white" id="tel">${I.phone.replace('<svg', '<svg width="18"')} Téléphone</button></div>
-      <button class="link" id="guest">Voir la carte sans compte</button>
-      <p class="tiny" style="text-align:center;margin:0">En continuant, tu acceptes les <u data-legal>Conditions d’utilisation</u> et la <u data-legal>Politique de confidentialité</u>.</p>
+      <button class="link" id="guest">Voir la carte sans compte</button><button class="chip" id="lng" style="align-self:center">🌐 ${ST.lang === 'en' ? 'Français' : 'English'}</button>
+      <p class="tiny" style="text-align:center;margin:0">En continuant, tu acceptes les <button class="tiny" data-legal style="text-decoration:underline">Conditions d’utilisation</button> et la <button class="tiny" data-legal style="text-decoration:underline">Politique de confidentialité</button>.</p>
     </div>`);
   $('#apple', el).onclick = V.apple; $('#google', el).onclick = V.google; $('#tel', el).onclick = V.phone;
   if (ST.os === 'android') { const ap = $('#apple', el), go = $('#google', el); ap.className = 'btn white'; go.className = 'btn dark'; go.innerHTML = '<b style="color:#fff">G</b> Continuer avec Google'; ap.innerHTML = ' Apple'; const grid = go.parentElement; ap.replaceWith(go); grid.prepend(ap); }
+  $('#lng', el).onclick = () => { ST.lang = ST.lang === 'en' ? 'fr' : 'en'; V.welcome(); };
   $('#guest', el).onclick = () => { ST.account = 'guest'; V.map(); toast('Mode invité : la carte et les lieux. Crée un compte pour voir tes amis.'); };
   $$('[data-legal]', el).forEach(u => u.onclick = V.legal);
 };
@@ -44,7 +45,7 @@ V.legal = () => openSheet(`<h2 class="h2">Ce que tu acceptes, en clair</h2>
 
 V.apple = () => {
   const sb = openSheet(`<div style="display:flex;justify-content:space-between;align-items:center"><b style="font-size:17px"> Identifiant Apple</b><button class="rb ghost" data-x aria-label="Fermer">${I.close}</button></div>
-    <div style="text-align:center;display:flex;flex-direction:column;gap:6px;align-items:center"><img src="${A}logo.webp" alt="" style="width:60px;height:60px;border-radius:14px"><b style="font-size:20px">Créer un compte ONEERA avec votre identifiant Apple</b></div>
+    <div style="text-align:center;display:flex;flex-direction:column;gap:6px;align-items:center"><img src="${A}logo.webp" alt="" style="width:60px;height:60px;border-radius:14px"><b style="font-size:20px">Crée ton compte ONEERA avec ton identifiant Apple</b></div>
     <div class="list"><div class="row"><div class="ico">${I.user}</div><div class="grow"><div class="t">Alex Moreau</div><div class="s">Nom</div></div></div>
     <button class="row" id="mail"><div class="ico">${I.lock}</div><div class="grow"><div class="t">Masquer mon adresse e-mail</div><div class="s">Transfert vers ton adresse, ONEERA ne la voit pas</div></div>${I.check.replace('<svg', '<svg width="20" style="color:#0A7AFF"')}</button></div>
     <button class="btn dark" id="cont">Continuer</button>`);
@@ -65,7 +66,7 @@ V.otp = (num) => {
     <div class="body"><h1 class="h2">Code reçu par SMS</h1><p class="lead">Envoyé au ${esc(num)}</p>
     <div class="otp" id="otp">${'<span></span>'.repeat(6)}</div><button class="link" style="width:auto" id="rs">Renvoyer le code (0:24)</button></div>
     <div style="background:#D1D4DB;padding:6px 6px 0"><button class="suggest" id="sug" style="width:100%">${ST.os === 'android' ? 'Code détecté automatiquement' : 'Depuis Messages'} · <b>482 913</b></button></div>
-    <div class="kp" id="kp" style="padding-top:6px">${[1, 2, 3, 4, 5, 6, 7, 8, 9, '', 0, '⌫'].map(k => `<button class="${k === '' ? 'n' : ''}" data-k="${k}">${k}</button>`).join('')}</div>`, 'white');
+    <div class="kp" id="kp" style="padding-top:6px">${[1, 2, 3, 4, 5, 6, 7, 8, 9, '', 0, '⌫'].map(k => (k === '' ? '<span class="n" aria-hidden="true"></span>' : `<button data-k="${k}"${k === '⌫' ? ' aria-label="Effacer"' : ''}>${k}</button>`)).join('')}</div>`, 'white');
   let done = false; const show = () => { $$('#otp span', el).forEach((s, i) => { s.textContent = code[i] || ''; s.classList.toggle('f', i === code.length); }); if (code.length === 6 && !done) { done = true; setTimeout(() => { ST.account = 'phone'; markStep('account'); V.profile(); }, 350); } };
   $('#kp', el).onclick = e => { const k = e.target.closest('button')?.dataset.k; if (k === undefined || k === '') return; code = k === '⌫' ? code.slice(0, -1) : (code + k).slice(0, 6); show(); };
   $('#sug', el).onclick = () => { code = '482913'; show(); }; $('#rs', el).onclick = () => toast('Nouveau code envoyé');
@@ -91,7 +92,7 @@ V.phone = () => {
     <div class="body"><h1 class="h2">Ton numéro de téléphone</h1><p class="lead">On t’envoie un code par SMS. Il sert aussi à te retrouver dans les contacts de tes amis.</p>
     <div style="display:flex;gap:8px"><button class="inp" id="cc" style="width:104px;display:flex;align-items:center;gap:6px;flex-shrink:0" aria-label="Pays">🇫🇷 +33 ▾</button><div class="inp" id="num" style="display:flex;align-items:center;color:var(--ink3)">6 12 34 56 78</div></div>
     <button class="btn" id="send" disabled>Recevoir le code</button></div>
-    <div class="kp" id="kp">${[1, 2, 3, 4, 5, 6, 7, 8, 9, '', 0, '⌫'].map(k => `<button class="${k === '' ? 'n' : ''}" data-k="${k}" ${k === '' ? 'tabindex="-1"' : ''}>${k}</button>`).join('')}</div>`, 'white');
+    <div class="kp" id="kp">${[1, 2, 3, 4, 5, 6, 7, 8, 9, '', 0, '⌫'].map(k => (k === '' ? '<span class="n" aria-hidden="true"></span>' : `<button data-k="${k}"${k === '⌫' ? ' aria-label="Effacer"' : ''}>${k}</button>`)).join('')}</div>`, 'white');
   const show = () => { const d = num.replace(/(\d)(?=(\d{2})+$)/g, '$1 '); $('#num', el).textContent = d || '6 12 34 56 78'; $('#num', el).style.color = num ? 'var(--ink)' : 'var(--ink3)'; $('#send', el).disabled = num.length < 8; $('#cc', el).textContent = flag + ' ' + cc + ' ▾'; };
   $('#cc', el).onclick = () => { const sb = openSheet(`<h2 class="h2">Pays</h2><div class="list">${[['🇫🇷', '+33', 'France'], ['🇬🇧', '+44', 'Royaume-Uni'], ['🇮🇹', '+39', 'Italie'], ['🇩🇪', '+49', 'Allemagne'], ['🇪🇸', '+34', 'Espagne'], ['🇺🇸', '+1', 'États-Unis'], ['🇧🇪', '+32', 'Belgique'], ['🇨🇭', '+41', 'Suisse']].map(c => `<button class="row" data-c="${c[1]}" data-f="${c[0]}"><span style="font-size:22px">${c[0]}</span><div class="grow"><div class="t">${c[2]}</div></div><span class="small">${c[1]}</span></button>`).join('')}</div>`); sb.onclick = e => { const r = e.target.closest('[data-c]'); if (r) { cc = r.dataset.c; flag = r.dataset.f; closeSheet(); show(); } }; };
   $('#kp', el).onclick = e => { const k = e.target.closest('button')?.dataset.k; if (k === undefined || k === '') return; num = k === '⌫' ? num.slice(0, -1) : (num + k).slice(0, 11); show(); };
@@ -105,12 +106,12 @@ V.profile = () => {
     <div class="tiny" style="font-weight:700;color:var(--pri)">ÉTAPE 1 SUR 4 · ENVIRON 10 SECONDES</div>
     <h1 class="h2">Comment tes amis te verront</h1>
     <div class="field"><label for="ps">Pseudo (affiché sur la carte, jamais ton e-mail)</label><div style="position:relative"><input class="inp" id="ps" value="${esc(ST.me.pseudo)}" autocomplete="off" maxlength="20"><span id="ok" class="pill ok" style="position:absolute;right:10px;top:13px">Disponible</span></div></div>
-    <button class="row" id="maj" style="background:#fff;border-radius:14px;border:1.5px solid var(--line)"><div class="grow"><div class="t">J’ai 18 ans ou plus</div><div class="s">Événement réservé aux majeurs : coche pour continuer</div></div><span class="tog"></span></button>
+    ${tpl().minAge ? `<button class="row" id="maj" style="background:#fff;border-radius:14px;border:1.5px solid var(--line)"><div class="grow"><div class="t">J’ai ${tpl().minAge} ans ou plus</div><div class="s">Événement réservé aux ${tpl().minAge}+ : active pour continuer</div></div><span class="tog" role="switch" aria-checked="false"></span></button>` : ''}
     <div id="why" class="small" style="color:#9A5800" hidden>Confirme que tu es majeur pour continuer.</div>
     </div><div style="padding:0 18px 30px;background:#fff"><button class="btn" id="go">Continuer</button></div>`, 'white');
-  const ps = $('#ps', el); let major = false;
+  const ps = $('#ps', el); let major = !tpl().minAge;
   ps.oninput = () => { const v = ps.value.trim().toLowerCase(); const taken = ['alex', 'admin', 'oneera'].includes(v); $('#ok', el).className = 'pill ' + (v.length < 3 || taken ? 'bad' : 'ok'); $('#ok', el).textContent = v.length < 3 ? '3 caractères min.' : taken ? 'Déjà pris' : 'Disponible'; };
-  $('#maj', el).onclick = () => { major = !major; $('#maj .tog', el).classList.toggle('on', major); $('#why', el).hidden = true; };
+  $('#maj', el) && ($('#maj', el).onclick = () => { major = !major; $('#maj .tog', el).classList.toggle('on', major); $('#why', el).hidden = true; });
   $('#go', el).onclick = () => { const v = ps.value.trim(); if (v.length < 3 || ['alex', 'admin', 'oneera'].includes(v.toLowerCase())) { ps.focus(); return; } if (!major) { $('#why', el).hidden = false; return; } ST.me.pseudo = v; V.avatarQuick(); };
 };
 // Une seule autorisation au départ : la localisation. Les autres sont demandées au moment où elles servent.
@@ -119,7 +120,7 @@ V.perms = () => {
     <div class="tiny" style="font-weight:700;color:var(--pri)">ÉTAPE 3 SUR 4</div><h1 class="h2">Place-toi sur la carte</h1>
     <div class="card" style="align-items:center;text-align:center;background:linear-gradient(180deg,#EEF2FF,#fff)"><div style="width:100%;height:170px;border-radius:16px;background:url(${A}bdf_fest.webp) 48% 55%/260% auto;position:relative"><span style="position:absolute;left:50%;top:50%;width:18px;height:18px;margin:-9px;border-radius:9px;background:#4F6BF5;border:3px solid #fff;box-shadow:0 0 0 14px rgba(79,107,245,.22)"></span></div>
       <b>Ta position, seulement pendant l’événement</b><span class="small">Pour te voir sur le plan et que tes amis te retrouvent. Arrêt automatique à la sortie du site.</span></div>
-    <div class="small" style="display:flex;gap:8px;align-items:flex-start"><span class="ico" style="width:30px;height:30px">${I.bell.replace('<svg', '<svg width="16"')}</span><span>Les notifications seront demandées au premier ami ajouté, les pas au moment de ton récap. ${isAnd() ? 'Les « appareils à proximité » (balises) seront demandés à l’entrée de la Rotonde.' : 'Sur iPhone, les balises du lieu fonctionnent avec la localisation, sans autorisation Bluetooth.'}</span></div>
+    <button class="link" id="why" style="justify-content:flex-start">Pourquoi une seule autorisation ?</button>
     <button class="row" id="stats" style="background:#F3F5FB;border-radius:16px;align-items:flex-start"><div class="grow"><div class="t">Aider le lieu avec des stats anonymes</div><div class="s">Affluence des bars et des zones, sans ton nom ni ton parcours. Facultatif, désactivé par défaut.</div></div><span class="tog ${ST.perms.stats ? 'on' : ''}" id="tg"></span></button>
     <div id="age" ${ST.perms.stats ? '' : 'hidden'} class="field"><label>Ta tranche d’âge (facultatif, pour ces stats)</label><div class="chips" style="flex-wrap:wrap" id="ages">${['18-24', '25-34', '35-44', '45+'].map(a => `<button class="chip ${ST.me.age === a ? 'on' : ''}" data-a="${a}">${a}</button>`).join('')}</div></div>
     </div><div style="padding:0 18px 30px;background:#fff;display:flex;flex-direction:column;gap:4px"><button class="btn" id="all">Activer ma position</button><button class="link" id="later">Plus tard</button></div>`, 'white');
@@ -127,6 +128,7 @@ V.perms = () => {
   $('#ages', el).onclick = e => { const b = e.target.closest('[data-a]'); if (!b) return; ST.me.age = b.dataset.a; $$('#ages .chip', el).forEach(c => c.classList.toggle('on', c === b)); };
   $('#all', el).onclick = async () => { $('#all', el).disabled = true; ST.perms.loc = await askLocation(); markStep('perms'); V.addFriends(true); };
   $('#later', el).onclick = () => { markStep('perms'); V.addFriends(true); };
+  $('#why', el) && ($('#why', el).onclick = () => openSheet(`<h2 class="h2">Une autorisation à la fois</h2><p class="small">Les notifications sont demandées au premier ami ajouté, les pas au moment de ton récap. ${isAnd() ? 'Les « appareils à proximité » (balises) sont demandés dans les lieux équipés.' : 'Sur iPhone, les balises du lieu fonctionnent avec la localisation.'} ${hasFlag('mesh') ? 'Ici, sans réseau, le Bluetooth sera demandé pour relayer les positions entre téléphones.' : ''}</p>`));
 };
 function askLocation() {
   return isAnd() ? sysAlert({ title: 'Autoriser ONEERA à accéder à la position de cet appareil ?', text: '', map: 1, buttons: [{ t: 'Lorsque vous utilisez l’appli', v: 'app', b: 1 }, { t: 'Uniquement cette fois-ci', v: 'once' }, { t: 'Ne pas autoriser', v: null }] })

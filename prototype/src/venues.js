@@ -1,9 +1,9 @@
 // ===== Lieux : festival, club, club-restaurant (même app, données du lieu chargées à l'ouverture) =====
 const clone = o => JSON.parse(JSON.stringify(o));
 const VENUES = {
-  bdf: { id: 'bdf', kind: 'Festival plein air', name: 'Le Bal des Fous', place: 'Cannes · Port', date: 'Samedi 25 juillet', hours: '20:00 – 04:00', capacity: 6000, map: { src: A + 'bdf_fest.webp', w: 3000, h: 1891 }, m: 4.1, start: [50, 63], zoom: .46,
+  bdf: { id: 'bdf', kind: 'Festival plein air', name: 'Le Bal des Fous', place: 'Cannes · Port', date: 'Samedi 25 juillet', hours: '20:00 – 04:00', capacity: 6000, map: { src: A + 'bdf_fest.webp', w: 3000, h: 1891 }, m: 4.1, start: [50, 63], zoom: .46, open: 0, close: 480, peak: 290,
     data: { NODES: clone(NODES), EDGES: [...EDGES], RESTRICTED: [...RESTRICTED], POIS: clone(POIS), ZONES: clone(ZONES), LINEUP: clone(LINEUP), FRIENDS: clone(FRIENDS) }, stages: [['scene', 'Scène principale'], ['dj', 'Le Cube']], tech: 'GPS en extérieur + 20 balises (Rotonde, entrées)', flows: [['ABCDEFGHI', 380], ['IHGFMN', 190], ['FRFEQ', 140], ['GFEDCU', 95], ['OPO', 12]] },
-  bisous: { id: 'bisous', kind: 'Boîte de nuit', name: 'Bisous Bisous', place: 'Cannes · Palais (niveau club)', date: 'Samedi soir', hours: '23:30 – 05:00', capacity: 650, map: { src: A + 'bisous.webp', w: 1200, h: 800 }, m: .55, start: [44, 58], zoom: .62,
+  bisous: { id: 'bisous', kind: 'Boîte de nuit', name: 'Bisous Bisous', place: 'Cannes · Palais (niveau club)', date: 'Samedi soir', hours: '23:30 – 05:00', capacity: 650, map: { src: A + 'bisous.webp', w: 1200, h: 800 }, m: .55, start: [44, 58], zoom: .62, open: 210, close: 540, peak: 360,
     floors: [['club', 'Club (niveau −1)'], ['casino', 'Casino (RDC)']], tech: '15 balises, aucun GPS (intérieur, 2 niveaux)',
     data: {
       NODES: { A: [14, 66], B: [22, 66], C: [30, 63], D: [37, 58], E: [40, 61], F: [47, 51], G: [45, 45], H: [55, 47], I: [57, 40], J: [62, 41], K: [72, 31], L: [84, 24], M: [24, 74], N: [27, 80], O: [19, 72], P: [61, 55], Q: [66, 58], R: [75, 57] },
@@ -31,7 +31,7 @@ const VENUES = {
         { id: 'tom', n: 'Tom', col: '#F08C00', bat: 81, loop: 'JKLKJ', speed: .02, acc: 3 }, { id: 'yanis', n: 'Yanis', col: '#7C4FD6', bat: 18, loop: 'DEDFD', speed: .02, acc: 2 },
         { id: 'sami', n: 'Sami', col: '#3B6FE0', bat: 54, at: 'A', floor: 'casino', acc: 4 }]
     }, stages: [['scene', 'Cabine DJ']], flows: [['ABCDF', 90], ['FHIJKL', 60], ['DEDF', 45], ['BMN', 20]] },
-  selva: { id: 'selva', kind: 'Club-restaurant', name: 'Selva', place: 'Monaco', date: 'Vendredi soir', hours: '20:00 – 03:00', capacity: 280, map: { src: A + 'selva.webp', w: 1200, h: 873 }, m: .35, start: [58, 70], zoom: .62, tech: '8 balises, aucun GPS',
+  selva: { id: 'selva', kind: 'Club-restaurant', name: 'Selva', place: 'Monaco', date: 'Vendredi soir', hours: '20:00 – 03:00', capacity: 280, map: { src: A + 'selva.webp', w: 1200, h: 873 }, m: .35, start: [58, 70], zoom: .62, open: 0, close: 420, peak: 220, tech: '8 balises, aucun GPS',
     data: {
       NODES: { A: [40, 84], B: [50, 79], C: [60, 71], D: [60, 62], E: [52, 53], F: [67, 58], G: [78, 52], H: [74, 40], I: [60, 37], J: [50, 33], K: [40, 46], L: [25, 50] },
       EDGES: ['AB', 'BC', 'CD', 'DE', 'DF', 'FG', 'GH', 'HI', 'IJ', 'EK', 'KL', 'DI'], RESTRICTED: ['J'],
@@ -66,7 +66,8 @@ STAFF.forEach(s => s.node0 = s.node);
 const setArr = (a, b) => { a.splice(0, a.length, ...clone(b)); };
 const setObj = (o, b) => { Object.keys(o).forEach(k => delete o[k]); Object.assign(o, clone(b)); };
 function setVenue(id) {
-  const v = VENUES[id]; if (!v) return; VENUE = v; const d = v.data;
+  const v = VENUES[id]; if (!v) return; if (typeof walking !== 'undefined' && walking) { tickers.delete(walking); walking = null; } if (typeof MV !== 'undefined' && MV) MV.setRoute(null); if (typeof SCREEN !== 'undefined' && SCREEN) $$('.banner', SCREEN).forEach(b => b.remove());
+  VENUE = v; const d = v.data;
   setObj(NODES, d.NODES); setArr(EDGES, d.EDGES); RESTRICTED.clear(); d.RESTRICTED.forEach(x => RESTRICTED.add(x)); setArr(POIS, d.POIS); setArr(ZONES, d.ZONES); setArr(LINEUP, d.LINEUP); setArr(FRIENDS, d.FRIENDS);
   Object.assign(EVENT, { name: v.name, place: v.place, date: v.date, hours: v.hours, capacity: v.capacity });
   STAFF.forEach(s => s.node = (v.staff && v.staff[s.id]) || s.node0); MAP_ASPECT = v.map.w / v.map.h; PCT_TO_M = v.m; FLOWS.splice(0, FLOWS.length, ...clone(v.flows)); buildGraph(); initFriends(); ST.me.pos = [...v.start]; ST.me.floor = 'club'; ST.rdv = null;

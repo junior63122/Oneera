@@ -22,13 +22,13 @@ const AV = {
   build: [['m', 'Carrure large'], ['f', 'Silhouette fine']],
   pose: [['stand', 'Debout'], ['wave', 'Salut'], ['peace', 'Peace']]
 };
-const AV_DEFAULT = { build: 'm', skin: 2, hair: 'curly', hairC: 2, eyes: 'round', eyeC: 0, brows: 'soft', mouth: 'smile', beard: 'none', outfit: 'none', top: 'tee', topC: 0, bottom: 'jeans', bottomC: 7, shoes: 'sneakers', shoesC: 0, glasses: 'none', glassesC: 1, hat: 'none', hatC: 1, ears: 'none', neck: 'none', extra: ['wristband'], pose: 'stand' };
+const AV_DEFAULT = { build: 'm', skin: 2, hair: 'curly', hairC: 2, beardC: 2, eyes: 'round', eyeC: 0, brows: 'soft', mouth: 'smile', beard: 'none', outfit: 'none', top: 'tee', topC: 0, bottom: 'jeans', bottomC: 7, shoes: 'sneakers', shoesC: 0, glasses: 'none', glassesC: 1, hat: 'none', hatC: 1, ears: 'none', neck: 'none', extra: ['wristband'], pose: 'stand' };
 const avShade = (hex, a) => { const n = parseInt(hex.slice(1), 16); let r = n >> 16, g = (n >> 8) & 255, b = n & 255; const f = v => Math.max(0, Math.min(255, Math.round(a < 0 ? v * (1 + a) : v + (255 - v) * a))); return '#' + [f(r), f(g), f(b)].map(v => v.toString(16).padStart(2, '0')).join(''); };
 let avUid = 0;
 
 function avatarSVG(c0, opt = {}) {
   const c = { ...AV_DEFAULT, ...c0 }, id = 'a' + (++avUid), sk = AV.skin[c.skin], skD = avShade(sk, -.16), hc = AV.hairC[c.hairC], hcD = avShade(hc, -.25), hcL = avShade(hc, .18);
-  const tc = AV.cloth[c.topC], tcD = avShade(tc, -.18), bc = AV.cloth[c.bottomC], bcD = avShade(bc, -.2), sc = AV.cloth[c.shoesC], f = c.build === 'f', ex = new Set(c.extra || []);
+  const tc = AV.cloth[c.outfit !== 'none' && c.outfit ? (c.outfitC ?? c.topC) : c.topC], tcD = avShade(tc, -.18), bdc = AV.hairC[c.beardC ?? c.hairC], bdcD = avShade(bdc, -.25), bc = AV.cloth[c.bottomC], bcD = avShade(bc, -.2), sc = AV.cloth[c.shoesC], f = c.build === 'f', ex = new Set(c.extra || []);
   const out = c.outfit !== 'none';
   const S = []; const add = s => S.push(s);
   // ---- calques arrière : cheveux longs, capuche
@@ -120,6 +120,12 @@ function avatarSVG(c0, opt = {}) {
   add(`<path d="${brow(84)}" stroke="${hcD}" stroke-width="${bw}" fill="none" stroke-linecap="round"/><path d="${brow(116).replace(/M(\d+)/, m => m)}" stroke="${hcD}" stroke-width="${bw}" fill="none" stroke-linecap="round" transform="translate(232 0) scale(-1 1)"/>`.replace(`d="${brow(116)}"`, `d="${brow(116)}"`));
   add(`<path d="M98 104 Q100 112 104 110" stroke="${skD}" stroke-width="2.4" fill="none" stroke-linecap="round"/>`);
   add({
+    none: '', stubble: `<path d="M66 108 C68 132 84 140 100 141 C116 140 132 132 134 108 C128 128 116 134 100 134 C84 134 72 128 66 108 Z" fill="${bdcD}" opacity=".28"/>`,
+    mustache: `<path d="M86 115 Q93 109 100 114 Q107 109 114 115 Q107 118 100 116 Q93 118 86 115 Z" fill="${bdcD}"/>`,
+    goatee: `<path d="M86 115 Q93 109 100 114 Q107 109 114 115 Q107 118 100 116 Q93 118 86 115 Z" fill="${bdcD}"/><path d="M92 128 Q100 144 108 128 Q100 134 92 128 Z" fill="${bdcD}"/>`,
+    beard: `<path d="M62 100 C62 130 80 146 100 146 C120 146 138 130 138 100 C134 118 126 124 116 126 Q100 118 84 126 C74 124 66 118 62 100 Z" fill="${bdcD}"/><path d="M86 115 Q93 109 100 114 Q107 109 114 115 Q107 118 100 116 Q93 118 86 115 Z" fill="${bdcD}"/>`
+  }[c.beard]);
+  add({
     smile: `<path d="M88 120 Q100 130 112 120" stroke="#7A2E2E" stroke-width="3" fill="none" stroke-linecap="round"/>`,
     grin: `<path d="M86 118 Q100 136 114 118 Z" fill="#7A2E2E"/><path d="M89 119 L111 119 L109 123 L91 123 Z" fill="#fff"/>`,
     laugh: `<path d="M86 117 Q100 140 114 117 Z" fill="#7A2E2E"/><path d="M92 129 Q100 134 108 129 Q100 126 92 129 Z" fill="#E86B7A"/>`,
@@ -128,12 +134,7 @@ function avatarSVG(c0, opt = {}) {
     o: `<ellipse cx="100" cy="123" rx="5" ry="6" fill="#7A2E2E"/>`,
     tongue: `<path d="M87 118 Q100 134 113 118 Z" fill="#7A2E2E"/><path d="M94 124 Q100 136 106 124 Z" fill="#E86B7A"/>`
   }[c.mouth]);
-  add({
-    none: '', stubble: `<path d="M66 108 C68 132 84 140 100 141 C116 140 132 132 134 108 C128 128 116 134 100 134 C84 134 72 128 66 108 Z" fill="${hcD}" opacity=".28"/>`,
-    mustache: `<path d="M86 115 Q93 109 100 114 Q107 109 114 115 Q107 118 100 116 Q93 118 86 115 Z" fill="${hcD}"/>`,
-    goatee: `<path d="M86 115 Q93 109 100 114 Q107 109 114 115 Q107 118 100 116 Q93 118 86 115 Z" fill="${hcD}"/><path d="M92 128 Q100 144 108 128 Q100 134 92 128 Z" fill="${hcD}"/>`,
-    beard: `<path d="M62 100 C62 130 80 146 100 146 C120 146 138 130 138 100 C134 118 126 124 116 126 Q100 118 84 126 C74 124 66 118 62 100 Z" fill="${hcD}"/><path d="M86 115 Q93 109 100 114 Q107 109 114 115 Q107 118 100 116 Q93 118 86 115 Z" fill="${hcD}"/>`
-  }[c.beard]);
+
   // ---- cheveux avant
   add({
     bald: '', buzz: `<path d="M61 84 C62 56 80 46 100 46 C120 46 138 56 139 84 C130 70 116 64 100 64 C84 64 70 70 61 84 Z" fill="${hc}" opacity=".85"/>`,
@@ -148,7 +149,7 @@ function avatarSVG(c0, opt = {}) {
     bun: `<circle cx="100" cy="38" r="17" fill="${hc}"/><path d="M58 92 C54 52 82 42 100 42 C120 42 146 54 142 92 C138 72 124 60 100 60 C78 60 62 72 58 92 Z" fill="${hc}"/>`,
     buns: `<circle cx="70" cy="50" r="15" fill="${hc}"/><circle cx="130" cy="50" r="15" fill="${hc}"/><path d="M58 92 C54 52 82 42 100 42 C120 42 146 54 142 92 C138 72 124 60 100 60 C78 60 62 72 58 92 Z" fill="${hc}"/><path d="M100 42 L100 60" stroke="${hcD}" stroke-width="2"/>`,
     braids: `<path d="M58 96 C54 52 82 42 100 42 C120 42 146 54 142 96 C138 72 124 60 100 60 C78 60 62 72 58 96 Z" fill="${hc}"/><path d="M100 42 L100 60" stroke="${hcD}" stroke-width="2"/>`,
-    mohawk: `<path d="M88 66 Q86 30 100 22 Q114 30 112 66 Z" fill="${hc}"/><path d="M61 84 C64 62 80 54 100 54 C120 54 136 62 139 84 C128 72 114 68 100 68 C86 68 72 72 61 84 Z" fill="${hc}" opacity=".35"/>`
+    mohawk: c.hat !== 'none' ? `<path d="M61 84 C64 62 80 54 100 54 C120 54 136 62 139 84 C128 72 114 68 100 68 C86 68 72 72 61 84 Z" fill="${hc}" opacity=".5"/>` : `<path d="M88 66 Q86 30 100 22 Q114 30 112 66 Z" fill="${hc}"/><path d="M61 84 C64 62 80 54 100 54 C120 54 136 62 139 84 C128 72 114 68 100 68 C86 68 72 72 61 84 Z" fill="${hc}" opacity=".35"/>`
   }[c.hair]);
   // ---- lunettes, chapeaux
   const gc = AV.cloth[c.glassesC];
@@ -169,7 +170,7 @@ function avatarSVG(c0, opt = {}) {
     headphones: `<path d="M56 96 C52 40 148 40 144 96" stroke="#1C1F2A" stroke-width="7" fill="none"/><rect x="48" y="86" width="16" height="26" rx="7" fill="${hcol}"/><rect x="136" y="86" width="16" height="26" rx="7" fill="${hcol}"/>`
   }[c.hat]);
   const ped = opt.pedestal ? `<ellipse cx="100" cy="404" rx="76" ry="16" fill="#E792C6"/><ellipse cx="100" cy="400" rx="76" ry="15" fill="url(#${id}ped)"/>` : '';
-  const vb = opt.view === 'head' ? '30 20 140 140' : opt.view === 'torso' ? '20 100 160 170' : opt.view === 'legs' ? '20 220 160 200' : opt.view === 'feet' ? '40 340 120 72' : opt.vb || '0 10 200 412';
+  const vb = opt.view === 'head' ? '22 12 156 156' : opt.view === 'torso' ? '20 100 160 170' : opt.view === 'legs' ? '20 220 160 200' : opt.view === 'feet' ? '40 340 120 72' : opt.vb || '0 10 200 412';
   const defs = `<defs><radialGradient id="${id}s" cx="45%" cy="38%" r="70%"><stop offset="0" stop-color="${avShade(sk, .1)}"/><stop offset="1" stop-color="${sk}"/></radialGradient><radialGradient id="${id}ped" cx="50%" cy="40%" r="60%"><stop offset="0" stop-color="#FBD3EA"/><stop offset="1" stop-color="#F4B6DD"/></radialGradient>
     <clipPath id="${id}tk"><path d="M${f ? 78 : 74} 150 L${f ? 122 : 126} 150 L150 172 L150 250 L50 250 L50 172 Z"/></clipPath><clipPath id="${id}cr"><rect x="40" y="140" width="120" height="66"/></clipPath>
     <pattern id="${id}p" width="26" height="26" patternUnits="userSpaceOnUse"><rect width="26" height="26" fill="${tc}"/><circle cx="7" cy="7" r="4" fill="#F4B6DD"/><circle cx="7" cy="7" r="1.5" fill="#E8C23A"/><path d="M16 18 q6 -6 10 0 q-6 6 -10 0" fill="#2F8F5A"/><circle cx="20" cy="4" r="2.5" fill="#E3762B"/></pattern></defs>`;
@@ -186,7 +187,7 @@ const AV_PRESETS = [
   { build: 'm', skin: 0, hair: 'short', hairC: 6, top: 'shirt', topC: 11, bottom: 'jeans', bottomC: 1, glasses: 'round', glassesC: 1, beard: 'stubble', extra: ['wristband'] },
   { build: 'f', skin: 4, hair: 'buns', hairC: 11, top: 'tee', topC: 8, bottom: 'shorts', bottomC: 1, mouth: 'tongue', hat: 'none', extra: ['wristband', 'glitter', 'blush'], shoes: 'platforms', shoesC: 1 },
   { build: 'm', skin: 3, hair: 'spiky', hairC: 0, top: 'hoodie', topC: 2, bottom: 'joggers', bottomC: 1, mouth: 'smirk', extra: ['wristband', 'bag'] },
-  { build: 'f', skin: 9, hair: 'wavy', hairC: 6, outfit: 'dress', topC: 9, eyes: 'lashes', mouth: 'smile', hat: 'flowers', extra: ['wristband', 'freckles'], shoes: 'sandals', shoesC: 13 },
+  { build: 'f', skin: 9, hair: 'wavy', hairC: 6, outfit: 'dress', topC: 9, outfitC: 9, eyes: 'lashes', mouth: 'smile', hat: 'flowers', extra: ['wristband', 'freckles'], shoes: 'sandals', shoesC: 13 },
   { build: 'm', skin: 8, hair: 'buzz', hairC: 0, outfit: 'suit', topC: 0, mouth: 'smile', beard: 'goatee', extra: ['wristband'], shoes: 'boots', shoesC: 1 },
   { build: 'f', skin: 5, hair: 'bob', hairC: 12, top: 'jacket', topC: 3, bottom: 'jeans', bottomC: 7, mouth: 'grin', glasses: 'heart', glassesC: 9, extra: ['wristband'] },
   { build: 'm', skin: 1, hair: 'mohawk', hairC: 8, top: 'tank', topC: 1, bottom: 'cargo', bottomC: 12, mouth: 'grin', ears: 'studs', extra: ['wristband', 'glitter'], hat: 'none' },

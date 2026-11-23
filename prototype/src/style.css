@@ -1,7 +1,7 @@
 /* Studio desk around a phone: left = live phone, right = scenario panel. Dashboard takes the full width. */
 :root{
   --pri:#4F6BF5; --pri2:#6E8BF7; --pri-d:#3D5AFE; --indigo:#4B44D8; --ink:#1C1F2A; --ink2:#5B6075; --ink3:#6B7084;
-  --line:#E6E8F0; --card:#FFFFFF; --soft:#F3F5FB; --pale:#E9EEFD; --ok:#16A34A; --ok-bg:#E4F6EA; --warn:#E58A00; --warn-bg:#FFF1DC;
+  --line:#E6E8F0; --card:#FFFFFF; --soft:#F3F5FB; --pale:#E9EEFD; --ok:#16A34A; --ok-bg:#E4F6EA; --warn:#B86E00; --warn-bg:#FFF1DC;
   --bad:#E5484D; --bad-bg:#FDECEC; --vio:#8B5CF6; --pink:#F4B6DD; --dark:#22252E;
   --desk:#E6E9F4; --desk-ink:#1C1F2A; --desk-card:#FFFFFF; --desk-line:#D7DBEA; --desk-mut:#5B6075;
   --f:'Figtree',system-ui,-apple-system,'Segoe UI',sans-serif;
@@ -336,3 +336,20 @@ img[src*="a/ic/"]{object-fit:contain;aspect-ratio:1/1;height:auto}
 #screen.night .h1,#screen.night .h2,#screen.night .row .t,#screen.night .topbar h1{color:#ECEEF6}
 #screen.night [style*="#E4F6EA"],#screen.night [style*="#DCE5FF"],#screen.night [style*="#FFF7E8"],#screen.night [style*="#F3F5FB"],#screen.night [style*="#EEF2FF"],#screen.night [style*="#FDECEC"],#screen.night [style*="#F1EBFE"],#screen.night [style*="#FFF4D6"]{color:#1C1F2A}
 #screen.night [style*="#E4F6EA"] *,#screen.night [style*="#DCE5FF"] *,#screen.night [style*="#FFF7E8"] *,#screen.night [style*="#F3F5FB"] *,#screen.night [style*="#EEF2FF"] *,#screen.night [style*="#FDECEC"] *,#screen.night [style*="#F1EBFE"] *,#screen.night [style*="#FFF4D6"] *{color:#1C1F2A}
+
+#screen.night .cloud{background:radial-gradient(closest-side,rgba(160,140,255,.14),rgba(160,140,255,0))}
+#screen.night .chathead,#screen.night .chips.quick{background:#141722!important;border-color:#2A2E3D!important}
+#screen.night .items button.on{box-shadow:0 0 0 3px var(--pri);border-color:var(--pri)}
+#screen.night .pill.ok{background:#173A28;color:#7FE0A3}#screen.night .pill.warn{background:#3A2C12;color:#F6C26B}#screen.night .pill.bad{background:#3A1719;color:#FF9B9E}#screen.night .pill{background:#232845;color:#AFC0FF}
+#screen.night .btn.dark{background:var(--pri)}
+#screen.night [style*="#DCE5FF"]{background:linear-gradient(135deg,#232845,#3A2350)!important;color:#ECEEF6}#screen.night [style*="#DCE5FF"] *{color:#ECEEF6}
+
+#screen.night{--ink:#ECEEF6;--ink2:#A9AEC4;--ink3:#8E93AB}
+#screen.night .seg button{color:#A9AEC4}
+#screen.night [style*="#F3F5FF"],#screen.night [style*="#FFF1DC"],#screen.night [style*="#F3F5FB"],#screen.night [style*="#FFF7E8"],#screen.night [style*="#EEF2FF"]{background:#232738!important;color:#ECEEF6!important}
+#screen.night [style*="#F3F5FF"] .t,#screen.night [style*="#F3F5FF"] .s,#screen.night [style*="#FFF1DC"] *,#screen.night [style*="#F3F5FB"] .t,#screen.night [style*="#F3F5FB"] .s,#screen.night [style*="#F3F5FB"] b,#screen.night [style*="#F3F5FB"] .small,#screen.night [style*="#FFF7E8"] *,#screen.night [style*="#EEF2FF"] *{color:#ECEEF6!important}
+#screen.night .ico{color:#AFC0FF}#screen.night [style*="#F3F5FB"] .ico{background:#2E3346}
+#screen.night [style*="color:#9A5800"],#screen.night [style*="color: #9A5800"]{color:#F6C26B!important}
+#screen.night [style*="color:var(--ink)"]{color:#ECEEF6!important}
+#screen.night .scr.white .link{color:#C9CDE0}
+.pill.warn{color:#8A4E00}

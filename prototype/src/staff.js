@@ -1,20 +1,23 @@
+const staffMe = () => ST.role === 'bar' ? STAFF.find(s => s.id === 'lucas') : STAFF.find(s => s.id === 'nadia');
+const myBar = () => POIS.find(o => o.bar && o.node === staffNode(STAFF.find(s => s.id === 'lucas'))) || POIS.find(o => o.bar);
 // ===== App staff (même app, interface selon le rôle) =====
 const S = {};
-const AUTO = [{ id: 9001, cat: 'crowd', label: 'Densité élevée (automatique)', note: 'Avant-scène au-dessus de 90 % de sa capacité estimée', at: [39, 39], zone: 'Avant-scène', time: '23:36', status: 'Reçue', by: 'Système', prio: 'Majeur', hist: [['23:36', 'Seuil 90 % dépassé', 'Reçue']] },
+const _liveInc = genIncidents().find(i => i.auto && i.t <= nowMin() && nowMin() < i.e);
+const AUTO = [...(_liveInc ? [{ id: 9001, cat: 'crowd', label: 'Densité élevée (automatique)', note: _liveInc.zone + ' au-dessus de 90 % de sa capacité estimée (borne haute)', at: _liveInc.at, zone: _liveInc.zone, time: fmtClock(20 * 60 + _liveInc.t), status: 'Reçue', by: 'Système', prio: 'Majeur', hist: [[fmtClock(20 * 60 + _liveInc.t), 'Seuil 90 % dépassé', 'Reçue']] }] : []),
   { id: 9002, cat: 'lost', label: 'Objet perdu', note: 'Téléphone noir, coque rose', at: [51, 66], zone: 'Bar à cocktails', time: '23:21', status: 'Prise en charge', agent: 'Point info', by: '@ines', prio: 'Mineur', hist: [['23:21', 'Reçue', 'Reçue'], ['23:24', 'Point info prend en charge', 'Prise en charge']] }];
 AUTO.forEach(a => ST.reports.push(a));
 const staffBadge = () => ST.reports.filter(r => r.status === 'Reçue').length;
 function staffNav(active) {
   const isBar = ST.role === 'bar';
-  const items = isBar ? [['map', I.map, 'Map'], ['bar', I.grid, 'Mon bar'], ['team', I.users, 'Équipe']] : [['map', I.map, 'Map'], ['alerts', I.alert, 'Alertes'], ['team', I.users, 'Équipe'], ['me', I.user, 'Staff']];
+  const items = isBar ? [['map', I.map, 'Carte'], ['bar', I.grid, 'Mon bar'], ['team', I.users, 'Équipe']] : [['map', I.map, 'Carte'], ['alerts', I.alert, 'Alertes'], ['team', I.users, 'Équipe'], ['me', I.user, 'Staff']];
   return `<nav class="nav"><div class="bar" style="background:rgba(28,31,42,.95)">${items.map(i => `<button data-sn="${i[0]}" class="${active === i[0] ? 'on' : ''}" style="color:${active === i[0] ? '#8FA4FF' : '#C5C9D6'}" aria-label="${i[2]}">${i[1]}<span>${i[2]}</span>${i[0] === 'alerts' && staffBadge() ? `<span class="badge" style="top:2px;right:6px;border-color:#1C1F2A">${staffBadge()}</span>` : ''}</button>`).join('')}</div><button class="rb" id="sos2" aria-label="Demander du renfort" style="width:52px;height:52px;border-radius:26px;background:#E5484D;color:#fff">${I.alert}</button></nav>`;
 }
 function wireStaffNav(el) {
   $$('[data-sn]', el).forEach(b => b.onclick = () => ({ map: S.map, alerts: S.alerts, team: S.team, me: S.me, bar: S.bar })[b.dataset.sn]());
-  $('#sos2', el).onclick = async () => { const v = await sysAlert({ title: 'Demander du renfort ?', text: 'Ta position est envoyée aux managers et à la sécurité la plus proche.', buttons: [{ t: 'Envoyer', v: 1, b: 1 }, { t: 'Annuler', v: 0 }] }); if (v) { ST.reports.unshift({ id: Date.now() % 100000, cat: 'danger', label: 'Renfort demandé (staff)', note: ST.role === 'bar' ? 'Bar Ouest' : 'Fosse', at: ST.role === 'bar' ? NODES.M : NODES.G, zone: ST.role === 'bar' ? 'Bar Ouest' : 'Fosse', time: fmtClock(ST.clock), status: 'Reçue', by: ST.role === 'bar' ? 'Lucas M. (bar)' : 'Nadir K.', prio: 'Critique', hist: [[fmtClock(ST.clock), 'Renfort demandé']] }); emit(); toast('Renfort demandé : 2 agents prévenus'); } };
+  $('#sos2', el).onclick = async () => { const v = await sysAlert({ title: 'Demander du renfort ?', text: 'Ta position est envoyée aux managers et à la sécurité la plus proche.', buttons: [{ t: 'Envoyer', v: 1, b: 1 }, { t: 'Annuler', v: 0 }] }); if (v) { ST.reports.unshift({ id: Date.now() % 100000, cat: 'danger', label: 'Renfort demandé (staff)', note: ST.role === 'bar' ? 'Bar Ouest' : 'Fosse', at: [...NODES[staffNode(staffMe())]], zone: zoneOf(NODES[staffNode(staffMe())]), time: fmtClock(ST.clock), status: 'Reçue', by: ST.role === 'bar' ? 'Lucas M. (bar)' : 'Nadir K.', prio: 'Critique', hist: [[fmtClock(ST.clock), 'Renfort demandé']] }); emit(); toast('Renfort demandé : 2 agents prévenus'); } };
 }
 S.map = () => {
-  const me = ST.role === 'bar' ? STAFF[4] : STAFF[0];
+  const me = staffMe();
   const el = mount(`<div id="mv"></div>${statusBar()}<div class="mapTop"><div class="evbar" style="background:rgba(28,31,42,.95);color:#fff"><img class="lg" src="${HEAD(me.h)}" alt="" style="border-radius:17px"><div style="flex:1"><b>${me.n} · ${me.role}</b><div style="font-size:12px;opacity:.75">En service · ${ST.role === 'bar' ? 'Bar Ouest' : 'Secteur Fosse'} · fin 04:30</div></div><span class="pill ok">Dispo</span></div>
     <div class="chips" id="sf">${['Tout', 'Sécurité', 'Médical', 'Bar', 'Alertes'].map((c, i) => `<button class="chip ${i ? '' : 'on'}">${c}</button>`).join('')}</div></div>
     <div class="ctrls" style="top:150px"><div class="stack"><button id="zin" aria-label="Zoomer">${I.plus}</button><button id="zout" aria-label="Dézoomer">${I.minus}</button><button id="hm" aria-label="Densité">${I.fire}</button></div></div>
@@ -25,14 +28,14 @@ S.map = () => {
   MV = new MapView($('#mv', el), { at: [48, 52], zoom: .36, cluster: false, markers: () => {
     const out = [];
     if (heat && flt !== 'Alertes') ZONES.forEach(z => { const r = occNow(z) / z.cap, c = r > .85 ? '#E5484D' : r > .6 ? '#E58A00' : '#16A34A'; out.push({ id: 'z' + z.id, at: z.at, aria: z.n, html: `<div class="lbl" style="background:${c};color:#fff;transform:translateY(50%)">${Math.round(r * 100)} %</div>`, halo: { m: z.r * 4.1, c }, onClick: () => toast(`${z.n} : ${Math.round(r * 100)} % · ≈ ${fmtN(occNow(z))} pers. · ${STAFF.filter(s => dist(NODES[staffNode(s)], z.at) < 12).length} agent(s) proche(s)`), z: 1 }); });
-    POIS.filter(o => ['secours', 'entree', 'barO', 'barE', 'barC', 'scene', 'info'].includes(o.id)).forEach(o => out.push({ ...poiMarker(o, () => toast(`${o.n}${o.bar ? ' · attente ≈ ' + waitOf(o.id) + ' min' : ''} · ${metersPath(route('G', o.node), NODES.G)} m de toi`)), z: 2 }));
+    POIS.filter(o => o.bar || ['secours', 'entree', 'scene', 'info', 'secu', 'sortie'].includes(o.id)).forEach(o => out.push({ ...poiMarker(o, () => toast(`${o.n}${o.bar ? ' · attente ≈ ' + waitOf(o.id) + ' min' : ''} · ${metersPath(route(staffNode(staffMe()), o.node), NODES[staffNode(staffMe())])} m de toi`)), z: 2 }));
     STAFF.filter(s => flt === 'Tout' || s.role === flt).filter(() => flt !== 'Alertes').forEach(s => out.push(personMarker('st' + s.id, s.n.split(' ')[0], staffHead(s), NODES[staffNode(s)], { staff: true, col: s.col, sub: s.st === 'Dispo' ? s.role : s.st, acc: 4, onClick: () => S.member(s) })));
-    ST.reports.filter(r => r.status !== 'Résolu' && r.status !== 'En attente réseau' && ['Tout', 'Alertes', 'Sécurité', 'Médical'].includes(flt)).forEach(r => out.push({ id: 'al' + r.id, at: r.at, cls: 'alert', html: `<div class="poi" style="width:36px;height:36px">!</div><div class="lbl">${esc(r.label)}</div>`, onClick: () => S.alert(r.id), z: 9 }));
+    ST.reports.filter(r => r.at && r.status !== 'Résolu' && r.status !== 'En attente réseau' && ['Tout', 'Alertes', 'Sécurité', 'Médical'].includes(flt)).forEach(r => out.push({ id: 'al' + r.id, at: r.at, cls: 'alert', html: `<div class="poi" style="width:36px;height:36px">!</div><div class="lbl">${esc(r.label)}</div>`, onClick: () => S.alert(r.id), z: 9 }));
     return out; } });
   $('#zin', el).onclick = () => MV.zoomBy(1.4); $('#zout', el).onclick = () => MV.zoomBy(1 / 1.4); $('#hm', el).onclick = () => { heat = !heat; };
   $$('#sf .chip', el).forEach(c => c.onclick = () => { flt = c.textContent; $$('#sf .chip', el).forEach(x => x.classList.toggle('on', x === c)); });
   const lb = $('#lb', el); const draw = () => { if (!document.body.contains(lb)) { listeners.delete(draw); return; } const open = ST.reports.filter(r => r.status === 'Reçue');
-    lb.innerHTML = open.length ? open.slice(0, 2).map(r => `<button class="mini" data-a="${r.id}" style="border-left:5px solid ${r.prio === 'Critique' ? '#E5484D' : '#E58A00'}"><img src="${IC(CATS.find(c => c[0] === r.cat)[2])}" alt="" style="width:34px"><div style="flex:1;min-width:0"><b style="font-size:14px">${esc(r.label)}</b><div class="small">${r.zone} · ${r.time} · ${metersPath(route('G', nearestNode(r.at)), NODES.G)} m</div></div><span class="pill bad">${r.prio}</span></button>`).join('') : '<div class="mini"><span class="pill ok">Calme</span><span class="small">Aucune alerte en attente dans ton secteur</span></div>';
+    lb.innerHTML = open.length ? open.slice(0, 2).map(r => `<button class="mini" data-a="${r.id}" style="border-left:5px solid ${r.prio === 'Critique' ? '#E5484D' : '#E58A00'}"><img src="${IC(CATS.find(c => c[0] === r.cat)[2])}" alt="" style="width:34px"><div style="flex:1;min-width:0"><b style="font-size:14px">${esc(r.label)}</b><div class="small">${r.zone} · ${r.time} · ${metersPath(route(staffNode(staffMe()), nearestNode(r.at)), NODES[staffNode(staffMe())])} m</div></div><span class="pill bad">${r.prio}</span></button>`).join('') : '<div class="mini"><span class="pill ok">Calme</span><span class="small">Aucune alerte en attente dans ton secteur</span></div>';
     $$('[data-a]', lb).forEach(b => b.onclick = () => S.alert(+b.dataset.a)); };
   listeners.add(draw); draw();
 };
@@ -46,7 +49,7 @@ S.alerts = () => {
 };
 S.alert = (id) => {
   const r = ST.reports.find(x => x.id === id); if (!r) return;
-  const m = metersPath(route('G', nearestNode(r.at)), NODES.G);
+  const sn = staffNode(staffMe()), m = metersPath(route(sn, nearestNode(r.at)), NODES[sn]);
   const next = { 'Reçue': 'Je prends en charge', 'Prise en charge': 'Je suis en route', 'En route': 'Je suis sur place', 'Sur place': 'Clôturer l’alerte' }[r.status];
   const sb = openSheet(`<div style="display:flex;gap:10px;align-items:center"><img src="${IC(CATS.find(c => c[0] === r.cat)[2])}" alt="" style="width:52px"><div style="flex:1"><h2 class="h2">${esc(r.label)}</h2><div class="small">${r.zone} · ${r.time} · ${m} m de toi</div></div><span class="pill ${r.prio === 'Critique' ? 'bad' : 'warn'}">${r.prio}</span></div>
     ${r.note ? `<div class="card" style="background:#F3F5FB"><div class="small">« ${esc(r.note)} »</div></div>` : ''}
@@ -57,10 +60,10 @@ S.alert = (id) => {
   $('#nx', sb) && ($('#nx', sb).onclick = () => {
     if (r.status === 'Reçue') staffTake(r.id, ST.role === 'bar' ? 'Lucas M.' : 'Nadir K.');
     else { const nx = { 'Prise en charge': 'En route', 'En route': 'Sur place', 'Sur place': 'Résolu' }[r.status]; r.status = nx; r.hist.push([fmtClock(ST.clock), { 'En route': 'En route', 'Sur place': 'Arrivée sur place', 'Résolu': 'Alerte clôturée' }[nx], nx]); emit();
-      if (r.mine && nx === 'Sur place') push({ title: 'L’agent est sur place', text: 'Fais-lui signe, il porte un tee-shirt STAFF.', icon: IC('securite') }); }
+      if (r.mine && nx === 'Sur place') push({ rid: r.id, title: 'L’agent est sur place', text: 'Fais-lui signe, il porte un tee-shirt STAFF.', icon: IC('securite') }); }
     logEv('Staff : ' + r.label + ' → ' + r.status); closeSheet(true); S.alert(id);
   });
-  $('#it', sb).onclick = () => { closeSheet(true); if (!MV || !document.body.contains(MV.host)) S.map(); setTimeout(() => { MV.setRoute([NODES.G, ...route('G', nearestNode(r.at)).map(k => NODES[k]), r.at], '#E5484D'); MV.flyTo(r.at, .5); }, 100); };
+  $('#it', sb).onclick = () => { closeSheet(true); if (!MV || !document.body.contains(MV.host)) S.map(); setTimeout(() => { MV.setRoute([NODES[sn], ...route(sn, nearestNode(r.at)).map(k => NODES[k]), r.at], '#E5484D'); MV.flyTo(r.at, .5); }, 100); };
   $('#rf', sb).onclick = () => { r.hist.push([fmtClock(ST.clock), 'Renfort demandé']); emit(); toast('Hugo P. (sécurité) prévenu'); };
 };
 S.member = (s) => { const sb = openSheet(`<div style="display:flex;gap:12px;align-items:center"><img class="av" src="${staffHead(s)}" alt="" style="width:60px;height:60px;border-radius:30px"><div><h2 class="h2">${s.n}</h2><div class="small">${s.role} · ${s.sector} · ${s.st}</div></div></div><div class="grid2"><button class="btn" id="mm">${I.chat.replace('<svg', '<svg width="18"')} Message</button><button class="btn white" id="mr">${I.phone.replace('<svg', '<svg width="18"')} Appel radio</button></div>`); $('#mm', sb).onclick = () => { closeSheet(); toast('Message envoyé à ' + s.n + ' · lu'); }; $('#mr', sb).onclick = () => { closeSheet(); toast('Canal radio ouvert avec ' + s.n + ' (prototype)'); }; };
@@ -75,21 +78,21 @@ S.team = () => {
 };
 S.me = () => {
   const el = mount(`${statusBar()}<div class="body" style="padding-bottom:110px;padding-top:10px"><div class="card" style="flex-direction:row;gap:12px;align-items:center"><img src="${AVB('secu')}" alt="" style="height:110px"><div><b style="font-size:20px">Nadir K.</b><div class="small">Sécurité · Secteur Fosse</div><div class="small">Service 20:00 → 04:30</div></div></div>
-    <div class="list"><button class="row" id="pause"><div class="grow"><div class="t">Je suis en pause</div><div class="s">Ta position n’est plus partagée pendant la pause</div></div><span class="tog"></span></button><div class="row"><div class="grow"><div class="t">Interventions ce soir</div></div><b>3</b></div><div class="row"><div class="grow"><div class="t">Temps de réponse moyen</div></div><b>2 min 40</b></div></div>
+    <div class="list"><button class="row" id="pause"><div class="grow"><div class="t">Je suis en pause</div><div class="s">Ta position n’est plus partagée pendant la pause</div></div><span class="tog"></span></button><div class="row"><div class="grow"><div class="t">Interventions de l’équipe sécurité ce soir</div></div><b>38</b></div><div class="row"><div class="grow"><div class="t">Temps de réponse de l’équipe</div><div class="s">Indicateur d’équipe, jamais individuel</div></div><b>1 min 50</b></div></div>
     <div class="tiny">Ta position est visible par le staff et l’organisateur uniquement pendant ton service, puis conservée 7 jours pour le bilan.</div></div>${staffNav('me')}`);
   wireStaffNav(el); $('#pause', el).onclick = e => { const on = e.currentTarget.querySelector('.tog').classList.toggle('on'); STAFF[0].st = on ? 'Pause' : 'Dispo'; emit(); toast(on ? 'En pause : ta position n’est plus partagée' : 'De retour en service'); };
 };
 S.bar = () => {
-  const id = 'barO';
-  const el = mount(`${statusBar()}<div class="topbar"><h1 class="left" style="font-size:26px;font-weight:800">Bar Ouest</h1><span class="pill ok">Ouvert</span></div><div class="body" style="padding-bottom:110px">
-    <div class="grid2"><div class="stat"><span>Attente affichée</span><b style="color:#E58A00">≈ ${ST.barWait?.barO ?? 9} min</b><span class="tiny">${ST.barWait?.barO != null ? 'saisie par toi' : 'estimée (31 personnes)'}</span></div><div class="stat"><span>Corriger l’attente</span><div style="display:flex;gap:4px;flex-wrap:wrap;margin-top:4px">${[3, 5, 10, 15].map(w => `<button class="chip" data-w="${w}" style="min-height:30px;padding:4px 8px">${w}′</button>`).join('')}</div></div></div>
-    <div class="chips" style="flex-wrap:wrap">${['Ouvert', 'Caisse en panne', 'Fermeture 10 min'].map(x => `<button class="chip ${(ST.barState?.barO || 'Ouvert') === x ? 'on' : ''}" data-st="${x}">${x}</button>`).join('')}</div>
+  const id = myBar().id, barName = myBar().n;
+  const el = mount(`${statusBar()}<div class="topbar"><h1 class="left" style="font-size:26px;font-weight:800">${barName}</h1><span class="pill ok">Ouvert</span></div><div class="body" style="padding-bottom:110px">
+    <div class="grid2"><div class="stat"><span>Attente affichée</span><b style="color:#E58A00">≈ ${ST.barWait?.[id] ?? waitOf(id)} min</b><span class="tiny">${ST.barWait?.[id] != null ? 'saisie par toi' : 'estimée (31 personnes)'}</span></div><div class="stat"><span>Corriger l’attente</span><div style="display:flex;gap:4px;flex-wrap:wrap;margin-top:4px">${[3, 5, 10, 15].map(w => `<button class="chip" data-w="${w}" style="min-height:30px;padding:4px 8px">${w}′</button>`).join('')}</div></div></div>
+    <div class="chips" style="flex-wrap:wrap">${['Ouvert', 'Caisse en panne', 'Fermeture 10 min'].map(x => `<button class="chip ${(ST.barState?.[id] || 'Ouvert') === x ? 'on' : ''}" data-st="${x}">${x}</button>`).join('')}</div>
     <div class="small">Touchez un produit pour le passer en rupture : il s’affiche « Épuisé » dans l’app des visiteurs en quelques secondes.</div>
     ${MENU[id].map(([cat, items]) => `<div class="sec">${cat}</div><div class="list">${items.map(([n, p]) => `<button class="row" data-p="${esc(n)}"><div class="grow"><div class="t">${n}</div><div class="s">${p} €</div></div><span class="pill ${ST.ruptures[id + ':' + n] ? 'bad' : 'ok'}">${ST.ruptures[id + ':' + n] ? 'Épuisé' : 'Dispo'}</span></button>`).join('')}</div>`).join('')}
     <button class="btn white" id="ask">Demander un réassort au stock</button>${D.reassort.length ? `<div class="list">${D.reassort.map(r => `<div class="row"><div class="grow"><div class="t">Réassort ${r.t}</div><div class="s">Runner : Paul</div></div><span class="pill vio">${r.st}</span></div>`).join('')}</div>` : ''}<div style="height:20px"></div></div>${staffNav('bar')}`);
   wireStaffNav(el);
-  $$('[data-p]', el).forEach(b => b.onclick = () => { const k = id + ':' + b.dataset.p; ST.ruptures[k] = !ST.ruptures[k]; if (!ST.ruptures[k]) delete ST.ruptures[k]; logEv('Bar Ouest : ' + b.dataset.p + (ST.ruptures[k] ? ' en rupture' : ' de nouveau dispo')); emit(); S.bar(); });
-  $('#ask', el).onclick = () => { const r = { bar: 'barO', t: fmtClock(ST.clock), st: 'Demandé' }; D.reassort.unshift(r); logEv('Réassort demandé · Bar Ouest'); S.bar(); setTimeout(() => { r.st = 'Pris en charge'; emit(); if ($('#ask')) S.bar(); }, 3000); setTimeout(() => { r.st = 'Livré'; emit(); if ($('#ask')) S.bar(); }, 9000); };
-  $$('[data-w]', el).forEach(b => b.onclick = () => { ST.barWait = { ...(ST.barWait || {}), barO: +b.dataset.w }; logEv('Bar Ouest : attente corrigée à ' + b.dataset.w + ' min'); S.bar(); });
-  $$('[data-st]', el).forEach(b => b.onclick = () => { ST.barState = { ...(ST.barState || {}) }; if (b.dataset.st === 'Ouvert') delete ST.barState.barO; else ST.barState.barO = b.dataset.st; logEv('Bar Ouest : ' + b.dataset.st); S.bar(); });
+  $$('[data-p]', el).forEach(b => b.onclick = () => { const k = id + ':' + b.dataset.p; ST.ruptures[k] = !ST.ruptures[k]; if (!ST.ruptures[k]) delete ST.ruptures[k]; logEv(barName + ' : ' + b.dataset.p + (ST.ruptures[k] ? ' en rupture' : ' de nouveau dispo')); emit(); S.bar(); });
+  $('#ask', el).onclick = () => { const r = { bar: id, t: fmtClock(ST.clock), st: 'Demandé' }; D.reassort.unshift(r); logEv('Réassort demandé · ' + barName); S.bar(); setTimeout(() => { r.st = 'Pris en charge'; emit(); if ($('#ask')) S.bar(); }, 3000); setTimeout(() => { r.st = 'Livré'; emit(); if ($('#ask')) S.bar(); }, 9000); };
+  $$('[data-w]', el).forEach(b => b.onclick = () => { ST.barWait = { ...(ST.barWait || {}), [id]: +b.dataset.w }; logEv('Bar Ouest : attente corrigée à ' + b.dataset.w + ' min'); S.bar(); });
+  $$('[data-st]', el).forEach(b => b.onclick = () => { ST.barState = { ...(ST.barState || {}) }; if (b.dataset.st === 'Ouvert') delete ST.barState[id]; else ST.barState[id] = b.dataset.st; logEv(barName + ' : ' + b.dataset.st); S.bar(); });
 };

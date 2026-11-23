@@ -1,8 +1,8 @@
 // ===== Thème sombre et anglais =====
-ST.theme = ST.theme || 'light'; ST.lang = ST.lang || 'fr';
+ST.theme = ST.theme || 'light'; ST.lang = ST.lang || 'fr'; // anglais au choix (bouton sur l'accueil) tant que la traduction n'est pas complète
 const EN = {
   'Carte': 'Map', 'Amis': 'Friends', 'Réglages': 'Settings', 'Tout': 'All', 'Bars': 'Bars', 'Scènes': 'Stages', 'Manger': 'Food', 'Services': 'Services', 'Secours': 'First aid',
-  'Y aller': 'Go there', 'Envoyer à un ami': 'Send to a friend', 'Attente estimée': 'Estimated wait', 'Paiement': 'Payment', 'La carte': 'Menu', 'Rejoindre': 'Join', 'Viens ici !': 'Come here!', 'Écrire': 'Message', 'Point de RDV': 'Meeting point',
+  'Y aller': 'Go there', 'Envoyer à un ami': 'Send to a friend', 'Attente estimée': 'Estimated wait', 'Paiement': 'Payment', 'La carte': 'Menu', 'Rejoindre': 'Join', 'Viens ici !': 'Come here!', '📍 Viens ici !': '📍 Come here!', 'Moi': 'Me', 'Modifier mon avatar': 'Edit my avatar', 'Ouvert · ': 'Open · ', 'Masquer ma position pour Léa, bloquer, signaler': 'Hide my location from Léa, block, report', 'Écrire': 'Message', 'Point de RDV': 'Meeting point',
   'Je te cherche (boussole)': 'Find them (compass)', 'Signaler un problème': 'Report a problem', 'Envoyer l’alerte': 'Send alert', 'Appeler le 112': 'Call 112', 'Retrouve ta bande': 'Find your crew', 'Crée ta bande': 'Create your crew',
   'Voir la carte': 'Open the map', 'Continuer': 'Continue', 'C’est moi !': 'That’s me!', 'Choisis ton avatar': 'Choose your avatar', 'Comment tes amis te verront': 'How your friends will see you', 'Place-toi sur la carte': 'Put yourself on the map',
   'Activer ma position': 'Turn on my location', 'Plus tard': 'Later', 'Continuer avec Apple': 'Continue with Apple', 'Téléphone': 'Phone', 'Voir la carte sans compte': 'View the map without an account',
@@ -24,7 +24,7 @@ const EN = {
 };
 const FR_OF = {}; Object.entries(EN).forEach(([f, e]) => FR_OF[e] = f);
 function translateTree(root) {
-  const dict = ST.lang === 'en' ? EN : FR_OF; const w = document.createTreeWalker(root, NodeFilter.SHOW_TEXT); let n;
+  if (ST.lang !== 'en') return; const dict = EN; const w = document.createTreeWalker(root, NodeFilter.SHOW_TEXT); let n;
   while ((n = w.nextNode())) { const t = n.nodeValue.trim(); if (t && dict[t]) n.nodeValue = n.nodeValue.replace(t, dict[t]); }
   root.querySelectorAll && root.querySelectorAll('[placeholder]').forEach(i => { const v = { 'Bar, toilettes, artiste, ami…': 'Bar, toilets, artist, friend…', 'Message': 'Message' }; if (ST.lang === 'en' && v[i.placeholder]) i.placeholder = v[i.placeholder]; });
 }

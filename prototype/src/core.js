@@ -126,12 +126,42 @@ setInterval(() => { ST.clock += 1; emit(); }, 30000);
 
 // ---------- chiffres partagés (une seule source pour toutes les vues) ----------
 const nowMin = () => ((ST.clock - 20 * 60) + 1440) % 1440;
-const occAt = (z, minute) => { const peak = Math.exp(-Math.pow((minute - 300) / 140, 2)); const w = { fosse: 1, scene: 1.08, vip: .8, tables: .65, bars: .85, rotonde: .45, terrasse: .5 }[z.id] || .6; return Math.round(z.cap * Math.min(.98, (.18 + .8 * peak) * w)); };
+// Source unique : le compteur de porte donne les présents ; les zones en sont une répartition (le reste circule).
+const PROFILE = m => { const v = typeof VENUE !== 'undefined' ? VENUE : { open: 0, close: 480, peak: 290 }; if (m < v.open || m > v.close) return 0; const ramp = Math.min(1, (m - v.open) / 25, (v.close - m) / 25); return ramp * (.12 + .88 * Math.exp(-Math.pow((m - v.peak) / 165, 2))); };
+function presentAt(m) { m = Math.max(0, Math.min(540, m)); return Math.round(EVENT.capacity * .9 * PROFILE(m)); }
+const ZW = { fosse: 1.15, scene: 1.3, vip: .95, tables: .75, bars: 1, rotonde: .45, terrasse: .55 };
+function occAt(z, m) {
+  m = Math.max(0, Math.min(540, m)); const p = presentAt(m), tot = ZONES.reduce((a, x) => a + x.cap * (ZW[x.id] || .7), 0);
+  let share = z.cap * (ZW[z.id] || .7) / tot;
+  if (z.id === 'scene' || z.id === 'fosse') share *= LINEUP.some(l => l.s === 'scene' && toMin20(l.f) <= m && m < toMin20(l.t)) ? 1.08 : .9;
+  const inZones = .8 + .06 * Math.cos(m / 35);
+  return Math.round(Math.min(z.cap * .99, p * inZones * share));
+}
 const occNow = z => occAt(z, nowMin());
 const zonesTotal = m => ZONES.reduce((a, z) => a + occAt(z, m), 0);
-const presentAt = m => Math.round(Math.min(EVENT.capacity * .94, zonesTotal(m) * 1.18)); // + circulation et hors zones, plafonné sous la jauge
-const appUsers = m => Math.round(presentAt(m) * .4);
+const appUsers = m => Math.round(presentAt(m) * .41);
 const contributors = m => Math.round(appUsers(m) * .68);
+// densité (personnes par m²) : surface déclarée dans Préparation (≈ capacité / 3,2 m²)
+const zoneArea = z => z.area || Math.round(z.cap / 3.2);
+const densAt = (z, m) => occAt(z, m) / zoneArea(z);
+// marge : 12 % + effet du petit échantillon (contributeurs présents dans la zone)
+const zoneN = (z, m) => Math.max(1, Math.round(occAt(z, m) * .41 * .68));
+const margin = (z, m) => Math.min(.45, .12 + 1.2 / Math.sqrt(zoneN(z, m)));
+const rangeOf = (v, mg) => [Math.round(v * (1 - mg) / 10) * 10, Math.round(v * (1 + mg) / 10) * 10];
+// échelle unique de couleurs de densité (p/m²) — partagée par toutes les vues
+const DENS_SCALE = [[1, '#CFE8C0', '< 1'], [2, '#9BD46A', '1–2'], [3, '#F5B941', '2–3'], [4, '#F5821E', '3–4'], [99, '#E5323C', '≥ 4']];
+const densColor = d => DENS_SCALE.find(s => d < s[0])[1];
+const fillColor = r => r >= .9 ? '#E5484D' : r >= .75 ? '#F59E0B' : '#22C55E';
+// incidents : une seule table par lieu, générée à partir des mêmes séries (densité) + incidents saisis
+function genIncidents() {
+  const out = [];
+  ZONES.forEach(z => { let start = null; for (let m = 0; m <= 480; m += 5) { const r = occAt(z, m) / z.cap, hi = r * (1 + margin(z, m)) >= .97 || r >= .9; if (hi && start === null) start = m; if ((!hi || m === 480) && start !== null) { if (m - start >= 10) out.push({ t: start, e: m, n: 'Densité > 90 % · ' + z.n, zone: z.n, cat: 'crowd', auto: true, at: z.at }); start = null; } } });
+  const man = VENUE.id === 'bdf' ? [[95, 104, 'Objet perdu · Rotonde', 'lost', 'rotonde'], [125, 142, 'Malaise · Fosse', 'medical', 'fosse'], [168, 181, 'Bousculade · Entrée', 'danger', 'terrasse'], [201, 214, 'Objet perdu · Bar à cocktails', 'lost', 'bars'], [262, 270, 'Malaise · Rotonde', 'medical', 'rotonde'], [330, 345, 'Bagarre · Bar Est', 'danger', 'bars'], [372, 380, 'Malaise · Fosse', 'medical', 'fosse'], [410, 418, 'Objet perdu · Terrasse', 'lost', 'terrasse']]
+    : [[150, 158, 'Malaise · ' + ZONES[0].n, 'medical', ZONES[0].id], [260, 266, 'Objet perdu · Vestiaire', 'lost', ZONES[ZONES.length - 1].id], [320, 331, 'Altercation · ' + ZONES[2].n, 'danger', ZONES[2].id]];
+  man.forEach(x => { const z = ZONES.find(q => q.id === x[4]) || ZONES[0]; out.push({ t: x[0], e: x[1], n: x[2], zone: z.n, cat: x[3], auto: false, at: z.at }); });
+  return out.sort((a, b) => a.t - b.t);
+}
+const incidentsUntil = m => genIncidents().filter(i => i.t <= m);
 const isLive = l => { const m = nowMin(); return toMin20(l.f) <= m && m < toMin20(l.t); };
 const fmtN = n => Math.round(n).toLocaleString('fr-FR');
 
@@ -140,6 +170,7 @@ let SCREEN; // élément #screen
 const statusBar = (dark) => `<div class="status" style="${dark ? 'color:#fff' : ''}"><span>${fmtClock(ST.clock)}</span><span class="r">${ST.offline ? '<span style="font-size:12px">Pas de réseau</span>' : '<svg width="18" height="12" viewBox="0 0 18 12"><rect x="0" y="8" width="3" height="4" rx="1" fill="currentColor"/><rect x="5" y="5" width="3" height="7" rx="1" fill="currentColor"/><rect x="10" y="2" width="3" height="10" rx="1" fill="currentColor"/><rect x="15" y="0" width="3" height="12" rx="1" fill="currentColor" opacity=".35"/></svg>'}<svg width="26" height="13" viewBox="0 0 26 13"><rect x=".5" y=".5" width="22" height="12" rx="3.5" fill="none" stroke="currentColor" opacity=".4"/><rect x="2" y="2" width="14" height="9" rx="2" fill="currentColor"/><rect x="24" y="4" width="1.6" height="5" rx=".8" fill="currentColor" opacity=".4"/></svg></span></div>`;
 
 function mount(html, cls = '') {
+  if (ST._avRestore) { ST.me.av = ST._avRestore; ST._avRestore = null; if (typeof toast === 'function') setTimeout(() => toast('Modifications d’avatar non enregistrées : annulées'), 300); }
   closeSheet(true); clearTimeout(V._alwaysT); $$('.banner', SCREEN).forEach(b => b.remove());
   if (MV && !/id="mv"/.test(html)) { MV.destroy(); MV = null; clearInterval(V._lbT); }
   const el = document.createElement('div'); el.className = 'scr ' + cls; el.innerHTML = html;
@@ -188,7 +219,7 @@ function push(n) {
   if (n.for === 'staff' && (ST.role === 'visitor' || $('#dash'))) { (ST.pushQueue = ST.pushQueue || []).push(n); return; }
   showPush(n);
 }
-function flushPush() { const q = (ST.pushQueue || []).filter(n => (n.for === 'staff') === (ST.role !== 'visitor')); ST.pushQueue = (ST.pushQueue || []).filter(n => !q.includes(n)); q.forEach((n, i) => setTimeout(() => showPush(n), 500 + i * 2600)); }
+function flushPush() { const all = (ST.pushQueue || []); const lastByRid = {}; all.forEach((n, i) => { if (n.rid) lastByRid[n.rid] = i; }); ST.pushQueue = all.filter((n, i) => !n.rid || (lastByRid[n.rid] === i && (ST.reports.find(r => r.id === n.rid) || {}).status !== 'Résolu')); const q = (ST.pushQueue || []).filter(n => (n.for === 'staff') === (ST.role !== 'visitor')); ST.pushQueue = (ST.pushQueue || []).filter(n => !q.includes(n)); q.forEach((n, i) => setTimeout(() => showPush(n), 500 + i * 2600)); }
 function showPush({ title, text, icon, onTap, app = 'ONEERA' }) {
   $$('.push', SCREEN).forEach(t => t.remove());
   const t = document.createElement('button'); t.className = 'push';
