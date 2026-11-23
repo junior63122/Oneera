@@ -2,7 +2,7 @@ import os, shutil
 R = os.path.dirname(os.path.abspath(__file__))
 src = lambda f: open(os.path.join(R, 'src', f), encoding='utf-8').read()
 css = src('style.css')
-js = '\n'.join(src(f) for f in ['data.js', 'core.js', 'venues.js', 'map.js', 'avatar.js', 'onboard.js', 'avatar_ui.js', 'visitor.js', 'modes.js', 'discover.js', 'i18n.js', 'staff.js', 'dash.js', 'analytics.js', 'report.js', 'app.js'])
+js = '\n'.join(src(f) for f in ['data.js', 'core.js', 'venues.js', 'map.js', 'fx.js', 'avatar.js', 'onboard.js', 'avatar_ui.js', 'visitor.js', 'modes.js', 'discover.js', 'i18n.js', 'staff.js', 'dash.js', 'analytics.js', 'report.js', 'app.js'])
 head = '''<title>Prototype ONEERA</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800;900&display=swap">

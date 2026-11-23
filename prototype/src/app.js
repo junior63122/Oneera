@@ -23,7 +23,8 @@ function panelHTML() {
       <p>Toutes les vues partagent les mêmes données : un signalement envoyé par le visiteur arrive chez l’agent et l’organisateur ; une rupture déclarée au bar s’affiche dans la carte des boissons.</p></section>
     <section class="pcard"><h2>Simuler</h2><div class="pbtns">
       <button class="pbtn" data-p="msg">Message de Léa</button><button class="pbtn" data-p="near">Ami arrivé</button><button class="pbtn" data-p="orga">Annonce de l’organisateur</button>
-      <button class="pbtn ${ST.offline ? 'on' : ''}" data-p="offline">Pas de réseau</button><button class="pbtn" data-p="recap">Fin de soirée (récap)</button><button class="pbtn" data-p="guest">Mode invité</button><button class="pbtn" data-p="lock">Écran verrouillé</button><button class="pbtn" data-p="find">Chercher Léa (boussole)</button></div></section>
+      <button class="pbtn ${ST.offline ? 'on' : ''}" data-p="offline">Pas de réseau</button><button class="pbtn" data-p="recap">Fin de soirée (récap)</button><button class="pbtn" data-p="guest">Mode invité</button><button class="pbtn" data-p="lock">Écran verrouillé</button><button class="pbtn" data-p="find">Chercher Léa (boussole)</button><button class="pbtn" data-p="fw">Feu d’artifice</button><button class="pbtn" data-p="intro">Arrivée « vue des Dieux »</button></div>
+      <div class="pbtns" style="margin-top:8px">${[['auto', 'Ambiance auto (heure)'], ['day', 'Jour'], ['night', 'Nuit']].map(m => `<button class="pbtn ${(ST.mapMode || 'auto') === m[0] ? 'on' : ''}" data-p="amb:${m[0]}">${m[1]}</button>`).join('')}</div></section>
     <section class="pcard"><h2>Journal en direct</h2><div class="logline">${ST.log.slice(-30).map(l => `<span>${esc(l)}</span>`).join('') || '<span>Les actions des 3 vues s’affichent ici.</span>'}</div></section>
     <section class="pcard"><p>Prototype de démonstration : données fictives, installation, connexions Apple/Google et SMS simulées. Plan, avatars et icônes : visuels ONEERA existants.</p></section>`;
 }
@@ -46,6 +47,10 @@ function wirePanel(root) {
     if (p === 'guest') { resetDemo(); ST.account = 'guest'; V.map(); }
     if (p.startsWith('os:')) { ST.os = p.slice(3); toast(ST.os === 'android' ? 'Mode Android' : 'Mode iPhone'); }
     if (p.startsWith('tpl:')) { applyTemplate(p.slice(4)); if ($('#dash')) openDash(D.view); else if (ST.role === 'visitor') { if (!ST.account) quickSetup(); V.map(); toast('Scénario : ' + TEMPLATES.find(t => t.id === ST.template).n); } else S.map(); }
+    if (p === 'fw') { if (!$('#dash') && !(MV && MV.alive && document.body.contains(MV.host))) { ensureVisitor(); V.map(); } const st = POIS.find(o => o.id === ((VENUE.stages || [])[0] || [])[0]) || POIS[0]; setTimeout(() => { (MV && MV.alive ? MV : null) && MV.flyTo([st.at[0], st.at[1] - 14], VENUE.zoom * .9); setTimeout(() => FX.fireworks(st.at, 12), 500); toast('Feu d’artifice au-dessus de ' + st.n); }, 150); logEv('Feu d’artifice · ' + st.n); }
+    if (p === 'intro') { if (ST.role !== 'visitor' || $('#dash')) { ensureVisitor(); } ST.introSeen = {}; V.map(); }
+    if (p.startsWith('amb:')) { ST.mapMode = p.slice(4); renderPanel && renderPanel(); }
+    if (p.startsWith('venue:') && ST.role === 'visitor' && !$('#dash') && p.slice(6) !== VENUE.id) { const id = p.slice(6); FX.leave(() => { setVenue(id); if (!ST.account) quickSetup(); V.map(); renderPanel && renderPanel(); }); return; }
     if (p.startsWith('venue:')) { setVenue(p.slice(6)); if ($('#dash')) openDash(D.view === 'club' || D.view === 'clubcmp' ? 'global' : D.view); else if (ST.role === 'visitor') { if (!ST.account) quickSetup(); V.map(); } else S.map(); }
     if (p === 'lock') { ensureVisitor(); V.lock(); }
     if (p === 'find') { ensureVisitor(); V.findFriend('lea'); }

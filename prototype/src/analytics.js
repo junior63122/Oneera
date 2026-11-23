@@ -10,7 +10,7 @@ const LEGEND_D = `<div style="position:absolute;right:12px;bottom:12px;z-index:3
 // carte : heatmap en grille de densité (p/m²) bornée aux zones, flux avec sens et volume
 dashMap = function (outer, { minute, onZone, replay, crisis, onTap } = {}) {
   const host = document.createElement('div'); host.style.cssText = 'position:absolute;inset:0'; outer.prepend(host);
-  const mv = new MapView(host, { src: VENUE.map.src, w: VENUE.map.w, h: VENUE.map.h, at: VENUE.id === 'bdf' ? [47, 52] : [50, 50], zoom: VENUE.id === 'bdf' ? .3 : .45, cluster: false, maxS: VENUE.id === 'bdf' ? 1.2 : 1.8, onTapEmpty: onTap, markers: () => {
+  const mv = new MapView(host, { src: VENUE.map.src, w: VENUE.map.w, h: VENUE.map.h, at: VENUE.id === 'bdf' ? [47, 52] : [50, 50], zoom: VENUE.id === 'bdf' ? .3 : .45, cluster: false, maxS: VENUE.id === 'bdf' ? 1.2 : 1.8, onTapEmpty: onTap, fx: () => ({ minute: minute ? minute() : nowMin(), crowd: !(D.layers.heat && !crisis), flows: !!(D.layers.flow && !crisis), lights: !crisis, shadows: !crisis, filter: D.layers.heat && !crisis ? 'saturate(.35)' : crisis ? 'grayscale(.7)' : '' }), markers: () => {
     const out = [], m = minute ? minute() : nowMin();
     const keep = crisis ? ['secours', 'entree', 'secu', 'defib', 'sortie'] : POIS.filter(o => o.bar || ['scene', 'entree', 'secours', 'food', 'partner', 'vestiaire', 'resto'].includes(o.id)).map(o => o.id);
     POIS.filter(o => keep.includes(o.id)).forEach(o => out.push({ ...poiMarker(o, () => dToast(poiInfo(o, m)), '', true), z: 2 }));
@@ -25,7 +25,6 @@ dashMap = function (outer, { minute, onZone, replay, crisis, onTap } = {}) {
   const base = host.querySelector('img.base'), ctx = cv.getContext('2d'); let off = 0;
   const draw = dt => {
     if (!mv.alive) { tickers.delete(draw); return; }
-    base.style.filter = D.layers.heat && !crisis ? 'saturate(.25) brightness(1.05)' : crisis ? 'grayscale(.7) brightness(.9)' : '';
     const w = host.clientWidth, h = host.clientHeight, dpr = Math.min(2, devicePixelRatio || 1);
     if (cv.width !== Math.round(w * dpr)) { cv.width = w * dpr; cv.height = h * dpr; cv.style.width = w + 'px'; cv.style.height = h + 'px'; }
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.clearRect(0, 0, w, h); off += dt * 30; const m = minute ? minute() : nowMin();

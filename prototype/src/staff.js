@@ -59,7 +59,7 @@ S.alert = (id) => {
     <div class="grid2"><button class="btn white" id="it">${I.route.replace('<svg', '<svg width="18"')} Itinéraire</button><button class="btn white" id="rf">Renfort</button></div>`);
   $('#nx', sb) && ($('#nx', sb).onclick = () => {
     if (r.status === 'Reçue') staffTake(r.id, ST.role === 'bar' ? 'Lucas M.' : 'Nadir K.');
-    else { const nx = { 'Prise en charge': 'En route', 'En route': 'Sur place', 'Sur place': 'Résolu' }[r.status]; r.status = nx; r.hist.push([fmtClock(ST.clock), { 'En route': 'En route', 'Sur place': 'Arrivée sur place', 'Résolu': 'Alerte clôturée' }[nx], nx]); emit();
+    else { const nx = { 'Prise en charge': 'En route', 'En route': 'Sur place', 'Sur place': 'Résolu' }[r.status]; r.status = nx; if (nx === 'En route') FX.dispatch(r); r.hist.push([fmtClock(ST.clock), { 'En route': 'En route', 'Sur place': 'Arrivée sur place', 'Résolu': 'Alerte clôturée' }[nx], nx]); emit();
       if (r.mine && nx === 'Sur place') push({ rid: r.id, title: 'L’agent est sur place', text: 'Fais-lui signe, il porte un tee-shirt STAFF.', icon: IC('securite') }); }
     logEv('Staff : ' + r.label + ' → ' + r.status); closeSheet(true); S.alert(id);
   });

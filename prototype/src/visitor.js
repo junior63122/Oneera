@@ -32,7 +32,8 @@ V.map = (opts = {}) => {
     <div class="livebar" id="lb"></div>${navBar('map')}`);
   wireNav(el);
   if (MV) MV.destroy();
-  MV = new MapView($('#mv', el), { at: opts.at || [ST.me.pos[0], ST.me.pos[1] - 8], zoom: opts.zoom || VENUE.zoom, markers: mapMarkers, onLong: at => V.rdvSheet(at), onTapEmpty: () => {} });
+  MV = new MapView($('#mv', el), { at: opts.at || [ST.me.pos[0], ST.me.pos[1] - 8], zoom: opts.zoom || VENUE.zoom, markers: mapMarkers, onLong: at => V.rdvSheet(at), onTapEmpty: () => {}, fx: () => ({ crowd: !showCrowd }) });
+  ST.introSeen = ST.introSeen || {}; if (!opts.at && !ST.introSeen[VENUE.id]) { ST.introSeen[VENUE.id] = 1; FX.intro(MV, [ST.me.pos[0], ST.me.pos[1] - 8], VENUE.zoom); }
   $('#flt', el).onclick = e => { const b = e.target.closest('[data-f]'); if (!b) return; mapFilter = b.dataset.f; $$('#flt .chip', el).forEach(c => c.classList.toggle('on', c === b)); if (mapFilter === 'friends' && myFriends().length) { const p = myFriends().map(f => friendPos(f.id)); MV.flyTo([p.reduce((a, q) => a + q[0], 0) / p.length, p.reduce((a, q) => a + q[1], 0) / p.length], .45); } };
   $('#floors', el) && ($('#floors', el).onclick = e => { const b = e.target.closest('[data-fl]'); if (!b) return; if (b.dataset.fl !== 'club') { toast('Tes amis au casino apparaissent à l’escalier avec « au RDC (Casino) ↑ ». Itinéraire par l’escalier de l’entrée.'); return; } });
   $('#zin', el).onclick = () => MV.zoomBy(1.4); $('#zout', el).onclick = () => MV.zoomBy(1 / 1.4);
@@ -63,7 +64,7 @@ V.map = (opts = {}) => {
   if (!guest() && ST.metrics.start && !ST.metrics.steps.map) setTimeout(() => markStep('map'), 400);
   
 };
-function applyNight() { const img = $('#mv img.base'); if (img) img.style.filter = nightMap ? 'brightness(.55) saturate(1.25) hue-rotate(-12deg)' : ''; const m = $('#mv'); if (m) m.style.background = nightMap ? 'linear-gradient(180deg,#1B1838,#2A1F4A)' : ''; }
+function applyNight() { return;  const img = $('#mv img.base'); if (img) img.style.filter = nightMap ? 'brightness(.55) saturate(1.25) hue-rotate(-12deg)' : ''; const m = $('#mv'); if (m) m.style.background = nightMap ? 'linear-gradient(180deg,#1B1838,#2A1F4A)' : ''; }
 function mapMarkers(mv) {
   const out = [], f = mapFilter;
   if (f !== 'friends') POIS.filter(o => f === 'all' || o.cat === f || (f === 'secu' && o.cat === 'secu')).forEach(o => out.push(poiMarker(o, () => V.poiSheet(o.id), '', mv.s < .5 && f === 'all' && !['scene', 'barO', 'barE', 'barC', 'entree'].includes(o.id))));
@@ -90,11 +91,13 @@ V.layers = () => {
   const sb = openSheet(`<h2 class="h2">Affichage de la carte</h2>
     <div class="grid3">${[['all', 'Festival', 'scene'], ['friends', 'Mes amis', 'point_de_rdv'], ['service', 'Services', 'point_info']].map(v => `<button class="card" data-v="${v[0]}" style="align-items:center;gap:6px;${mapFilter === v[0] ? 'box-shadow:0 0 0 2px var(--pri)' : ''}"><img src="${IC(v[2])}" alt="" style="width:44px"><b style="font-size:13px">${v[1]}</b></button>`).join('')}</div>
     <button class="row" id="crowd" style="background:#F3F5FB;border-radius:14px"><div class="ico">${I.crowd}</div><div class="grow"><div class="t">Affluence en direct</div><div class="s">Estimée à partir des visiteurs qui partagent des stats anonymes et du comptage aux entrées</div></div><span class="tog ${showCrowd ? 'on' : ''}"></span></button>
-    <button class="row" id="night" style="background:#F3F5FB;border-radius:14px"><div class="ico">${I.eye}</div><div class="grow"><div class="t">Mode nuit</div><div class="s">Carte plus sombre, moins éblouissante en soirée</div></div><span class="tog ${nightMap ? 'on' : ''}"></span></button>
+    <div style="background:#F3F5FB;border-radius:14px;padding:12px 14px"><div class="t" style="font-weight:750">Ambiance de la carte</div><div class="s small" style="margin:2px 0 8px">Automatique : la carte passe en nuit au coucher du soleil, scènes, bars et allées s’éclairent.</div><div class="seg" id="amb">${[['auto', 'Auto'], ['day', 'Jour'], ['night', 'Nuit']].map(m => `<button class="${mapMode() === m[0] ? 'on' : ''}" data-amb="${m[0]}">${m[1]}</button>`).join('')}</div></div>
+    <button class="row" id="anim" style="background:#F3F5FB;border-radius:14px"><div class="ico">${I.crowd}</div><div class="grow"><div class="t">Carte animée</div><div class="s">Foule, lumières, nuages. Désactive pour économiser la batterie.</div></div><span class="tog ${ST.mapAnim !== false ? 'on' : ''}"></span></button>
     ${hasFlag('camping') ? `<button class="btn white" id="tentb">${ST.tents && ST.tents[VENUE.id] ? 'Déplacer ma tente ici' : 'Marquer ma tente à ma position'}</button>` : ''}
     <div class="small">Astuce : appui long sur la carte pour créer un point de rendez-vous. Deux doigts pour zoomer.</div>`);
   sb.onclick = e => { const v = e.target.closest('[data-v]'); if (v) { mapFilter = v.dataset.v; closeSheet(); V.map({ at: MV.centerPct(), zoom: MV.s }); } if (e.target.closest('#crowd')) { showCrowd = !showCrowd; $('#crowd .tog', sb).classList.toggle('on', showCrowd); } if (e.target.closest('#tentb')) { closeSheet(); V.tent(); }
-    if (e.target.closest('#night')) { nightMap = !nightMap; $('#night .tog', sb).classList.toggle('on', nightMap); applyNight(); } };
+    const am = e.target.closest('[data-amb]'); if (am) { ST.mapMode = am.dataset.amb; $$('#amb button', sb).forEach(b => b.classList.toggle('on', b === am)); }
+    if (e.target.closest('#anim')) { ST.mapAnim = ST.mapAnim === false; $('#anim .tog', sb).classList.toggle('on', ST.mapAnim !== false); toast(ST.mapAnim === false ? 'Carte fixe : économie de batterie' : 'Carte animée'); } };
 };
 
 V.eventSheet = () => {
@@ -104,7 +107,7 @@ V.eventSheet = () => {
     ${hasFlag('multiday') ? `<div class="seg" id="days">${['Ven. 24', 'Sam. 25', 'Dim. 26'].map((d, i) => `<button class="${i === 1 ? 'on' : ''}" data-d="${i}">${d}</button>`).join('')}</div>` : ''}
     <div class="sec">Programmation</div>${lineupList('scene')}
     <button class="btn white" id="prog">Voir toute la programmation</button><div class="sec">Autres lieux ONEERA ce soir</div><div class="list">${Object.values(VENUES).filter(v => v.id !== VENUE.id).map(v => `<button class="row" data-ven="${v.id}"><img src="${v.map.src}" alt="" style="width:54px;height:40px;object-fit:cover;border-radius:8px"><div class="grow"><div class="t">${v.name}</div><div class="s">${v.kind} · ${v.place}</div></div></button>`).join('')}</div>`);
-  $$('[data-ven]', sb).forEach(b => b.onclick = () => { closeSheet(true); setVenue(b.dataset.ven); V.map(); toast('Bienvenue à ' + EVENT.name + ' · plan et lieux chargés'); });
+  $$('[data-ven]', sb).forEach(b => b.onclick = () => { closeSheet(true); FX.leave(() => { setVenue(b.dataset.ven); V.map(); toast('Bienvenue à ' + EVENT.name + ' · plan et lieux chargés'); }); });
   $('#prog', sb).onclick = () => V.programme(); $('#seat', sb) && ($('#seat', sb).onclick = V.mySeat); $('#days', sb) && ($('#days', sb).onclick = e => { const b = e.target.closest('[data-d]'); if (!b) return; $$('#days button', sb).forEach(x => x.classList.toggle('on', x === b)); toast(b.textContent + ' : programme du jour affiché (prototype)'); });
   wireFav(sb);
 };

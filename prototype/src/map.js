@@ -1,17 +1,17 @@
 // ===== Moteur de carte : pan, pinch, molette, inertie, bornes, marqueurs, clusters, itinéraire =====
 class MapView {
   constructor(host, opts = {}) {
-    this.host = host; this.W = opts.w || VENUE.map.w; this.H = opts.h || VENUE.map.h; this.src = opts.src || VENUE.map.src;
+    this.host = host; this.alpha = opts.src ? /_a\.webp/.test(opts.src) : !!VENUE.map.alpha; this.W = opts.w || VENUE.map.w; this.H = opts.h || VENUE.map.h; this.src = opts.src || VENUE.map.src;
     this.minS = 0; this.maxS = opts.maxS || 1.6; this.markers = new Map(); this.getMarkers = opts.markers || (() => []);
     this.onLong = opts.onLong; this.onTapEmpty = opts.onTapEmpty; this.routePts = null; this.cluster = opts.cluster !== false;
-    host.classList.add('map'); host.innerHTML = `<div class="world"><img class="base" alt="Plan illustré du site" draggable="false" width="${this.W}" height="${this.H}" src="${this.src}"></div><svg class="ovs"></svg><div class="ov"></div>`;
-    this.world = host.querySelector('.world'); this.ov = host.querySelector('.ov'); this.svg = host.querySelector('svg.ovs');
+    host.classList.add('map'); host.innerHTML = `<div class="world"><img class="base" alt="Plan illustré du site" draggable="false" width="${this.W}" height="${this.H}" src="${this.src}"></div><canvas class="fx" aria-hidden="true"></canvas><svg class="ovs"></svg><div class="ov"></div><canvas class="fx2" aria-hidden="true"></canvas>`;
+    this.world = host.querySelector('.world'); this.fx = host.querySelector('canvas.fx'); this.fx2 = host.querySelector('canvas.fx2'); this.base = host.querySelector('img.base'); this.fxCfg = opts.fx; this.ov = host.querySelector('.ov'); this.svg = host.querySelector('svg.ovs');
     this.s = 1; this.tx = 0; this.ty = 0; this.vx = 0; this.vy = 0; this.ptrs = new Map(); this.alive = true;
     this.resize(); this.center(opts.at || [48, 52], opts.zoom || 0.36);
     this.bind(); this.loop = this.loop.bind(this); requestAnimationFrame(this.loop);
     this.ro = new ResizeObserver(() => { const c = this.centerPct(); this.resize(); this.center(c, this.s); }); this.ro.observe(host);
   }
-  resize() { this.vw = this.host.clientWidth || 368; this.vh = this.host.clientHeight || 822; this.minS = Math.max(this.vw / this.W, this.vh / this.H) * 0.98; }
+  resize() { this.vw = this.host.clientWidth || 368; this.vh = this.host.clientHeight || 822; this.minS = Math.max(this.vw / this.W, this.vh / this.H) * 0.98 * (this.alpha ? .72 : .8); }
   destroy() { this.alive = false; this.ro.disconnect(); }
   centerPct() { return [(this.vw / 2 - this.tx) / this.s / this.W * 100, (this.vh / 2 - this.ty) / this.s / this.H * 100]; }
   center(at, s) { this.s = Math.min(this.maxS, Math.max(this.minS, s)); this.tx = this.vw / 2 - at[0] / 100 * this.W * this.s; this.ty = this.vh / 2 - at[1] / 100 * this.H * this.s; this.clamp(); this.apply(); }
@@ -64,7 +64,7 @@ class MapView {
   loop() {
     if (!this.alive) return;
     if (!this.ptrs.size && (Math.abs(this.vx) > .2 || Math.abs(this.vy) > .2)) { this.tx += this.vx; this.ty += this.vy; this.vx *= .92; this.vy *= .92; this.clamp(); this.apply(); }
-    this.renderMarkers(); requestAnimationFrame(this.loop);
+    this.renderMarkers(); if (typeof FX !== 'undefined' && document.visibilityState !== 'hidden') FX.draw(this, performance.now()); requestAnimationFrame(this.loop);
   }
   renderMarkers() {
     let list = this.getMarkers(this);
@@ -91,7 +91,7 @@ class MapView {
         this.ov.append(el); this.markers.set(m.id, el);
       }
       if (el._html !== m.html) { el.innerHTML = m.html; el._html = m.html; el.className = 'mk ' + (m.cls || ''); }
-      el._click = m.onClick; const [x, y] = this.proj(m.at); el.style.left = x + 'px'; el.style.top = y + 'px'; el.style.zIndex = m.z || 1;
+      el._click = m.onClick; if (el._at && (Math.abs(el._at[0] - m.at[0]) + Math.abs(el._at[1] - m.at[1])) > .015) el._walk = performance.now() + 380; el._at = [m.at[0], m.at[1]]; el.classList.toggle('walk', (el._walk || 0) > performance.now()); const [x, y] = this.proj(m.at); el.style.left = x + 'px'; el.style.top = y + 'px'; el.style.zIndex = m.z || 1;
       if (el._halo && m.halo) { const r = this.mPx(m.halo.m); Object.assign(el._halo.style, { left: x + 'px', top: y + 'px', width: 2 * r + 'px', height: 1.3 * r + 'px', background: m.halo.c + '2e', border: `1.5px ${m.halo.dash ? 'dashed' : 'solid'} ${m.halo.c}99` }); }
     });
     this.markers.forEach((el, id) => { if (!seen.has(id)) { el._halo && el._halo.remove(); el.remove(); this.markers.delete(id); } });
