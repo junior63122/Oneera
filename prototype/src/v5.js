@@ -25,8 +25,8 @@ MapView.fan = function (list, mv) {
 };
 
 // ---------- Bulles de messages sur la carte (visibles des seuls amis) + masquer / afficher ----------
-ST.showBub = ST.showBub !== false; ST.bubbles = ST.bubbles || { lea: { t: 'Devant la scène, Kalia joue 🔥', at: 23 * 60 + 30 }, sami: { t: 'Qui vient au bar à cocktails ?', at: 23 * 60 + 36 } };
-const bubFresh = b => b && ((ST.clock - b.at + 1440) % 1440) < 30;
+ST.showBub = ST.showBub !== false; ST.bubbles = ST.bubbles || { lea: { t: 'Devant la scène 🔥', at: 23 * 60 + 30, v: 'bdf' }, sami: { t: 'Qui vient au bar ?', at: 23 * 60 + 36, v: 'bdf' } };
+const bubFresh = b => b && (!b.v || b.v === VENUE.id) && ((ST.clock - b.at + 1440) % 1440) < 30;
 const _mapMarkers = mapMarkers;
 mapMarkers = function (mv) {
   const out = _mapMarkers(mv);
@@ -48,7 +48,7 @@ V.meSheet = () => {
     <button class="row" id="sb" style="background:#F3F5FB;border-radius:14px"><div class="grow"><div class="t">Afficher les messages sur la carte</div><div class="s">Bulles de tes amis, 30 min</div></div><span class="tog ${ST.showBub ? 'on' : ''}"></span></button>
     <button class="row" id="sh"><div class="ico">${I.eye}</div><div class="grow"><div class="t">Partage de ma position</div><div class="s">${shareLabel()}</div></div></button>`);
   $('#inv', sb).onclick = () => V.pickFriends('Inviter à me rejoindre ici', ids => { ids.forEach(id => (ST.convos[id] = ST.convos[id] || []).push({ me: 1, t: '📍 Rejoins-moi ici (' + zoneOf(ST.me.pos) + ')', loc: zoneOf(ST.me.pos) })); const n = ids.map(i => FRIENDS.find(f => f.id === i).n); toast(`Invitation envoyée à ${n.join(', ')} : ta position et l’itinéraire`); emit();
-    setTimeout(() => { if (!document.body.contains(MV && MV.host)) return; ST.bubbles[ids[0]] = { t: 'J’arrive ! 🏃', at: ST.clock }; emit(); }, 2500); });
+    setTimeout(() => { if (!document.body.contains(MV && MV.host)) return; ST.bubbles[ids[0]] = { t: 'J’arrive ! 🏃', at: ST.clock, v: VENUE.id }; emit(); }, 2500); });
   $('#wr', sb).onclick = V.mapMessage;
   $('#sb', sb).onclick = () => { ST.showBub = !ST.showBub; $('#sb .tog', sb).classList.toggle('on', ST.showBub); emit(); toast(ST.showBub ? 'Messages affichés sur la carte' : 'Messages masqués sur la carte'); };
   $('#sh', sb).onclick = V.shareSettings;
@@ -62,7 +62,7 @@ V.mapMessage = () => {
   $('#mt', sb).oninput = e => { const v = e.target.value, m = v.match(/@([\p{L}\w.-]+)/gu) || []; m.forEach(x => { const f = myFriends().find(f => f.n.toLowerCase() === x.slice(1).toLowerCase()); if (f && !ment.includes(f.id)) { ment.push(f.id); $(`[data-m="${f.id}"]`, sb).classList.add('on'); } }); };
   $('#mn', sb).onclick = e => { const b = e.target.closest('[data-m]'); if (!b) return; const id = b.dataset.m; ment = ment.includes(id) ? ment.filter(x => x !== id) : ment.concat(id); b.classList.toggle('on'); };
   $('#rm', sb).onclick = () => { delete ST.bubbles.me; closeSheet(); emit(); toast('Message retiré de la carte'); };
-  $('#ok', sb).onclick = () => { const t = $('#mt', sb).value.trim(); if (!t) { $('#mt', sb).focus(); return; } ST.bubbles.me = { t, at: ST.clock }; ment.forEach(id => (ST.convos[id] = ST.convos[id] || []).push({ me: 1, t: '@' + FRIENDS.find(f => f.id === id).n + ' ' + t + ' 📍 ' + zoneOf(ST.me.pos), loc: zoneOf(ST.me.pos) })); closeSheet(); emit();
+  $('#ok', sb).onclick = () => { const t = $('#mt', sb).value.trim(); if (!t) { $('#mt', sb).focus(); return; } ST.bubbles.me = { t, at: ST.clock, v: VENUE.id }; ment.forEach(id => (ST.convos[id] = ST.convos[id] || []).push({ me: 1, t: '@' + FRIENDS.find(f => f.id === id).n + ' ' + t + ' 📍 ' + zoneOf(ST.me.pos), loc: zoneOf(ST.me.pos) })); closeSheet(); emit();
     toast(ment.length ? `Publié · ${ment.map(i => FRIENDS.find(f => f.id === i).n).join(', ')} prévenu(s) avec ta position` : 'Publié sur la carte · visible par tes amis 30 min'); };
 };
 V.pickFriends = (title, cb, pre = []) => {
@@ -78,7 +78,7 @@ function shareLabel() { const s = ST.sharing; if (s.mode === 'off') return 'Dés
 V.shareSettings = () => {
   const s = ST.sharing; s.except = s.except || []; s.only = s.only || [];
   const sb = openSheet(`<h2 class="h2">Partager ma position</h2>
-    <div class="seg" id="md">${[['event', 'Jusqu’à la fin'], ['15m', '15 min'], ['1h', '1 h'], ['3h', '3 h'], ['off', 'Désactiver']].map(m => `<button data-m="${m[0]}">${m[1]}</button>`).join('')}</div>
+    <div class="seg" id="md">${[['event', 'Soirée'], ['15m', '15 min'], ['1h', '1 h'], ['3h', '3 h'], ['off', 'Arrêter']].map(m => `<button data-m="${m[0]}">${m[1]}</button>`).join('')}</div>
     <div class="small" id="ex"></div>
     <div id="who" class="list">${[['friends', 'Tous mes amis'], ['except', 'Mes amis, sauf…'], ['only', 'Seulement ces amis']].map(w => `<button class="row" data-w="${w[0]}"><div class="grow"><div class="t">${w[1]}</div><div class="s" data-n></div></div><span data-r></span></button>`).join('')}</div>
     <button class="row" id="gh" style="background:#F3F5FB;border-radius:14px"><div class="ico">${I.eyeOff}</div><div class="grow"><div class="t">Mode fantôme</div><div class="s">Tu vois tes amis, eux voient ta dernière zone seulement</div></div><span class="tog"></span></button>
@@ -154,10 +154,7 @@ V.layers = () => { _layers(); const sb = $('.sheet .sbody'); if (!sb) return; sb
 // ---------- Carte : compteur d'amis présents + « personnes de ton réseau à proximité » ----------
 const _vmap = V.map;
 V.map = (opts) => {
-  _vmap(opts); saveSession(); const q = $('#qual'); if (!q) return;
-  q.insertAdjacentHTML('afterend', '<button id="netc" class="pill" style="box-shadow:0 2px 8px rgba(20,30,60,.12);background:#fff;color:var(--ink);margin-left:6px" hidden></button>');
-  const nc = $('#netc'), draw = () => { if (!document.body.contains(nc)) { listeners.delete(draw); return; } const fr = myFriends().filter(f => !f.floor); nc.hidden = guest() || !fr.length; nc.innerHTML = `👥 ${fr.length} ami${fr.length > 1 ? 's' : ''} ici · ≈ ${({ bdf: 9, bisous: 4, selva: 3 }[VENUE.id] || 3)} de ton réseau à proximité`; };
-  nc.onclick = V.friendsTab; listeners.add(draw); draw();
+  _vmap(opts); saveSession(); if (!ST.tourDone && !guest() && !(opts && opts.at)) setTimeout(V.tour, ST.introSeen && MV && MV.intro ? 2600 : 500);
 };
 
 // ---------- Fenêtres : glisser vers le bas depuis tout le panneau pour fermer (pas seulement la poignée) ----------
@@ -201,16 +198,18 @@ const MUTUAL = { lea: ['ines', 'tom'], ines: ['lea'], tom: ['lea', 'sami'], sami
 const _friendSheet = V.friendSheet;
 V.friendSheet = (id) => {
   _friendSheet(id); const sb = $('.sheet .sbody'); if (!sb) return; const mu = (MUTUAL[id] || []).filter(x => ST.friends.includes(x));
-  sb.insertAdjacentHTML('beforeend', `<div class="grid2"><button class="btn white sm" id="mut">${mu.length} ami${mu.length > 1 ? 's' : ''} en commun</button><button class="btn white sm" id="shp">${I.share.replace('<svg', '<svg width="16"')} Partager son profil</button></div>`);
-  $('#mut', sb).onclick = () => openSheet(`<h2 class="h2">Amis en commun</h2><div class="list">${mu.map(m => { const f = FRIENDS.find(x => x.id === m); return `<button class="row" data-u="${m}"><img class="av" src="${fHead(m)}" alt=""><div class="grow"><div class="t">${f.n}</div><div class="s">@${m}</div></div></button>`; }).join('') || '<div class="row small">Aucun ami en commun.</div>'}</div>`).onclick = e => { const u = e.target.closest('[data-u]'); if (u) V.friendSheet(u.dataset.u); };
-  $('#shp', sb).onclick = () => V.pickFriends('Partager le profil de ' + FRIENDS.find(f => f.id === id).n + ' à…', ids => toast(`Profil partagé à ${ids.length} ami(s) : ils peuvent l’ajouter en une touche`));
+  const sm = sb.querySelector('.small'); sm && sm.insertAdjacentHTML('beforeend', ` · <button class="link" id="mut" style="display:inline;min-height:0;padding:0;font-size:inherit;color:var(--pri)">${mu.length} ami${mu.length > 1 ? 's' : ''} en commun</button>`);
+  const here = $('#here', sb); if (here) here.innerHTML = '📍 Rejoins-moi ici';
+  const more = $('#more', sb); if (more) { more.innerHTML = `${I.more.replace('<svg', '<svg width="18"')} Partager son profil, masquer ma position, bloquer, signaler`; more.addEventListener('click', () => setTimeout(() => { const l = $('.sheet .sbody .list'); if (l && !$('#shp')) { l.insertAdjacentHTML('afterbegin', `<button class="row" id="shp"><div class="ico">${I.share}</div><div class="grow"><div class="t">Partager son profil</div></div></button>`); $('#shp').onclick = () => V.pickFriends('Partager le profil de ' + FRIENDS.find(f => f.id === id).n + ' à…', ids => toast(`Profil partagé à ${ids.length} ami(s) : ils peuvent l’ajouter en une touche`)); } }, 30)); }
+  $('#mut', sb) && ($('#mut', sb).onclick = () => openSheet(`<h2 class="h2">Amis en commun</h2><div class="list">${mu.map(m => { const f = FRIENDS.find(x => x.id === m); return `<button class="row" data-u="${m}"><img class="av" src="${fHead(m)}" alt=""><div class="grow"><div class="t">${f.n}</div><div class="s">@${m}</div></div></button>`; }).join('') || '<div class="row small">Aucun ami en commun.</div>'}</div>`).onclick = e => { const u = e.target.closest('[data-u]'); if (u) V.friendSheet(u.dataset.u); });
 };
 const _friendsTab = V.friendsTab;
 V.friendsTab = () => {
   _friendsTab(); const fl = $('#fl'); if (!fl) return;
+  fl.insertAdjacentHTML('beforebegin', `<div class="small" style="padding:0 18px 8px">👥 ≈ ${({ bdf: 9, bisous: 4, selva: 3 }[VENUE.id] || 3)} personnes de ton réseau (amis d’amis) à proximité · elles ne voient pas ta position</div>`);
   const sug = [['maya', 'Maya D.', 2], ['jade', 'Jade R.', 3], ['noah', 'Noah B.', 1]].filter(s => !ST.friends.includes(s[0]) && !ST.pending.some(p => p.id === s[0]));
   const box = document.createElement('div'); box.className = 'card'; box.style.cssText = 'gap:8px;margin:0 0 12px';
-  box.innerHTML = `<b style="font-size:15px">Vous connaissez peut-être</b><div class="chips">${sug.map(s => `<button class="chip" data-s="${s[0]}" style="padding:6px 12px 6px 6px"><img src="${HEAD(['group_21', 'lins', 'staff1'][sug.indexOf(s) % 3])}" alt="" style="width:28px;height:28px;border-radius:14px"><span style="display:flex;flex-direction:column;align-items:flex-start;line-height:1.1"><b style="font-size:13px">${s[1]}</b><span class="tiny">${s[2]} ami${s[2] > 1 ? 's' : ''} en commun</span></span><span class="pill" style="margin-left:4px">Ajouter</span></button>`).join('')}</div><button class="btn white sm" id="allc">Ajouter tous mes contacts qui ont ONEERA</button>`;
+  box.innerHTML = `<b style="font-size:15px">Tu connais peut-être</b><div class="chips">${sug.map(s => `<button class="chip" data-s="${s[0]}" style="padding:6px 12px 6px 6px"><img src="${HEAD(['group_21', 'lins', 'staff1'][sug.indexOf(s) % 3])}" alt="" style="width:28px;height:28px;border-radius:14px"><span style="display:flex;flex-direction:column;align-items:flex-start;line-height:1.1"><b style="font-size:13px">${s[1]}</b><span class="tiny">${s[2]} ami${s[2] > 1 ? 's' : ''} en commun</span></span><span class="pill" style="margin-left:4px">Ajouter</span></button>`).join('')}</div><button class="btn white sm" id="allc">Ajouter tous mes contacts qui ont ONEERA</button>`;
   if (sug.length) fl.parentElement.insertBefore(box, fl);
   box.onclick = e => { const s = e.target.closest('[data-s]'); if (s) { s.remove(); toast('Demande envoyée · elle apparaîtra dans ses demandes reçues'); } if (e.target.closest('#allc')) V.addFriends(false); };
 };
@@ -267,3 +266,16 @@ V.bugReport = () => {
   $('#ok', sb).onclick = () => { if (!$('#bt', sb).value.trim()) { $('#bt', sb).focus(); return; } closeSheet(); toast('Merci ! Ton retour est transmis à l’équipe ONEERA avec la capture.'); };
 };
 let _shk = []; addEventListener('devicemotion', e => { const a = e.accelerationIncludingGravity; if (!a) return; const g = Math.hypot(a.x || 0, a.y || 0, a.z || 0); if (g < 24) return; const t = Date.now(); _shk = _shk.filter(x => t - x < 900).concat(t); if (_shk.length >= 3 && !$('.sheet')) { _shk = []; V.bugReport(); } });
+
+// ---------- Premier lancement : 3 repères seulement, puis l'écran reste épuré ----------
+V.tour = () => {
+  if (ST.tourDone || !$('#mv') || $('.tour')) return;
+  const steps = [['#mepill', 'Toi, tes amis', 'Tes amis apparaissent sur la carte. Touche ta pastille pour inviter un ami ou partager ta position.'], ['#flt', 'Trouver un lieu', 'Bars, scènes, toilettes : touche un filtre ou une icône pour voir sa fiche et l’itinéraire.'], ['#sos', 'En cas de problème', 'Le bouton SOS prévient l’équipe du lieu avec ta position.']];
+  let i = 0; const box = document.createElement('div'); box.className = 'tour'; SCREEN.append(box);
+  const end = () => { ST.tourDone = true; box.remove(); emit(); };
+  const show = () => { const s = steps[i], t = $(s[0]); if (!t) { i++; return i < steps.length ? show() : end(); } const r = t.getBoundingClientRect(), R = SCREEN.getBoundingClientRect(), k = R.width / SCREEN.offsetWidth || 1, x = (r.left - R.left) / k, y = (r.top - R.top) / k, w = r.width / k, h = r.height / k, below = y < SCREEN.offsetHeight / 2;
+    box.innerHTML = `<div class="tourHole" style="left:${x - 6}px;top:${y - 6}px;width:${w + 12}px;height:${h + 12}px"></div><div class="tourCard" style="${below ? `top:${y + h + 14}px` : `bottom:${SCREEN.offsetHeight - y + 14}px`}"><b>${s[1]}</b><span>${s[2]}</span><div style="display:flex;justify-content:space-between;align-items:center;margin-top:6px"><button class="link" data-x style="min-height:30px">Passer</button><span class="tiny">${i + 1} / ${steps.length}</span><button class="btn sm" data-n style="width:auto;padding:0 18px">${i === steps.length - 1 ? 'C’est parti' : 'Suivant'}</button></div></div>`; };
+  box.onclick = e => { if (e.target.closest('[data-x]')) return end(); if (e.target.closest('[data-n]')) { i++; return i < steps.length ? show() : end(); } };
+  show();
+};
+const _quickSetup = quickSetup; quickSetup = function () { _quickSetup(); if (ST.tourDone === undefined) ST.tourDone = true; };

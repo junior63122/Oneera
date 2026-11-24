@@ -46,7 +46,7 @@ img{max-width:none}
   .status>span{visibility:hidden}
   #fab-panel{display:flex!important}
 }
-#fab-panel{display:none;position:absolute;left:calc(80px + env(safe-area-inset-left,0px));top:calc(env(safe-area-inset-top,0px) + 10px);z-index:1000;width:30px;height:30px;border-radius:15px;background:rgba(28,31,42,.72);color:#fff;align-items:center;justify-content:center;font-size:16px}
+#fab-panel{display:none;position:absolute;left:calc(6px + env(safe-area-inset-left,0px));top:calc(env(safe-area-inset-top,0px) + 4px);z-index:1000;width:24px;height:24px;border-radius:12px;background:rgba(28,31,42,.38);color:#fff;align-items:center;justify-content:center;font-size:16px}
 #mobileMenu{position:absolute;inset:0;z-index:950;background:rgba(10,12,20,.55);display:flex;align-items:flex-end}
 #mobileMenu .msheet{width:100%;border-radius:20px 20px 0 0;max-height:85%;overflow:auto;background:#F3F5FB;padding:12px 12px calc(16px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;gap:10px;--desk-ink:#1C1F2A;--desk-mut:#5B6075;--desk-line:#D7DBEA;--desk-card:#fff;color:#1C1F2A}
 #mobileMenu .pcard{max-height:none;overflow:visible}
@@ -398,3 +398,14 @@ img[src*="a/ic/"]{object-fit:contain;aspect-ratio:1/1;height:auto}
 
 /* v5 : les marqueurs (z-index de profondeur en 3D) restent confinés à la carte */
 .map{isolation:isolate}.map .ov{isolation:isolate}
+
+/* v5.1 : repères du premier lancement */
+.tour{position:absolute;inset:0;z-index:80}
+.tourHole{position:absolute;border-radius:18px;box-shadow:0 0 0 9999px rgba(15,18,40,.55);pointer-events:none;transition:all .25s}
+.tourCard{position:absolute;left:16px;right:16px;background:#fff;border-radius:20px;padding:14px 16px;display:flex;flex-direction:column;gap:4px;box-shadow:0 10px 30px rgba(0,0,0,.25)}
+.tourCard b{font-size:16px}.tourCard span{font-size:14px;color:var(--ink2);line-height:1.4}
+
+/* v5.1 : finitions de la revue d'écrans */
+.ctrls .stack button[hidden]{display:none}
+.mk .fr .bub{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:150px;font-size:11.5px;padding:5px 9px}
+.tourCard .tiny{white-space:nowrap}

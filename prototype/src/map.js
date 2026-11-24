@@ -5,14 +5,14 @@ class MapView {
     this.minS = 0; this.maxS = opts.maxS || 1.6; this.markers = new Map(); this.getMarkers = opts.markers || (() => []);
     this.onLong = opts.onLong; this.onTapEmpty = opts.onTapEmpty; this.routePts = null; this.cluster = opts.cluster !== false;
     host.classList.add('map'); host.innerHTML = `<div class="tl"><div class="world"><img class="base" alt="Plan illustré du site" draggable="false" width="${this.W}" height="${this.H}" src="${this.src}"></div><canvas class="fx" aria-hidden="true"></canvas><svg class="ovs"></svg></div><div class="ov"></div><canvas class="fx2" aria-hidden="true"></canvas>`;
-    this.tl = host.querySelector('.tl'); this.rot = 0; this.tilt = 0; this.tiltTo = 0; this.canRot = !!opts.rotate; this.onView = opts.onView;
+    this.tl = host.querySelector('.tl'); this.rot = 0; this.tilt = 0; this.tiltTo = 0; this.canRot = !!opts.rotate; this.strict = opts.strict != null ? !!opts.strict : !!opts.rotate; this.onView = opts.onView;
     this.world = host.querySelector('.world'); this.fx = host.querySelector('canvas.fx'); this.fx2 = host.querySelector('canvas.fx2'); this.base = host.querySelector('img.base'); this.fxCfg = opts.fx; this.ov = host.querySelector('.ov'); this.svg = host.querySelector('svg.ovs');
     this.s = 1; this.tx = 0; this.ty = 0; this.vx = 0; this.vy = 0; this.ptrs = new Map(); this.alive = true;
     this.resize(); this.center(opts.at || [48, 52], opts.zoom || 0.36);
     this.bind(); this.loop = this.loop.bind(this); requestAnimationFrame(this.loop);
     this.ro = new ResizeObserver(() => { const c = this.centerPct(); this.resize(); this.center(c, this.s); }); this.ro.observe(host);
   }
-  resize() { this.vw = this.host.clientWidth || 368; this.vh = this.host.clientHeight || 822; this.minS = Math.max(this.vw / this.W, this.vh / this.H) * 0.98 * (this.alpha ? .72 : .8); }
+  resize() { this.vw = this.host.clientWidth || 368; this.vh = this.host.clientHeight || 822; this.minS = Math.max(this.vw / this.W, this.vh / this.H) * (this.strict ? 1.001 : 0.98 * (this.alpha ? .72 : .8)); }
   destroy() { this.alive = false; this.ro.disconnect(); }
   centerPct() { return this.unproj(this.vw / 2, this.vh / 2); }
   center(at, s) { this.s = Math.min(this.maxS, Math.max(this.minS, s)); const c = Math.cos(this.rot), n = Math.sin(this.rot), x = at[0] / 100 * this.W, y = at[1] / 100 * this.H; this.tx = this.vw / 2 - this.s * (x * c - y * n); this.ty = this.vh / 2 - this.s * (x * n + y * c); this.clamp(); this.apply(); }
@@ -29,6 +29,16 @@ class MapView {
   }
   zoomBy(f, cx = this.vw / 2, cy = this.vh / 2) { const ns = Math.min(this.maxS, Math.max(this.minS, this.s * f)); const k = ns / this.s; this.tx = cx - (cx - this.tx) * k; this.ty = cy - (cy - this.ty) * k; this.s = ns; this.clamp(); this.apply(); }
   clamp() {
+    if (this.strict) { // bords du plan = bords de l'écran : jamais de fond visible, même en rotation ou en 3D
+      for (let it = 0; it < 5; it++) {
+        const Q = [[0, 0], [this.vw, 0], [0, this.vh], [this.vw, this.vh]].map(([x, y]) => { const f = this.s2flat(x, y); return this.unproj(f[0], f[1]); });
+        const xs = Q.map(q => q[0]), ys = Q.map(q => q[1]), x0 = Math.min(...xs), x1 = Math.max(...xs), y0 = Math.min(...ys), y1 = Math.max(...ys), sp = Math.max((x1 - x0) / 100, (y1 - y0) / 100);
+        if (sp > 1.0005) { const k = sp * 1.003, cx = this.vw / 2, cy = this.vh / 2; this.tx = cx - (cx - this.tx) * k; this.ty = cy - (cy - this.ty) * k; this.s *= k; continue; }
+        const dx = x0 < 0 ? -x0 : x1 > 100 ? 100 - x1 : 0, dy = y0 < 0 ? -y0 : y1 > 100 ? 100 - y1 : 0; if (!dx && !dy) break;
+        const a = this.proj([50, 50]), b = this.proj([50 + dx, 50 + dy]); this.tx -= b[0] - a[0]; this.ty -= b[1] - a[1];
+      }
+      return;
+    }
     if (this.rot || this.tilt) { const [cx, cy] = this.unproj(this.vw / 2, this.vh / 2), kx = Math.min(100, Math.max(0, cx)), ky = Math.min(100, Math.max(0, cy)); if (kx !== cx || ky !== cy) { const [px, py] = this.proj([kx, ky]); this.tx += this.vw / 2 - px; this.ty += this.vh / 2 - py; } return; }
     const mw = this.W * this.s, mh = this.H * this.s, padX = this.vw * .25, padY = this.vh * .25;
     this.tx = mw + padX * 2 < this.vw ? (this.vw - mw) / 2 : Math.min(padX, Math.max(this.vw - mw - padX, this.tx));
@@ -80,7 +90,7 @@ class MapView {
   loop() {
     if (!this.alive) return;
     if (!this.ptrs.size && (Math.abs(this.vx) > .2 || Math.abs(this.vy) > .2)) { this.tx += this.vx; this.ty += this.vy; this.vx *= .92; this.vy *= .92; this.clamp(); this.apply(); }
-    if (this.tilt !== this.tiltTo) { const d = this.tiltTo - this.tilt; this.tilt = Math.abs(d) < .02 ? this.tiltTo : this.tilt + d * .16; }
+    if (this.tilt !== this.tiltTo) { const d = this.tiltTo - this.tilt; this.tilt = Math.abs(d) < .02 ? this.tiltTo : this.tilt + d * .16; this.clamp(); this.apply(); }
     const tf = this.tilt ? `perspective(1100px) rotateX(${(this.phi * 180 / Math.PI).toFixed(2)}deg)` : ''; if (this._tf !== tf) { this._tf = tf; const [ox, oy] = this.tiltO(); this.tl.style.transformOrigin = `${ox}px ${oy}px`; this.tl.style.transform = tf; this.host.classList.toggle('t3d', !!this.tilt); }
     const vk = Math.round(this.rot * 100) + ':' + (this.tiltTo ? 1 : 0); if (this._vk !== vk) { this._vk = vk; this.onView && this.onView(this); }
     this.renderMarkers(); if (typeof FX !== 'undefined' && document.visibilityState !== 'hidden') FX.draw(this, performance.now()); requestAnimationFrame(this.loop);

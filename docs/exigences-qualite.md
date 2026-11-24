@@ -62,7 +62,7 @@ Environ 1 500 exigences brutes en ressortent. Une fois les doublons regroupés, 
 | Carte 2,5D illustrée (référence Dofus / League of Legends mobile), qualité supérieure au site de réservation du Finns Beach Club | Discussions, BDF | ✅ |
 | Carte vivante, pas une image avec des icônes posées dessus : foule, lumières, eau, nuages, micro-animations | Discussions, CDC §8.1 | ✅ (v4) |
 | Jour / nuit automatique, et pas un simple changement de couleur | V1 MAP, Map explication codeurs | ✅ (v4) |
-| Nuages autour du site, jamais de fond uni ni de zones blanches ou noires ; au bord de la carte, l'écran reste bloqué sur les nuages, sans recentrage automatique | Discussions | ✅ |
+| Nuages autour du site, jamais de fond uni ni de zones blanches ou noires ; au bord de la carte, l'écran reste bloqué, sans recentrage automatique | Discussions | 🔧 v5.1 : la caméra ne sort plus jamais du plan (2D, carte tournée, 3D) ; plans détourés posés sur une vraie mer de nuages |
 | Animation d'entrée et de sortie de carte « façon Simpson » (descente depuis les nuages) | Discussions, BDF | ✅ (v4) |
 | Zoom, **rotation comme Plans**, déplacement libre, inertie, double-tap | V1 MAP, stack | 🔧 rotation à deux doigts + boussole « retour au nord » |
 | Vue **2D et 3D** | Discussions, BDF | 🔧 bouton 2D / 3D (plan incliné en perspective, avatars debout) ; vraie 3D 🏗️ sans le fichier .blend |
@@ -224,13 +224,31 @@ Ces documents ne sont pas dans le dépôt, je ne prétends donc pas les avoir an
 6. **Barre du bas** : le Figma du fondateur prévoit Map / Amis / Chat. Une demande pour l'app du festival placerait les messages en haut. Le prototype suit le Figma.
 7. **Droits sur les visuels** : les avatars, icônes et plans du prototype viennent du dossier Figma du Drive. La règle « salle blanche » de l'audit demande de vérifier qui les a produits et qui en détient les droits avant tout usage public.
 
-## 15. Preuves
+## 15. Revue écran par écran (v5.1)
+
+50 écrans capturés au format téléphone et passés en revue. Corrections :
+- **Carte** :
+  - caméra bornée au plan, plus de ciel uni visible ;
+  - interface allégée : boutons + / − retirés (pincer ou toucher deux fois), bouton œil retiré ;
+  - une seule pastille « ± 3 m · 4 amis ici · tu es visible », qui ouvre la fiche « Moi » ;
+  - la boussole n'apparaît que quand la carte est tournée ;
+  - bulles sur une seule ligne, rattachées à leur lieu.
+- **Premier lancement** : 3 repères seulement (toi et tes amis, trouver un lieu, SOS), que l'on peut passer.
+- **Fiche ami** : deux actions principales ; « Partager son profil », « Masquer ma position », « Bloquer » et « Signaler » sont regroupés dans « … ».
+- **Partage** : libellés courts (Soirée, 15 min, 1 h, 3 h, Arrêter).
+- **Éditeur d'avatar** : plus de « modifications non enregistrées » à l'ouverture ; il s'ouvre sur l'onglet le plus fourni.
+- **Bouton de démonstration ☰** : plus petit et discret.
+- **Textes** : tutoiement partout (« Tu connais peut-être »).
+
+## 16. Preuves
 
 Toutes les vérifications sont des scripts Playwright, dans `prototype/test/`.
 
 | Script | Ce qu'il couvre | Résultat |
 |---|---|---|
-| `qav5.js` | app visiteur v5 | 33 / 33 |
+| `qav5.js` | app visiteur v5 | 34 / 34 |
+| `bounds.js` | caméra bornée au plan (3 lieux × 2D, rotation, 3D) | 10 / 10 |
+| `review.js` | captures des 50 écrans pour la revue | — |
 | `qav5d.js` | tableau de bord et staff v5 | 21 / 21 |
 | `rot3d.js` | rotation et 3D | 10 / 10 |
 | `qa2.js` | régressions v3 | 23 / 23 |
