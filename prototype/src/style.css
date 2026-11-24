@@ -465,3 +465,26 @@ img[src*="a/ic/"]{object-fit:contain;aspect-ratio:1/1;height:auto}
 .stStyles button img{height:92px}.stStyles button b{font-size:13px}.stStyles button span{font-size:10.5px;color:var(--ink3);text-align:center;line-height:1.2}
 .stStyles button.on{background:#EEF1FF;box-shadow:inset 0 0 0 2.5px var(--pri)}
 #screen.night .stPanel{background:rgba(30,34,48,.96);color:#ECEEF6}#screen.night .stTabs button{background:#2A2F40;color:#C9CDE0}#screen.night .stStyles button{background:#2A2F40;box-shadow:none}
+
+/* v7 : studio du nouveau créateur */
+.av2big{position:relative;z-index:2;height:calc(100% - 10px);max-height:350px;aspect-ratio:160/404;margin-bottom:6px;animation:sway 5s ease-in-out infinite;transform-origin:50% 100%;filter:drop-shadow(0 10px 14px rgba(80,40,120,.18))}
+.av2big.pop{animation:pop .35s ease-out,sway 5s ease-in-out .35s infinite}
+.stBody{max-height:260px;overflow-y:auto;scrollbar-width:none;display:flex;flex-direction:column;gap:8px}.stBody::-webkit-scrollbar{display:none}
+.stLbl{font-size:12px;font-weight:800;color:var(--ink3);text-transform:uppercase;letter-spacing:.05em;margin-top:2px}
+.stTiles{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.stTiles button{display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 4px 7px;border-radius:16px;background:#F6F4FC;box-shadow:inset 0 0 0 1.5px #ECE9F6}
+.stTiles button .th{width:100%;aspect-ratio:1;display:block;border-radius:12px;overflow:hidden;background:linear-gradient(#F3ECFB,#FBE9F2)}
+.stTiles button b{font-size:11px;font-weight:750;text-align:center;line-height:1.15;color:var(--ink2)}
+.stTiles button.on{background:#EEF1FF;box-shadow:inset 0 0 0 2.5px var(--pri)}.stTiles button.on b{color:var(--pri)}
+.stSw.small{grid-template-columns:repeat(8,1fr);gap:8px}
+.seg.small button{min-height:34px;font-size:13px}
+.mk .fr.fullb .bodyimg.av2{height:calc(84px * var(--pk,1))}
+#screen.night .stTiles button{background:#2A2F40;box-shadow:none}
+
+/* v7 : le bouton de validation reste toujours visible, quelle que soit la hauteur de l'écran */
+.studio .stStage{flex:1 1 auto;min-height:150px}
+.studio .stPanel{flex:0 0 auto;max-height:62%;display:flex;flex-direction:column}
+.studio .stBody{flex:1 1 auto;min-height:0;max-height:none;overflow-y:auto}
+.studio #go{flex:0 0 auto}
+.studio .stTabs,.studio #gd{flex:0 0 auto}
+.rb:disabled{opacity:.35;pointer-events:none}
