@@ -29,7 +29,7 @@ const VENUES = {
       FRIENDS: [
         { id: 'lea', n: 'Léa', col: '#0E9F8A', bat: 62, loop: 'FGFHF', speed: .02, acc: 2 }, { id: 'ines', n: 'Inès', col: '#E0457B', bat: 35, loop: 'HIH', speed: .015, acc: 2 },
         { id: 'tom', n: 'Tom', col: '#F08C00', bat: 81, loop: 'JKLKJ', speed: .02, acc: 3 }, { id: 'yanis', n: 'Yanis', col: '#7C4FD6', bat: 18, loop: 'DEDFD', speed: .02, acc: 2 },
-        { id: 'sami', n: 'Sami', col: '#3B6FE0', bat: 54, at: 'A', floor: 'casino', acc: 4 }]
+        { id: 'sami', n: 'Samia', col: '#3B6FE0', bat: 54, at: 'A', floor: 'casino', acc: 4 }]
     }, stages: [['scene', 'Cabine DJ']], flows: [['ABCDF', 90], ['FHIJKL', 60], ['DEDF', 45], ['BMN', 20]] },
   selva: { id: 'selva', kind: 'Club-restaurant', name: 'Selva', place: 'Monaco', date: 'Vendredi soir', hours: '20:00 – 03:00', capacity: 280, map: { alpha: true, src: A + 'selva_a.webp', w: 1200, h: 873 }, m: .35, start: [58, 70], zoom: .62, open: 0, close: 420, peak: 220, tech: '8 balises, aucun GPS',
     data: {

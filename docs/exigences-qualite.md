@@ -87,7 +87,7 @@ Environ 1 500 exigences brutes en ressortent. Une fois les doublons regroupés, 
 | Indication permanente de la qualité de position (« ± 3 m · niveau ») ; position ancienne affichée avec son âge ; distances arrondies « ≈ » | Maquettes, grille | 🔧 niveau et « ≈ » ajoutés |
 | Pseudo toujours au-dessus de l'avatar, bulle fixée à l'avatar ; jamais l'e-mail | Recette | ✅ |
 | **Avatars superposés lisibles** | Terrain | 🔧 écartés en éventail |
-| Avatars personnalisables, riches, avec barbe, moustache et bouc, et qui donnent envie (« wow ») | Discussions | ✅ créateur paramétrique |
+| Avatars personnalisables, riches, avec barbe, moustache et bouc, et qui donnent envie (« wow ») | Discussions | 🔧 v6 : personnages haute qualité du Drive, en pied sur la carte ; ⚖️ tenues et coiffures sur mesure à cette qualité = modèles 3D (production) |
 | Écran « Crée ton propre avatar ! » / « Une prochaine fois » | Figma | ✅ étape avatar facultative |
 | Partage de position : activé, désactivé ou **temporaire** ; « Personne / Mes amis » | V1 MAP, BDF | 🔧 15 min / 1 h / 3 h / jusqu'à la fin / désactiver |
 | Cacher sa position à une seule personne ; « sauf… » / « seulement… » | Discussions, maquettes | 🔧 choix des amis |

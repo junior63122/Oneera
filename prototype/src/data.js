@@ -2,6 +2,8 @@
 const A = 'a/';
 const IC = k => A + 'ic/' + k + '.webp';
 const HEAD = k => A + 'hd/' + k + '.webp';
+const CH = (k, v) => A + 'c/' + k + (v ? '_' + v : '') + '.webp'; // personnages haute qualité : plein format, _m carte, _h visage
+const FRIEND_CHAR = { lea: 'rousse', ines: 'noir', tom: 'c30', yanis: 'metisse', sami: 'c31', maya: 'short', chloe: 'c32', elsa: 'b21', nathan: 'b20' };
 const AVB = k => A + 'av/' + k + '.webp';
 
 const EVENT = {
@@ -93,14 +95,14 @@ const FRIENDS = [
   { id: 'ines', n: 'Inès', h: 'noir', base: 'noir', col: '#E0457B', bat: 35, loop: 'MFRFM', speed: 0.02, acc: 4, zone: 'Bar Ouest' },
   { id: 'tom', n: 'Tom', h: 'group_18', base: 'group_18', col: '#F08C00', bat: 81, loop: 'EQETEFE', speed: 0.018, acc: 5, zone: 'Bar Est' },
   { id: 'yanis', n: 'Yanis', h: 'metisse', base: 'metisse', col: '#7C4FD6', bat: 18, loop: 'NOPON', speed: 0.015, acc: 6, zone: 'Rotonde' },
-  { id: 'sami', n: 'Sami', h: 'group_22', base: 'group_22', col: '#8A8FA6', bat: 4, stale: 18, at: 'U', zone: 'Zone fumeur' }
+  { id: 'sami', n: 'Samia', h: 'group_22', base: 'group_22', col: '#8A8FA6', bat: 4, stale: 18, at: 'U', zone: 'Zone fumeur' }
 ];
 const CONTACTS_ON = [
   { id: 'lea', n: 'Léa Martin', h: 'rousse', mutual: 'contact' },
   { id: 'ines', n: 'Inès B.', h: 'noir', mutual: 'contact' },
   { id: 'tom', n: 'Tom R.', h: 'group_18', mutual: 'contact' },
   { id: 'yanis', n: 'Yanis', h: 'metisse', mutual: 'contact' },
-  { id: 'sami', n: 'Sami K.', h: 'group_22', mutual: 'contact' },
+  { id: 'sami', n: 'Samia K.', h: 'group_22', mutual: 'contact' },
   { id: 'chloe', n: 'Chloé', h: 'short', mutual: 'contact', away: true },
   { id: 'maya', n: 'Maya D.', h: 'group_21', mutual: 'contact', away: true },
   { id: 'elsa', n: 'Elsa', h: 'group_19', mutual: 'contact', away: true }

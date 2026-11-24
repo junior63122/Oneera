@@ -33,7 +33,7 @@ mapMarkers = function (mv) {
   out.forEach(m => {
     if (m.id === 'p_me') m.onClick = V.meSheet;
     const id = m.id && m.id.startsWith('p_') ? m.id.slice(2) : null, b = id && ST.bubbles[id === 'me' ? 'me' : id];
-    if (ST.showBub && bubFresh(b) && typeof m.html === 'string' && m.html.startsWith('<div class="fr">')) m.html = m.html.replace('<div class="fr">', `<div class="fr"><div class="bub">${esc(b.t)}</div>`);
+    if (ST.showBub && bubFresh(b) && typeof m.html === 'string' && /^<div class="fr( fullb)?">/.test(m.html)) m.html = m.html.replace(/^(<div class="fr(?: fullb)?">)/, `$1<div class="bub">${esc(b.t)}</div>`);
   });
   return out;
 };

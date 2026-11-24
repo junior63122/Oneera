@@ -3,9 +3,9 @@ ST.me.av = ST.me.av || { ...AV_DEFAULT, ...AV_PRESETS[0] };
 const FRIEND_AV = { lea: AV_PRESETS[1], ines: AV_PRESETS[2], tom: AV_PRESETS[4], yanis: AV_PRESETS[3], sami: AV_PRESETS[6], chloe: AV_PRESETS[5], maya: AV_PRESETS[9], elsa: AV_PRESETS[11], nathan: AV_PRESETS[8] };
 const _avCache = new Map();
 function avURI(cfg, view = 'head') { const k = view + JSON.stringify(cfg); if (!_avCache.has(k)) { if (_avCache.size > 400) _avCache.clear(); _avCache.set(k, avData(cfg, view)); } return _avCache.get(k); }
-const fHead = id => FRIEND_AV[id] ? avURI(FRIEND_AV[id]) : A + 'logo.webp';
+const fHead = id => FRIEND_CHAR[id] ? CH(FRIEND_CHAR[id], 'h') : FRIEND_AV[id] ? avURI(FRIEND_AV[id]) : A + 'logo.webp';
 meHead = () => avURI(ST.me.av);
-const meFull = (style = '') => avatarSVG(ST.me.av, { pedestal: true, style, label: 'Ton avatar' });
+const meFull = (style = '') => `<img src="${CH(ST.me.char || 'lins')}" alt="Ton avatar" style="${style};object-fit:contain">`;
 
 const AVCATS = [
   ['body', I.user, 'Corps', [['build', 'Silhouette'], ['skin', 'Peau'], ['pose', 'Pose']]],
