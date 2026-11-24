@@ -122,6 +122,7 @@ class MapView {
       if (el._halo && m.halo) { const r = this.mPx(m.halo.m) * kk; Object.assign(el._halo.style, { left: x + 'px', top: y + 'px', width: 2 * r + 'px', height: 1.3 * r * Math.cos(this.phi) + 'px', background: m.halo.c + '2e', border: `1.5px ${m.halo.dash ? 'dashed' : 'solid'} ${m.halo.c}99` }); }
     });
     this.markers.forEach((el, id) => { if (!seen.has(id)) { el._halo && el._halo.remove(); el.remove(); this.markers.delete(id); } });
+    const nowD = performance.now(); if (!this._dcT || nowD - this._dcT > 160) { this._dcT = nowD; this.declutter(); }
     // itinéraire
     if (this.routePts) {
       const pts = this.routePts.map(p => this.proj(p).map(v => v.toFixed(1)).join(',')).join(' ');
@@ -129,6 +130,15 @@ class MapView {
     } else if (this.svg.innerHTML) this.svg.innerHTML = '';
   }
 }
+// anti-chevauchement des étiquettes : priorité aux personnes puis aux lieux clés ; jamais sous l'interface posée sur la carte
+MapView.prototype.declutter = function () {
+  const scr = this.host.closest('.scr') || this.host.parentElement; if (!scr) return; const H = this.host.getBoundingClientRect(), A = H.width * H.height;
+  const ui = [...scr.children].filter(e => e !== this.host && !e.contains(this.host) && e.offsetParent !== null && getComputedStyle(e).position !== 'static').flatMap(e => { const r = e.getBoundingClientRect(); if (!r.width || r.width * r.height > A * .45) { return [...e.children].filter(c => c.offsetParent !== null).map(c => c.getBoundingClientRect()).filter(q => q.width && q.width * q.height < A * .45); } return [r]; });
+  const hit = (a, b, m = 2) => a.left < b.right + m && a.right > b.left - m && a.top < b.bottom + m && a.bottom > b.top - m;
+  const items = []; this.markers.forEach(el => { if (el.style.display === 'none') return; const per = !el.classList.contains('pm'); el.querySelectorAll(':scope > .lbl, :scope .fr > .name, :scope .fr > .bub').forEach(l => items.push({ l, el, p: (per ? 3 + (el.dataset.id === 'p_me' ? 2 : 0) : el.classList.contains('key') ? 2 : 1) - (l.classList.contains('bub') ? .5 : 0), y: parseFloat(el.style.top) })); });
+  items.sort((a, b) => b.p - a.p || a.y - b.y); const kept = [];
+  items.forEach(it => { it.l.classList.remove('lblHide'); const r = it.l.getBoundingClientRect(); const bad = ui.some(u => hit(r, u, 4)) || kept.some(k => hit(r, k)) || r.left < H.left + 2 || r.right > H.right - 2; if (bad && (it.p < 5 || ui.some(u => hit(r, u, 4)))) it.l.classList.add('lblHide'); else kept.push(r); });
+};
 const dashStyle = document.createElement('style'); dashStyle.textContent = '@keyframes dash{to{stroke-dashoffset:-22}}'; document.head.append(dashStyle);
 
 // Marqueurs standards

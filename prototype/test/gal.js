@@ -1,0 +1,12 @@
+const { chromium } = require('playwright'); const O='/tmp/claude-0/-home-user-Oneera/e47acb2e-3cca-5354-8da8-dc5b80c26757/scratchpad/av3/';
+(async()=>{const b=await chromium.launch();const p=await (await b.newContext({viewport:{width:1500,height:900},deviceScaleFactor:1})).newPage();const er=[];p.on('pageerror',e=>er.push(e.message));
+await p.goto('http://127.0.0.1:8090/local.html?nouveau');await p.waitForTimeout(500);
+for(const mode of (process.argv[2]||'full').split(',')){
+await p.evaluate((mode)=>{const ids=Object.keys(FRIEND_AV2);let cfgs=[...ids.map(k=>FRIEND_AV2[k]),{g:'m',hair:'wavy',top:'openshirt',topC:2,bottom:'chinos',bottomC:2,skin:3,hairC:2,jewel:['necklace','bracelets']}];
+ let v=undefined; if(mode==='headm'){cfgs=AV2.hair.m.map(h=>({g:'m',hair:h[0],skin:3,hairC:2}));v='hair'} if(mode==='headf'){cfgs=AV2.hair.f.map(h=>({g:'f',hair:h[0],skin:2,hairC:3}));v='hair'}
+ if(mode==='shoes'){cfgs=AV2.shoes.map(s=>({shoes:s[0],shoesC:3}));v='feet'} if(mode==='tops'){cfgs=[...AV2.top.m.map(t=>({g:'m',top:t[0],topC:3})),...AV2.top.f.map(t=>({g:'f',top:t[0],topC:7}))];v='torso'}
+ if(mode==='bots'){cfgs=[...AV2.bottom.m.map(t=>({g:'m',bottom:t[0],bottomC:3})),...AV2.bottom.f.map(t=>({g:'f',bottom:t[0],bottomC:10})),...AV2.outfit.f.slice(1).map(t=>({g:'f',outfit:t[0],outfitC:5})),...AV2.outfit.m.slice(1).map(t=>({g:'m',outfit:t[0],outfitC:3}))];v='legs'}
+ if(mode==='face'){cfgs=[...AV2.eyes.map(e=>({g:'f',eyes:e[0],hair:'pixie'})),...AV2.mouth.map(e=>({g:'m',mouth:e[0],hair:'crop'})),...AV2.beard.map(e=>({g:'m',beard:e[0],hair:'crop'})),...AV2.glasses.map(e=>({g:'m',glasses:e[0],hair:'crop'})),...AV2.hat.map(e=>({g:'f',hat:e[0],hair:'long'}))];v='head'}
+ if(mode==='poses'){cfgs=[...AV2.pose.map(e=>({g:'m',pose:e[0]})),...AV2.pose.map(e=>({g:'f',pose:e[0],hair:'waves'})),...AV2.build.m.map(e=>({g:'m',build:e[0]})),...AV2.build.f.map(e=>({g:'f',build:e[0],hair:'bob'}))]}
+ if(mode==='zoom'){cfgs=[cfgs[0],cfgs[2],cfgs[9]]} const big=mode==='full'||mode==='poses';const Z=mode==='zoom';document.body.innerHTML='<div style="display:flex;flex-wrap:wrap;gap:6px;background:#E9E6F5;padding:8px">'+cfgs.map(c=>`<div style="width:${Z?440:big?140:150}px;height:${Z?1060:big?330:150}px;background:#fff;border-radius:10px">${avatar2SVG(c,{view:v,style:'width:100%;height:100%'})}</div>`).join('')+'</div>';},mode);
+await p.waitForTimeout(300);await p.screenshot({path:O+'g_'+mode+'.png',fullPage:true});}console.log(er.join('|')||'ok');await b.close()})();

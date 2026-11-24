@@ -488,3 +488,10 @@ img[src*="a/ic/"]{object-fit:contain;aspect-ratio:1/1;height:auto}
 .studio #go{flex:0 0 auto}
 .studio .stTabs,.studio #gd{flex:0 0 auto}
 .rb:disabled{opacity:.35;pointer-events:none}
+.lblHide{visibility:hidden!important}
+.tourCard{max-width:380px;margin:0 auto}
+.tourCard::before{content:'';position:absolute;width:16px;height:16px;background:#fff;transform:rotate(45deg);border-radius:3px;left:var(--ax)}
+.tourCard.dn::before{top:-7px}.tourCard.up::before{bottom:-7px}
+
+.av2big{width:100%;aspect-ratio:auto;max-height:none}.av2big svg{display:block}
+.stPed{transition:opacity .3s}

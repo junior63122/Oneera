@@ -35,11 +35,18 @@ V.avatarPick = (onDone, step = true) => {
       hair: () => `${tiles('hair', AV2.hair[G], 'hair')}${colors('hairC', AV2.hairC, 'Couleur')}`,
       top: () => `<div class="stLbl">Tenue une pièce</div>${tiles('outfit', AV2.outfit[G], undefined)}${one ? colors('outfitC', AV2.cloth, 'Couleur de la tenue') : `<div class="stLbl">Haut</div>${tiles('top', AV2.top[G], 'torso')}${colors('topC', AV2.cloth, 'Couleur du haut')}`}`,
       bottom: () => one ? `<div class="tiny" style="padding:12px 0">Tu portes une tenue une pièce. Choisis « Haut + bas » dans l’onglet Haut pour changer le bas.</div>` : `${tiles('bottom', AV2.bottom[G], 'legs')}${colors('bottomC', AV2.cloth, 'Couleur')}`,
-      shoes: () => `${tiles('shoes', AV2.shoes, 'feet')}${colors('shoesC', AV2.cloth, 'Couleur')}`,
+      shoes: () => `${tiles('shoes', AV2.shoes, 'feet', { bottom: 'shorts', outfit: 'none' })}${colors('shoesC', AV2.cloth, 'Couleur')}`,
       acc: () => `<div class="stLbl">Lunettes</div>${tiles('glasses', AV2.glasses, 'head')}<div class="stLbl">Couvre-chef</div>${tiles('hat', AV2.hat, 'hair')}${L.hat !== 'none' ? colors('hatC', AV2.cloth, 'Couleur') : ''}<div class="stLbl">Bijoux (plusieurs possibles)</div>${tiles('jewel', AV2.jewel, 'torso', { pose: 'relax' })}`
     })[tab]();
-    big.innerHTML = avatar2SVG(L, { pedestal: true, style: 'width:100%;height:100%' }); $('#un', el).disabled = !undo.length; $('#mpi', el).src = av2URI(L);
+    big.innerHTML = avatar2SVG(L, { pedestal: true, style: 'width:100%;height:100%' }); cam(); $('#un', el).disabled = !undo.length; $('#mpi', el).src = av2URI(L);
   };
+  // caméra du studio : zoom sur le visage pour cheveux / visage / accessoires, sur le buste pour le haut, sur les pieds pour les chaussures
+  const CAM = { face: [42, 4, 116, 146], hair: [38, -2, 124, 156], acc: [38, -2, 124, 156], top: [8, 26, 184, 262], bottom: [4, 120, 192, 292], shoes: [52, 318, 96, 92] }, FULL = [14, -4, 172, 428];
+  let camV = FULL.slice(), camT = 0;
+  const cam = () => { const svg = big.querySelector('svg'); if (!svg) return; const to = CAM[tab] || FULL, from = camV.slice(), t0 = performance.now(); cancelAnimationFrame(camT);
+    const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const step = now => { const k = reduce ? 1 : Math.min(1, (now - t0) / 380), e = 1 - Math.pow(1 - k, 3); camV = from.map((v, i) => v + (to[i] - v) * e); const sv = big.querySelector('svg'); sv && sv.setAttribute('viewBox', camV.map(v => v.toFixed(1)).join(' ')); if (k < 1) camT = requestAnimationFrame(step); };
+    svg.setAttribute('viewBox', camV.join(' ')); el.querySelector('.stPed').style.opacity = CAM[tab] ? 0 : 1; camT = requestAnimationFrame(step); };
   const push = () => { undo.push(JSON.stringify(L)); if (undo.length > 50) undo.shift(); };
   const pop = () => { big.classList.remove('pop'); void big.offsetWidth; big.classList.add('pop'); };
   $('#gd', el).onclick = e => { const b = e.target.closest('[data-g]'); if (!b || b.dataset.g === L.g) return; push(); const G = b.dataset.g; Object.assign(L, { g: G, hair: AV2.hair[G][G === 'f' ? 1 : 1][0], top: G === 'f' ? 'crop' : 'tee', bottom: G === 'f' ? 'cargo' : 'chinos', outfit: 'none', build: 'moyenne', beard: 'none' }); pop(); draw(); };

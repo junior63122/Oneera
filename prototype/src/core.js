@@ -179,7 +179,7 @@ const statusBar = (dark) => `<div class="status" style="${dark ? 'color:#fff' : 
 
 function mount(html, cls = '') {
   if (ST._avRestore) { ST.me.av = ST._avRestore; ST._avRestore = null; if (typeof toast === 'function') setTimeout(() => toast('Modifications d’avatar non enregistrées : annulées'), 300); }
-  closeSheet(true); clearTimeout(V._alwaysT); $$('.banner', SCREEN).forEach(b => b.remove());
+  closeSheet(true); clearTimeout(V._alwaysT); SCREEN.querySelectorAll('.tour').forEach(t => t.remove()); $$('.banner', SCREEN).forEach(b => b.remove());
   if (MV && !/id="mv"/.test(html)) { MV.destroy(); MV = null; clearInterval(V._lbT); }
   const el = document.createElement('div'); el.className = 'scr ' + cls; el.innerHTML = html;
   SCREEN.querySelectorAll('.scr').forEach(s => s.remove());
