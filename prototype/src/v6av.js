@@ -32,3 +32,13 @@ const _settings6 = V.settings;
 V.settings = () => { _settings6(); const b = $('#av'); if (b) b.onclick = () => V.avatarPick(() => V.settings(), false); };
 const _editProfile6 = V.editProfile;
 V.editProfile = () => { _editProfile6(); const b = $('#ph'); if (b) b.onclick = () => { closeSheet(true); V.avatarPick(() => V.settings(), false); }; };
+
+// Groupe de 5 personnes ou plus au même endroit : la pastille « +N » ouvre la liste complète
+MapView.onGroup = (ids, mv) => {
+  const ppl = ids.map(id => id === 'me' ? { id, n: 'Moi', h: meHead() } : (FRIENDS.find(f => f.id === id) || { id, n: id, h: A + 'logo.webp' })).map(p => ({ ...p, h: p.h && p.id !== 'me' ? fHead(p.id) : p.h }));
+  const at = ids.map(id => id === 'me' ? ST.me.pos : (FR_STATE[id] || {}).pos).filter(Boolean), c = [at.reduce((s, p) => s + p[0], 0) / at.length, at.reduce((s, p) => s + p[1], 0) / at.length];
+  const sb = openSheet(`<h2 class="h2">${ids.length} personnes ici</h2><div class="small" style="margin-top:-6px">${esc(zoneOf(c))} · au même endroit</div>
+    <div class="list">${ppl.map(p => `<button class="row" data-u="${p.id}"><img class="av" src="${p.h}" alt=""><div class="grow"><div class="t">${esc(p.n)}</div></div><span style="color:#9AA0B4">›</span></button>`).join('')}</div>
+    <button class="btn white" id="zz">Zoomer pour les voir un par un</button>`);
+  sb.onclick = e => { const u = e.target.closest('[data-u]'); if (u) { if (u.dataset.u === 'me') V.meSheet(); else V.friendSheet(u.dataset.u); } if (e.target.closest('#zz')) { closeSheet(); mv.flyTo(c, Math.min(mv.maxS, mv.s * 2.2)); } };
+};

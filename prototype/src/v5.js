@@ -18,10 +18,18 @@ const _boot = boot; boot = function () {
 
 // ---------- Avatars superposés : répartis en éventail, pseudo toujours lisible (« superposition pas parfaite ») ----------
 // (le calcul est fait dans MapView.renderMarkers via MapView.fan)
-MapView.fan = function (list, mv) {
-  const pp = list.filter(m => m.id && m.id.startsWith('p_')).map(m => ({ m, p: mv.projS(m.at) })), off = {};
-  pp.forEach(a => { if (off[a.m.id]) return; const g = pp.filter(b => !off[b.m.id] && Math.hypot(a.p[0] - b.p[0], a.p[1] - b.p[1]) < 30); if (g.length > 1) g.forEach((b, j) => { const k = j - (g.length - 1) / 2; off[b.m.id] = [k * 36, Math.abs(k) * 6]; }); });
-  return off;
+MapView.fan = function (list, mv) { // plusieurs personnes au même endroit : jamais l'une cachée sous l'autre
+  const pk = mv._pk || 1, R = 34 * pk, off = {}, hide = new Set(), badge = {}, used = new Set();
+  const pp = list.filter(m => m.id && m.id.startsWith('p_')).map(m => ({ m, p: mv.projS(m.at) })).sort((a, b) => (b.m.id === 'p_me') - (a.m.id === 'p_me'));
+  pp.forEach(a => {
+    if (used.has(a.m.id)) return; const g = pp.filter(b => !used.has(b.m.id) && Math.hypot(a.p[0] - b.p[0], a.p[1] - b.p[1]) < R); g.forEach(b => used.add(b.m.id)); if (g.length < 2) return;
+    const cx = g.reduce((s, b) => s + b.p[0], 0) / g.length, cy = g.reduce((s, b) => s + b.p[1], 0) / g.length;
+    const show = g.length <= 4 ? g : g.slice(0, 3), n = show.length, sp = (n === 2 ? 34 : n === 3 ? 32 : 30) * pk;
+    // 2 à 4 : en arc autour du point (prénoms décalés en hauteur pour rester lisibles) ; 5 et plus : 3 visibles + pastille « +N »
+    show.forEach((b, j) => { const k = j - (n - 1) / 2; off[b.m.id] = [cx - b.p[0] + k * sp, cy - b.p[1] + Math.abs(k) * 7 * pk - (j % 2 ? 12 * pk : 0)]; });
+    if (g.length > 4) { g.slice(3).forEach(b => hide.add(b.m.id)); badge[show[1].m.id] = { n: g.length - 3, ids: g.map(b => b.m.id.slice(2)) }; }
+  });
+  return { off, hide, badge };
 };
 
 // ---------- Bulles de messages sur la carte (visibles des seuls amis) + masquer / afficher ----------

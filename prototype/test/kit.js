@@ -1,0 +1,9 @@
+const { chromium } = require('playwright'); const OUT = '/tmp/claude-0/-home-user-Oneera/e47acb2e-3cca-5354-8da8-dc5b80c26757/scratchpad/rev/kit_';
+(async () => { const b = await chromium.launch(); const p = await (await b.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2, isMobile: true, hasTouch: true })).newPage(); const e = []; p.on('pageerror', x => e.push(x.message)); p.on('requestfailed', r => e.push('REQ ' + r.url()));
+  await p.goto('http://127.0.0.1:8090/local.html?nouveau'); await p.waitForTimeout(800); const t = s => p.evaluate(s);
+  await t(`quickSetup();V.avatarPick(null,true)`); await p.waitForTimeout(900); await p.screenshot({ path: OUT + '1.png' });
+  await p.click('[data-t="hair"]'); await p.click('[data-v="#CFA46A"]'); await p.waitForTimeout(700); await p.click('[data-t="top"]'); await p.click('[data-v="#25314F"]'); await p.waitForTimeout(700); await p.click('[data-t="bot"]'); await p.click('[data-v="#1D1D22"]'); await p.waitForTimeout(900); await p.screenshot({ path: OUT + '2.png' });
+  await p.click('[data-g="f"]'); await p.waitForTimeout(400); await p.click('[data-c="short"]'); await p.waitForTimeout(300); await p.click('[data-t="top"]'); await p.click('[data-v="#6E1F2D"]'); await p.waitForTimeout(400); await p.click('[data-t="hair"]'); await p.click('[data-v="#A9411D"]'); await p.waitForTimeout(400); await p.click('[data-t="skin"]'); await p.click('[data-v="#87522F"]'); await p.waitForTimeout(1000); await p.screenshot({ path: OUT + '3.png' });
+  await p.click('#pv'); await p.waitForTimeout(800); await p.screenshot({ path: OUT + '4.png' });
+  await p.click('#go'); await p.waitForTimeout(300); await t(`ST.introSeen={bdf:1};V.map();MV.flyTo(ST.me.pos,.8,10)`); await p.waitForTimeout(1500); await p.screenshot({ path: OUT + '5.png' });
+  console.log(e, await t(`JSON.stringify(ST.me.look)`)); await b.close(); })();

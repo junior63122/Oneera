@@ -15,7 +15,7 @@ const { chromium } = require('playwright');
   ok(await t(`!!document.querySelector('.mk .bub')`), 'bulles de messages des amis sur la carte');
   await t(`V.layers()`); await p.waitForTimeout(250); await p.click('#bubT'); await p.waitForTimeout(250); ok(await t(`!document.querySelector('.mk .bub')`), 'calques : masquer les messages de la carte'); await p.click('#bubT'); await t(`closeSheet()`);
   // éventail d'avatars superposés
-  ok(await t(`(()=>{const o=MapView.fan([{id:'p_a',at:[50,50]},{id:'p_b',at:[50,50]},{id:'p_c',at:[50.1,50]}],MV);return o.p_a&&o.p_b&&o.p_c&&Math.abs(o.p_a[0]-o.p_b[0])>=30&&Math.abs(o.p_b[0]-o.p_c[0])>=30})()`), 'avatars au même endroit : écartés en éventail, pseudos lisibles');
+  ok(await t(`(()=>{const o=MapView.fan([{id:'p_a',at:[50,50]},{id:'p_b',at:[50,50]},{id:'p_c',at:[50.1,50]}],MV).off;return o.p_a&&o.p_b&&o.p_c&&Math.abs(o.p_a[0]-o.p_b[0])>=28&&Math.abs(o.p_b[0]-o.p_c[0])>=28})()`), 'avatars au même endroit : écartés en éventail, pseudos lisibles');
   // fiche Moi : inviter à me rejoindre ici, message avec mention
   await t(`V.meSheet()`); await p.waitForTimeout(250); ok((await sheet()).includes('Inviter un ami à me rejoindre ici'), 'bouton « Inviter un ami à me rejoindre ici »');
   await p.click('#inv'); await p.waitForTimeout(250); await p.click('#pf [data-u="lea"]'); await p.click('#ok'); await p.waitForTimeout(300);

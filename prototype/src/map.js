@@ -116,7 +116,9 @@ class MapView {
         this.ov.append(el); this.markers.set(m.id, el);
       }
       if (el._html !== m.html) { el.innerHTML = m.html; el._html = m.html; el.className = 'mk ' + (m.cls || ''); }
-      el._click = m.onClick; if (el._at && (Math.abs(el._at[0] - m.at[0]) + Math.abs(el._at[1] - m.at[1])) > .015) el._walk = performance.now() + 380; el._at = [m.at[0], m.at[1]]; el.classList.toggle('walk', (el._walk || 0) > performance.now()); let [x, y, kk] = this.projS(m.at); const fo = fan[m.id]; if (fo) { x += fo[0]; y += fo[1]; } el.style.left = x + 'px'; el.style.top = y + 'px'; el.style.zIndex = this.tilt ? Math.round(y) + (m.z || 1) * 10000 : m.z || 1;
+      el._click = m.onClick; if (el._at && (Math.abs(el._at[0] - m.at[0]) + Math.abs(el._at[1] - m.at[1])) > .015) el._walk = performance.now() + 380; el._at = [m.at[0], m.at[1]]; el.classList.toggle('walk', (el._walk || 0) > performance.now()); let [x, y, kk] = this.projS(m.at); const fo = (fan.off || fan)[m.id]; if (fo) { x += fo[0]; y += fo[1]; } el.style.left = x + 'px'; el.style.top = y + 'px'; el.style.zIndex = this.tilt ? Math.round(y) + (m.z || 1) * 10000 : (m.z || 1) * 1000 + Math.round(y);
+      const hid = !!(fan.hide && fan.hide.has(m.id)); el.style.display = hid ? 'none' : ''; if (el._halo) el._halo.style.display = hid ? 'none' : '';
+      const bd = fan.badge && fan.badge[m.id]; let gb = el.querySelector('.grpb'); if (bd) { if (!gb) { gb = document.createElement('span'); gb.className = 'grpb'; el.append(gb); } gb.textContent = '+' + bd.n; el._click = () => MapView.onGroup && MapView.onGroup(bd.ids, this); el.setAttribute('aria-label', `Groupe de ${bd.ids.length} personnes`); } else if (gb) gb.remove();
       if (el._halo && m.halo) { const r = this.mPx(m.halo.m) * kk; Object.assign(el._halo.style, { left: x + 'px', top: y + 'px', width: 2 * r + 'px', height: 1.3 * r * Math.cos(this.phi) + 'px', background: m.halo.c + '2e', border: `1.5px ${m.halo.dash ? 'dashed' : 'solid'} ${m.halo.c}99` }); }
     });
     this.markers.forEach((el, id) => { if (!seen.has(id)) { el._halo && el._halo.remove(); el.remove(); this.markers.delete(id); } });
