@@ -57,7 +57,7 @@ function dashMap(outer, { minute, onZone, replay, crisis, onTap, extra } = {}) {
     if (D.layers.flow && !crisis) FLOWS.forEach(([seq, v], i) => { const vol = flowVol(v, m); if (vol < 5) return; const mid = NODES[seq.match(/R2|[A-Z]/g)[Math.floor(seq.match(/R2|[A-Z]/g).length / 2)]]; const names = seq.match(/R2|[A-Z]/g).map(k => zoneOf(NODES[k])); out.push({ id: 'fl' + i, at: mid, html: `<div class="lbl" style="background:#4F6BF5;color:#fff;transform:translateY(50%)">≈ ${vol} pers./10 min</div>`, onClick: () => dToast(`<b>Flux ${names[0]} → ${names[names.length - 1]}</b> · ≈ ${vol} personnes / 10 min · trajectoires réelles agrégées sur les allées (k ≥ 5)`), z: 4 }); });
     return out.concat(extra ? extra() : []);
   } });
-  const cv = document.createElement('canvas'); cv.style.cssText = 'position:absolute;inset:0;pointer-events:none'; host.insertBefore(cv, host.querySelector('svg'));
+  const cv = document.createElement('canvas'); cv.style.cssText = 'position:absolute;inset:0;pointer-events:none'; (host.querySelector('.tl') || host).insertBefore(cv, host.querySelector('svg'));
   const base = host.querySelector('img.base'); const ctx = cv.getContext('2d'); let off = 0;
   const draw = (dt) => {
     if (!mv.alive) { tickers.delete(draw); return; }

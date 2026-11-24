@@ -1,0 +1,35 @@
+// Tests v5 : tableau de bord + staff
+const { chromium } = require('playwright');
+(async () => {
+  const b = await chromium.launch(); const p = await b.newPage({ viewport: { width: 1440, height: 900 } });
+  const errs = []; p.on('pageerror', e => errs.push(e.message));
+  await p.goto('http://127.0.0.1:8090/local.html?nouveau'); await p.waitForTimeout(800);
+  const t = s => p.evaluate(s); let n = 0, f = 0; const ok = (c, m) => { n++; if (!c) f++; console.log((c ? 'OK   ' : 'FAIL ') + m); };
+  const txt = () => t(`document.querySelector('#dash').innerText`);
+  await t(`quickSetup();D.ev='bdf';openDash('create')`); await p.waitForTimeout(400);
+  ok(/Créer un événement/.test(await txt()) && /5 étapes/.test(await txt()), 'création d’événement guidée');
+  await p.fill('#we', '2027-07-11T04:00'); await p.dispatchEvent('#we', 'change'); ok(/fin après minuit/.test(await txt()), 'fin après minuit gérée');
+  await p.click('#nx'); await p.waitForTimeout(200); await p.click('#nx'); await p.waitForTimeout(200); ok(/Importe d’abord le plan/.test(await txt()), 'plan obligatoire avant de continuer');
+  await p.click('#imp'); await p.waitForTimeout(1400); ok(/importé/.test(await txt()), 'import du plan avec progression');
+  for (let i = 0; i < 3; i++) { await p.click('#nx'); await p.waitForTimeout(200); } ok(/Publier l’événement/.test(await txt()) && /Activation automatique/.test(await txt()), 'publication : QR + activation automatique');
+  await t(`openDash('prep')`); await p.waitForTimeout(500); await t(`D.tool='poi'`); await t(`DMV.onTapEmpty([60,60])`); await p.waitForTimeout(200); await p.fill('#pn', 'Bar de la plage'); await p.click('#ok'); await p.waitForTimeout(200);
+  ok(await t(`POIS.some(o=>o.n==='Bar de la plage')`), 'préparation : ajout réel d’un lieu (visible côté visiteur)');
+  await t(`D.tool='beacon';DMV.onTapEmpty(D.beacons[0].at)`); await p.waitForTimeout(200); ok(/pas de doublon/.test(await txt()), 'balises : pas de doublon au même endroit');
+  await t(`DMV.onTapEmpty([70,30])`); await p.waitForTimeout(200); ok(/Rôle/.test(await txt()) && /Rayon d’action/.test(await txt()) && /Action au passage/.test(await txt()), 'balise : rôle, rayon, action');
+  await t(`openDash('moder')`); await p.waitForTimeout(300); ok(/Masqué · afficher/.test(await txt()), 'modération : contenu masqué jusqu’à décision');
+  await p.click('[data-k="1"]'); await p.click('[data-k="3"]'); await p.click('[data-b="Silence 24 h"]'); await p.waitForTimeout(200); ok(await t(`D.mod.filter(m=>m.st==='Silence 24 h').length===3`), 'modération : action en masse');
+  await t(`openDash('relay')`); await p.waitForTimeout(300); ok(/Règles/.test(await txt()) && /Journal des envois/.test(await txt()), 'relais d’alertes : règles + journal');
+  await t(`openDash('platform')`); await p.waitForTimeout(300); ok(/Partenaires/.test(await txt()) && /Supervision technique/.test(await txt()), 'admin plateforme');
+  await t(`openDash('alerts')`); await p.waitForTimeout(400); ok(/Flux anormal/.test(await txt()) && /Immobilité prolongée/.test(await txt()), 'alertes automatiques : densité, flux anormal, immobilité');
+  await t(`openDash('team')`); await p.waitForTimeout(300); ok(/Administrateur festival/.test(await txt()) && /Double authentification/.test(await txt()), 'rôles du cahier des charges + 2FA');
+  await t(`openDash('data')`); await p.waitForTimeout(300); ok(/opt-in/.test(await txt()), 'export mailing opt-in');
+  await t(`openDash('prog')`); await p.waitForTimeout(300); ok(/Rechercher un artiste/.test(await t(`document.querySelector('#aq').placeholder`)), 'programmation : recherche d’artiste');
+  await p.click('[data-ed="Kalia b2b Remo"]'); await p.waitForTimeout(200); ok(/Lié au lieu/.test(await txt()), 'passage lié à la scène sur la carte');
+  await t(`D.layers.flow=true;openDash('global')`); await p.waitForTimeout(800); const fl = await t(`[...document.querySelectorAll('#dash .mk .lbl')].map(x=>x.textContent).filter(x=>x.includes('→')).join('|')`);
+  ok(fl.length > 0 && !/\bLa →|→ La\b|→ Zone ·/.test(fl), 'flux : étiquettes de zones complètes (' + fl.slice(0, 70) + ')');
+  await t(`closeDash();ST.role='staff';const r={id:555,cat:'medical',label:'Malaise',zone:'Fosse',at:[...ZONES[0].at],status:'Reçue',time:ST.clock?fmtClock(ST.clock):'23:40',hist:[],by:'@alex',prio:'Majeur'};ST.reports.unshift(r);S.map();S.alert(555)`); await p.waitForTimeout(300);
+  ok(await t(`!!document.querySelector('#call') && !!document.querySelector('#esc') && !document.querySelector('#nx').classList.contains('red')`), 'staff : appeler la personne, escalader, bouton non rouge');
+  await p.click('#esc'); ok(await t(`ST.reports.find(r=>r.id===555).prio==='Critique'`), 'staff : escalade = priorité critique');
+  ok(errs.length === 0, 'erreurs JS : ' + (errs.join(' | ') || 'aucune'));
+  console.log(`${n - f}/${n}`); await b.close();
+})();

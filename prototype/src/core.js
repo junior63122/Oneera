@@ -6,6 +6,14 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
 
 const P = 'fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"';
 const SV = d => `<svg viewBox="0 0 24 24" ${P} aria-hidden="true">${d}</svg>`;
+// Boussole + vue 2D/3D, partagées par les cartes visiteur et staff
+function viewCtl() { return `<button id="cmp" class="cmp" aria-label="Revenir au nord" title="Revenir au nord" hidden><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M12 2.5 15.2 12H8.8Z" fill="#E5484D"/><path d="M12 21.5 8.8 12h6.4Z" fill="#B9BCCB"/><circle cx="12" cy="12" r="1.6" fill="#fff"/></svg></button><button id="d3" aria-label="Vue inclinée 3D" aria-pressed="${ST.map3d ? 'true' : 'false'}" style="font-weight:900;font-size:14px;letter-spacing:-.3px">${ST.map3d ? '2D' : '3D'}</button>`; }
+function wireViewCtl(el, mv) {
+  const cmp = $('#cmp', el), d3 = $('#d3', el); if (!cmp || !d3) return;
+  mv.onView = m => { cmp.hidden = Math.abs(m.rot) < .02; cmp.firstChild.style.transform = `rotate(${m.rot}rad)`; };
+  cmp.onclick = () => mv.north(); mv.set3d(!!ST.map3d); if (ST.map3d) mv.tilt = 1;
+  d3.onclick = () => { ST.map3d = !ST.map3d; mv.set3d(ST.map3d); d3.textContent = ST.map3d ? '2D' : '3D'; d3.setAttribute('aria-pressed', ST.map3d ? 'true' : 'false'); d3.setAttribute('aria-label', ST.map3d ? 'Vue à plat 2D' : 'Vue inclinée 3D'); toast(ST.map3d ? 'Vue inclinée : fais glisser à deux doigts pour tourner' : 'Vue à plat'); };
+}
 const I = {
   back: SV('<path d="M15 18l-6-6 6-6"/>'), close: SV('<path d="M18 6L6 18M6 6l12 12"/>'), check: SV('<path d="M20 6L9 17l-5-5"/>'),
   search: SV('<circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/>'), bell: SV('<path d="M6 8a6 6 0 0112 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 003.4 0"/>'),

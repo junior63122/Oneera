@@ -4,7 +4,8 @@ class MapView {
     this.host = host; this.alpha = opts.src ? /_a\.webp/.test(opts.src) : !!VENUE.map.alpha; this.W = opts.w || VENUE.map.w; this.H = opts.h || VENUE.map.h; this.src = opts.src || VENUE.map.src;
     this.minS = 0; this.maxS = opts.maxS || 1.6; this.markers = new Map(); this.getMarkers = opts.markers || (() => []);
     this.onLong = opts.onLong; this.onTapEmpty = opts.onTapEmpty; this.routePts = null; this.cluster = opts.cluster !== false;
-    host.classList.add('map'); host.innerHTML = `<div class="world"><img class="base" alt="Plan illustré du site" draggable="false" width="${this.W}" height="${this.H}" src="${this.src}"></div><canvas class="fx" aria-hidden="true"></canvas><svg class="ovs"></svg><div class="ov"></div><canvas class="fx2" aria-hidden="true"></canvas>`;
+    host.classList.add('map'); host.innerHTML = `<div class="tl"><div class="world"><img class="base" alt="Plan illustré du site" draggable="false" width="${this.W}" height="${this.H}" src="${this.src}"></div><canvas class="fx" aria-hidden="true"></canvas><svg class="ovs"></svg></div><div class="ov"></div><canvas class="fx2" aria-hidden="true"></canvas>`;
+    this.tl = host.querySelector('.tl'); this.rot = 0; this.tilt = 0; this.tiltTo = 0; this.canRot = !!opts.rotate; this.onView = opts.onView;
     this.world = host.querySelector('.world'); this.fx = host.querySelector('canvas.fx'); this.fx2 = host.querySelector('canvas.fx2'); this.base = host.querySelector('img.base'); this.fxCfg = opts.fx; this.ov = host.querySelector('.ov'); this.svg = host.querySelector('svg.ovs');
     this.s = 1; this.tx = 0; this.ty = 0; this.vx = 0; this.vy = 0; this.ptrs = new Map(); this.alive = true;
     this.resize(); this.center(opts.at || [48, 52], opts.zoom || 0.36);
@@ -13,8 +14,14 @@ class MapView {
   }
   resize() { this.vw = this.host.clientWidth || 368; this.vh = this.host.clientHeight || 822; this.minS = Math.max(this.vw / this.W, this.vh / this.H) * 0.98 * (this.alpha ? .72 : .8); }
   destroy() { this.alive = false; this.ro.disconnect(); }
-  centerPct() { return [(this.vw / 2 - this.tx) / this.s / this.W * 100, (this.vh / 2 - this.ty) / this.s / this.H * 100]; }
-  center(at, s) { this.s = Math.min(this.maxS, Math.max(this.minS, s)); this.tx = this.vw / 2 - at[0] / 100 * this.W * this.s; this.ty = this.vh / 2 - at[1] / 100 * this.H * this.s; this.clamp(); this.apply(); }
+  centerPct() { return this.unproj(this.vw / 2, this.vh / 2); }
+  center(at, s) { this.s = Math.min(this.maxS, Math.max(this.minS, s)); const c = Math.cos(this.rot), n = Math.sin(this.rot), x = at[0] / 100 * this.W, y = at[1] / 100 * this.H; this.tx = this.vw / 2 - this.s * (x * c - y * n); this.ty = this.vh / 2 - this.s * (x * n + y * c); this.clamp(); this.apply(); }
+  rotateBy(d, cx = this.vw / 2, cy = this.vh / 2) { if (!this.canRot) return; this.rot = Math.atan2(Math.sin(this.rot + d), Math.cos(this.rot + d)); const c = Math.cos(d), n = Math.sin(d), dx = this.tx - cx, dy = this.ty - cy; this.tx = cx + dx * c - dy * n; this.ty = cy + dx * n + dy * c; this.clamp(); this.apply(); }
+  north(ms = 420) { const r0 = this.rot, t0 = performance.now(), step = now => { const k = Math.min(1, (now - t0) / ms), e = 1 - Math.pow(1 - k, 3), want = r0 * (1 - e); this.rotateBy(want - this.rot); if (k < 1 && this.alive) requestAnimationFrame(step); }; requestAnimationFrame(step); }
+  set3d(on) { this.tiltTo = on ? 1 : 0; }
+  // inclinaison : plateau penché en arrière (rotateX) vu en perspective, origine fixe
+  get phi() { return this.tilt * 0.82; } // ≈ 47° au maximum
+  tiltO() { return [this.vw / 2, this.vh * .62]; }
   flyTo(at, s = this.s, ms = 650) {
     const a0 = this.centerPct(), s0 = this.s, t0 = performance.now(); s = Math.min(this.maxS, Math.max(this.minS, s));
     const step = now => { const k = Math.min(1, (now - t0) / ms), e = 1 - Math.pow(1 - k, 3); this.center([a0[0] + (at[0] - a0[0]) * e, a0[1] + (at[1] - a0[1]) * e], s0 + (s - s0) * e); if (k < 1 && this.alive) requestAnimationFrame(step); };
@@ -22,31 +29,40 @@ class MapView {
   }
   zoomBy(f, cx = this.vw / 2, cy = this.vh / 2) { const ns = Math.min(this.maxS, Math.max(this.minS, this.s * f)); const k = ns / this.s; this.tx = cx - (cx - this.tx) * k; this.ty = cy - (cy - this.ty) * k; this.s = ns; this.clamp(); this.apply(); }
   clamp() {
+    if (this.rot || this.tilt) { const [cx, cy] = this.unproj(this.vw / 2, this.vh / 2), kx = Math.min(100, Math.max(0, cx)), ky = Math.min(100, Math.max(0, cy)); if (kx !== cx || ky !== cy) { const [px, py] = this.proj([kx, ky]); this.tx += this.vw / 2 - px; this.ty += this.vh / 2 - py; } return; }
     const mw = this.W * this.s, mh = this.H * this.s, padX = this.vw * .25, padY = this.vh * .25;
     this.tx = mw + padX * 2 < this.vw ? (this.vw - mw) / 2 : Math.min(padX, Math.max(this.vw - mw - padX, this.tx));
     this.ty = mh + padY * 2 < this.vh ? (this.vh - mh) / 2 : Math.min(padY, Math.max(this.vh - mh - padY, this.ty));
   }
-  apply() { this.world.style.transform = `translate3d(${this.tx}px,${this.ty}px,0) scale(${this.s})`; this.dirty = true; }
-  proj(at) { return [this.tx + at[0] / 100 * this.W * this.s, this.ty + at[1] / 100 * this.H * this.s]; }
-  unproj(x, y) { return [(x - this.tx) / this.s / this.W * 100, (y - this.ty) / this.s / this.H * 100]; }
+  apply() { this.world.style.transform = `translate3d(${this.tx}px,${this.ty}px,0) rotate(${this.rot}rad) scale(${this.s})`; this.dirty = true; }
+  // plan (en %) → écran à plat (rotation + zoom + déplacement)
+  proj(at) { const c = Math.cos(this.rot), n = Math.sin(this.rot), x = at[0] / 100 * this.W * this.s, y = at[1] / 100 * this.H * this.s; return [this.tx + x * c - y * n, this.ty + x * n + y * c]; }
+  unproj(x, y) { const c = Math.cos(this.rot), n = Math.sin(this.rot), dx = (x - this.tx) / this.s, dy = (y - this.ty) / this.s; return [(dx * c + dy * n) / this.W * 100, (-dx * n + dy * c) / this.H * 100]; }
+  // écran à plat → écran réel (vue 3D inclinée) et retour
+  flat2s(x, y) { if (!this.tilt) return [x, y, 1]; const [ox, oy] = this.tiltO(), f = this.phi, P = 1100, X = x - ox, Y = y - oy, k = P / (P - Y * Math.sin(f)); return [ox + X * k, oy + Y * Math.cos(f) * k, k]; }
+  s2flat(x, y) { if (!this.tilt) return [x, y]; const [ox, oy] = this.tiltO(), f = this.phi, P = 1100, Xs = x - ox, Ys = y - oy, Y = Ys * P / (P * Math.cos(f) + Ys * Math.sin(f)), k = P / (P - Y * Math.sin(f)); return [ox + Xs / k, oy + Y]; }
+  projS(at) { const [x, y] = this.proj(at); return this.flat2s(x, y); }
   mPx(m) { return m / PCT_TO_M / 100 * this.W * this.s; }
   bind() {
     // coordonnées locales corrigées de l'échelle d'affichage (téléphone réduit à l'écran)
-    const h = this.host, loc = (x, y) => { const r = h.getBoundingClientRect(), k = r.width / (h.offsetWidth || r.width) || 1; return [(x - r.left) / k, (y - r.top) / k, k]; };
+    const h = this.host, loc = (x, y) => { const r = h.getBoundingClientRect(), k = r.width / (h.offsetWidth || r.width) || 1, f = this.s2flat((x - r.left) / k, (y - r.top) / k); return [f[0], f[1], k]; };
+    let rotAcc = 0, rotOn = false;
     let last = null, longT = null, downAt = null, moved = 0;
     h.addEventListener('pointerdown', e => {
       if (e.target.closest('.mk') && e.pointerType === 'mouse') return;
-      h.setPointerCapture(e.pointerId); this.ptrs.set(e.pointerId, [e.clientX, e.clientY]); this.vx = this.vy = 0; last = performance.now(); moved = 0; downAt = [e.clientX, e.clientY]; this.downMk = e.target.closest('.mk');
+      h.setPointerCapture(e.pointerId); this.ptrs.set(e.pointerId, [e.clientX, e.clientY]); this.vx = this.vy = 0; last = performance.now(); moved = 0; if (this.ptrs.size === 2) { rotAcc = 0; rotOn = false; } downAt = [e.clientX, e.clientY]; this.downMk = e.target.closest('.mk');
       clearTimeout(longT); if (this.ptrs.size === 1 && this.onLong) longT = setTimeout(() => { if (moved < 8) { const [x, y] = loc(downAt[0], downAt[1]); h.classList.remove('drag'); this.ptrs.clear(); this.onLong(this.unproj(x, y)); } }, 600);
     });
     h.addEventListener('pointermove', e => {
       if (!this.ptrs.has(e.pointerId)) return; const p = this.ptrs.get(e.pointerId), k = loc(0, 0)[2];
       if (this.ptrs.size === 2) {
-        const [a, b] = [...this.ptrs.values()]; const d0 = Math.hypot(a[0] - b[0], a[1] - b[1]);
-        this.ptrs.set(e.pointerId, [e.clientX, e.clientY]); const [c, d] = [...this.ptrs.values()]; const d1 = Math.hypot(c[0] - d[0], c[1] - d[1]);
-        const [mx, my] = loc((c[0] + d[0]) / 2, (c[1] + d[1]) / 2); if (d0 > 0) this.zoomBy(d1 / d0, mx, my); moved += 10; return;
+        const [a, b] = [...this.ptrs.values()]; const d0 = Math.hypot(a[0] - b[0], a[1] - b[1]), a0 = Math.atan2(b[1] - a[1], b[0] - a[0]);
+        this.ptrs.set(e.pointerId, [e.clientX, e.clientY]); const [c, d] = [...this.ptrs.values()]; const d1 = Math.hypot(c[0] - d[0], c[1] - d[1]), a1 = Math.atan2(d[1] - c[1], d[0] - c[0]);
+        const [mx, my] = loc((c[0] + d[0]) / 2, (c[1] + d[1]) / 2); if (d0 > 0) this.zoomBy(d1 / d0, mx, my);
+        // rotation à deux doigts (comme Plans) : seuil de 12° pour ne pas tourner en zoomant
+        let da = a1 - a0; da = Math.atan2(Math.sin(da), Math.cos(da)); rotAcc += da; if (!rotOn && Math.abs(rotAcc) > .21) { rotOn = true; da = rotAcc; } if (rotOn) this.rotateBy(da, mx, my); moved += 10; return;
       }
-      const dx = (e.clientX - p[0]) / k, dy = (e.clientY - p[1]) / k; moved += Math.abs(dx) + Math.abs(dy); if (moved > 6) h.classList.add('drag');
+      const f0 = loc(p[0], p[1]), f1 = loc(e.clientX, e.clientY), dx = f1[0] - f0[0], dy = f1[1] - f0[1]; moved += Math.abs(e.clientX - p[0]) / k + Math.abs(e.clientY - p[1]) / k; if (moved > 6) h.classList.add('drag');
       const now = performance.now(), dt = Math.max(1, now - last); last = now; this.vx = dx / dt * 16; this.vy = dy / dt * 16;
       this.tx += dx; this.ty += dy; this.clamp(); this.apply(); this.ptrs.set(e.pointerId, [e.clientX, e.clientY]);
     });
@@ -64,22 +80,21 @@ class MapView {
   loop() {
     if (!this.alive) return;
     if (!this.ptrs.size && (Math.abs(this.vx) > .2 || Math.abs(this.vy) > .2)) { this.tx += this.vx; this.ty += this.vy; this.vx *= .92; this.vy *= .92; this.clamp(); this.apply(); }
+    if (this.tilt !== this.tiltTo) { const d = this.tiltTo - this.tilt; this.tilt = Math.abs(d) < .02 ? this.tiltTo : this.tilt + d * .16; }
+    const tf = this.tilt ? `perspective(1100px) rotateX(${(this.phi * 180 / Math.PI).toFixed(2)}deg)` : ''; if (this._tf !== tf) { this._tf = tf; const [ox, oy] = this.tiltO(); this.tl.style.transformOrigin = `${ox}px ${oy}px`; this.tl.style.transform = tf; this.host.classList.toggle('t3d', !!this.tilt); }
+    const vk = Math.round(this.rot * 100) + ':' + (this.tiltTo ? 1 : 0); if (this._vk !== vk) { this._vk = vk; this.onView && this.onView(this); }
     this.renderMarkers(); if (typeof FX !== 'undefined' && document.visibilityState !== 'hidden') FX.draw(this, performance.now()); requestAnimationFrame(this.loop);
   }
   renderMarkers() {
     let list = this.getMarkers(this);
     // regroupement des points d'intérêt proches à faible zoom
+    const pk = Math.max(.62, Math.min(1.1, Math.sqrt(this.s / ((typeof VENUE !== 'undefined' && VENUE.zoom) || .4)))); if (this._pk !== pk) { this._pk = pk; this.host.style.setProperty('--pk', pk.toFixed(3)); this.host.classList.toggle('lowz', pk < .8); }
     if (this.cluster) {
-      const out = [], used = new Set(), pois = list.filter(m => m.poi), rest = list.filter(m => !m.poi);
-      pois.forEach((m, i) => {
-        if (used.has(i)) return; const p = this.proj(m.at), grp = [m]; used.add(i);
-        pois.forEach((n, j) => { if (used.has(j)) return; const q = this.proj(n.at); if (Math.hypot(p[0] - q[0], p[1] - q[1]) < 44) { grp.push(n); used.add(j); } });
-        if (grp.length === 1) out.push(m);
-        else { const c = [grp.reduce((a, g) => a + g.at[0], 0) / grp.length, grp.reduce((a, g) => a + g.at[1], 0) / grp.length]; out.push({ id: 'clu_' + grp.map(g => g.id).join('_'), at: c, cls: 'clu', html: `<div class="poi">${grp.length}</div>`, label: '', onClick: () => this.flyTo(c, this.s * 1.9), z: 5 }); }
-      });
+      const out = [], pois = list.filter(m => m.poi).sort((a, b) => (b.prio || 0) - (a.prio || 0)), rest = list.filter(m => !m.poi), kept = [];
+      pois.forEach(m => { const p = this.projS(m.at); if (kept.some(q => Math.hypot(p[0] - q[0], p[1] - q[1]) < 46 * pk)) return; kept.push(p); out.push(m); });
       list = rest.concat(out);
     }
-    const seen = new Set();
+    const seen = new Set(), fan = MapView.fan ? MapView.fan(list, this) : {};
     list.forEach(m => {
       seen.add(m.id); let el = this.markers.get(m.id);
       if (!el) {
@@ -91,8 +106,8 @@ class MapView {
         this.ov.append(el); this.markers.set(m.id, el);
       }
       if (el._html !== m.html) { el.innerHTML = m.html; el._html = m.html; el.className = 'mk ' + (m.cls || ''); }
-      el._click = m.onClick; if (el._at && (Math.abs(el._at[0] - m.at[0]) + Math.abs(el._at[1] - m.at[1])) > .015) el._walk = performance.now() + 380; el._at = [m.at[0], m.at[1]]; el.classList.toggle('walk', (el._walk || 0) > performance.now()); const [x, y] = this.proj(m.at); el.style.left = x + 'px'; el.style.top = y + 'px'; el.style.zIndex = m.z || 1;
-      if (el._halo && m.halo) { const r = this.mPx(m.halo.m); Object.assign(el._halo.style, { left: x + 'px', top: y + 'px', width: 2 * r + 'px', height: 1.3 * r + 'px', background: m.halo.c + '2e', border: `1.5px ${m.halo.dash ? 'dashed' : 'solid'} ${m.halo.c}99` }); }
+      el._click = m.onClick; if (el._at && (Math.abs(el._at[0] - m.at[0]) + Math.abs(el._at[1] - m.at[1])) > .015) el._walk = performance.now() + 380; el._at = [m.at[0], m.at[1]]; el.classList.toggle('walk', (el._walk || 0) > performance.now()); let [x, y, kk] = this.projS(m.at); const fo = fan[m.id]; if (fo) { x += fo[0]; y += fo[1]; } el.style.left = x + 'px'; el.style.top = y + 'px'; el.style.zIndex = this.tilt ? Math.round(y) + (m.z || 1) * 10000 : m.z || 1;
+      if (el._halo && m.halo) { const r = this.mPx(m.halo.m) * kk; Object.assign(el._halo.style, { left: x + 'px', top: y + 'px', width: 2 * r + 'px', height: 1.3 * r * Math.cos(this.phi) + 'px', background: m.halo.c + '2e', border: `1.5px ${m.halo.dash ? 'dashed' : 'solid'} ${m.halo.c}99` }); }
     });
     this.markers.forEach((el, id) => { if (!seen.has(id)) { el._halo && el._halo.remove(); el.remove(); this.markers.delete(id); } });
     // itinéraire
@@ -107,7 +122,8 @@ const dashStyle = document.createElement('style'); dashStyle.textContent = '@key
 // Marqueurs standards
 function poiMarker(o, onClick, extra = '', noLabel) {
   const rupt = o.bar && Object.keys(ST.ruptures).some(k => k.startsWith(o.id + ':'));
-  return { id: 'poi_' + o.id, at: o.at, poi: true, aria: o.n, html: `<div class="poi"><img src="${IC(o.ic)}" alt=""></div>${noLabel ? '' : `<div class="lbl ${rupt ? 'warn' : ''}">${esc(o.n)}${extra}</div>`}`, onClick, z: 3 };
+  const key = /scene|stage|entree|sortie|wc|secours|secu|info/.test(o.id + ' ' + (o.ic || '')) ? 2 : o.bar ? 1 : 0;
+  return { id: 'poi_' + o.id, at: o.at, poi: true, prio: key, cls: 'pm' + (key === 2 ? ' key' : ''), aria: o.n, html: `<div class="poi"><img src="${IC(o.ic)}" alt=""></div>${noLabel ? '' : `<div class="lbl ${rupt ? 'warn' : ''}">${esc(o.n)}${extra}</div>`}`, onClick, z: 3 };
 }
 function personMarker(id, name, head, at, { me, stale, staff, acc = 4, sub, onClick, col } = {}) {
   const c = me ? '#4F6BF5' : stale ? '#8A8FA6' : col || (staff ? '#E58A00' : '#0E9F8A');

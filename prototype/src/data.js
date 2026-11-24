@@ -55,7 +55,7 @@ const POIS = [
   { id: 'entree', n: 'Entrée', ic: 'image_227', cat: 'service', node: 'A', at: [92, 83], desc: 'Contrôle des billets et bracelets.' },
   { id: 'vestiaire', n: 'Vestiaire', ic: 'vestiaire', cat: 'service', node: 'V', at: [74, 60], desc: '3 € par article, cashless.' },
   { id: 'fumeur', n: 'Zone fumeur', ic: 'zone_fumeur', cat: 'service', node: 'U', at: [80, 53] },
-  { id: 'food', n: 'Food', ic: 'food', cat: 'food', node: 'T', at: [63, 51], desc: 'Burgers, pizzas, options végé.', hours: '20:00 – 02:30' },
+  { id: 'food', n: 'Restauration', ic: 'food', cat: 'food', node: 'T', at: [63, 51], desc: 'Burgers, pizzas, options végé.', hours: '20:00 – 02:30' },
   { id: 'eau', n: 'Eau gratuite', ic: 'eau', cat: 'service', node: 'E', at: [58, 60], desc: 'Fontaine à eau gratuite.' },
   { id: 'recharge', n: 'Recharge téléphone', ic: 'recharge_telephone', cat: 'service', node: 'S', at: [37, 56], desc: 'Casiers de recharge, 2 € les 30 min.' },
   { id: 'info', n: 'Point info', ic: 'point_info', cat: 'service', node: 'D', at: [68, 60], desc: 'Objets trouvés, aide, informations.' },
@@ -64,6 +64,7 @@ const POIS = [
 ];
 
 const MENU = {
+  food: [['Plats', [['Burger du Bal', 13], ['Pizza margherita', 11], ['Wrap végé', 10]]], ['À côté', [['Frites', 4.5], ['Salade', 6]]], ['Desserts', [['Crêpe sucre', 4], ['Glace 2 boules', 5]]]],
   barO: [
     ['Bières', [['Pression 25 cl', 6], ['Pression 50 cl', 11], ['IPA locale 33 cl', 9]]],
     ['Cocktails', [['Spritz', 12], ['Mojito', 12], ['Gin tonic', 12]]],

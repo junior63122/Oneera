@@ -46,10 +46,10 @@ function polyAt(pts, u) { // point à la fraction u (0..1) de la longueur d'une 
 }
 FX.draw = (mv, now) => {
   const cv = mv.fx; if (!cv) return;
-  const w = mv.vw, h = mv.vh, dpr = Math.min(2, devicePixelRatio || 1);
-  if (cv.width !== Math.round(w * dpr) || cv.height !== Math.round(h * dpr)) { cv.width = Math.round(w * dpr); cv.height = Math.round(h * dpr); cv.style.width = w + 'px'; cv.style.height = h + 'px'; }
-  let ctx = cv.getContext('2d'); ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.clearRect(0, 0, w, h);
-  const top = mv.fx2; if (top && (top.width !== cv.width || top.height !== cv.height)) { top.width = cv.width; top.height = cv.height; top.style.width = w + 'px'; top.style.height = h + 'px'; }
+  const w = mv.vw, h = mv.vh, dpr = Math.min(2, devicePixelRatio || 1), px0 = mv.tiltTo || mv.tilt ? Math.round(w * .6) : 0, py0 = mv.tiltTo || mv.tilt ? Math.round(h * 1.1) : 0, cw = w + 2 * px0, ch = h + py0;
+  if (cv.width !== Math.round(cw * dpr) || cv.height !== Math.round(ch * dpr)) { cv.width = Math.round(cw * dpr); cv.height = Math.round(ch * dpr); cv.style.width = cw + 'px'; cv.style.height = ch + 'px'; cv.style.left = -px0 + 'px'; cv.style.top = -py0 + 'px'; }
+  let ctx = cv.getContext('2d'); ctx.setTransform(dpr, 0, 0, dpr, px0 * dpr, py0 * dpr); ctx.clearRect(-px0, -py0, cw, ch);
+  const top = mv.fx2; if (top && (top.width !== Math.round(w * dpr) || top.height !== Math.round(h * dpr))) { top.width = Math.round(w * dpr); top.height = Math.round(h * dpr); top.style.width = w + 'px'; top.style.height = h + 'px'; }
   const cfg = (mv.fxCfg && mv.fxCfg()) || {}, anim = mapAnim(), t = anim ? now / 1000 : 12;
   const dt = Math.min(.05, Math.max(0, (now - (mv._fxLast || now)) / 1000)); mv._fxLast = now;
   const minute = cfg.minute != null ? cfg.minute : nowMin(), clk = (20 * 60 + minute) % 1440, nk = cfg.night != null ? cfg.night : nightK(clk), dk = Math.max(0, 1 - Math.abs(nk - .5) * 2.2);
@@ -58,11 +58,11 @@ FX.draw = (mv, now) => {
   if (mv._f !== f) { mv.base.style.filter = f; mv._f = f; }
   const nkr = Math.round(nk * 20) / 20; if (mv._nk !== nkr) { mv._nk = nkr; mv.host.classList.toggle('nite', nk > .5);
     mv.host.style.background = nk > .5 ? `radial-gradient(120% 80% at 50% 0%,#2C2468 0%,#151436 55%,#0B0B22 100%)` : nk > .05 ? `linear-gradient(180deg,#7E86D8,#E7A9C4 60%,#F6C7A8)` : `linear-gradient(180deg,#A9C4F5,#DCE6FB 55%,#F6E1EE)`; }
-  const D0 = fxData(), [x0, y0] = mv.proj([0, 0]), [x1, y1] = mv.proj([100, 100]), zs = Math.max(.55, Math.min(1.7, mv.s / (VENUE.zoom || .5)));
-  const vis = (x, y, m = 80) => x > -m && y > -m && x < w + m && y < h + m;
+  const D0 = fxData(), C00 = mv.proj([0, 0]), C10 = mv.proj([100, 0]), C11 = mv.proj([100, 100]), C01 = mv.proj([0, 100]), Wm = mv.W * mv.s, Hm = mv.H * mv.s, zs = Math.max(.55, Math.min(1.7, mv.s / (VENUE.zoom || .5)));
+  const vis = (x, y, m = 80) => x > -m - px0 && y > -m - py0 && x < w + px0 + m && y < h + m;
   // 1. ombres de nuages qui glissent sur le site (jour)
-  if (nk < .9 && cfg.shadows !== false) { ctx.save(); ctx.beginPath(); ctx.rect(x0, y0, x1 - x0, y1 - y0); ctx.clip(); ctx.globalAlpha = .09 * (1 - nk);
-    for (let i = 0; i < 4; i++) { const sw = (x1 - x0) * .42, sh = sw * .58, u = ((t * .006 + i * .27 + fxRnd(i) * .2) % 1.4) - .2; ctx.drawImage(fxSprites.shadow, x0 + u * (x1 - x0) - sw / 2, y0 + (.15 + fxRnd(i + 9) * .7) * (y1 - y0) - sh / 2, sw, sh); }
+  if (nk < .9 && cfg.shadows !== false) { ctx.save(); ctx.translate(C00[0], C00[1]); ctx.rotate(mv.rot); ctx.beginPath(); ctx.rect(0, 0, Wm, Hm); ctx.clip(); ctx.globalAlpha = .09 * (1 - nk);
+    for (let i = 0; i < 4; i++) { const sw = Wm * .42, sh = sw * .58, u = ((t * .006 + i * .27 + fxRnd(i) * .2) % 1.4) - .2; ctx.drawImage(fxSprites.shadow, u * Wm - sw / 2, (.15 + fxRnd(i + 9) * .7) * Hm - sh / 2, sw, sh); }
     ctx.restore(); }
   // 2. eau : scintillements le jour, reflets colorés la nuit
   D0.glints.forEach(([gx, gy, r], i) => { const [px, py] = mv.proj([gx, gy]); if (!vis(px, py)) return; const a = Math.max(0, Math.sin(t * (1.6 + r * 2) + i * 2.1)); if (a < .35) return;
@@ -126,9 +126,10 @@ FX.draw = (mv, now) => {
   }
   // calque du dessus (au-dessus des marqueurs) : secours, feu d'artifice, entrée/sortie
   if (top) { ctx = top.getContext('2d'); ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.clearRect(0, 0, w, h); }
+  const visS = (x, y, m = 80) => x > -m && y > -m && x < w + m && y < h + m;
   // 6. secours en route vers une alerte (ambulance si médical, agent sinon)
   FX.vehicles = FX.vehicles.filter(v => { const r = ST.reports.find(x => x.id === v.rid); return r && ['Prise en charge', 'En route', 'Sur place'].includes(r.status); });
-  FX.vehicles.forEach(v => { const r = ST.reports.find(x => x.id === v.rid), k = r.status === 'Sur place' ? 1 : Math.min(1, (now - v.t0) / v.dur), [ax, ay, ang] = polyAt(v.pts, fxEase(k)), [px, py] = mv.proj([ax, ay]); if (!vis(px, py)) return;
+  FX.vehicles.forEach(v => { const r = ST.reports.find(x => x.id === v.rid), k = r.status === 'Sur place' ? 1 : Math.min(1, (now - v.t0) / v.dur), [ax, ay, ang0] = polyAt(v.pts, fxEase(k)), [px, py] = mv.projS([ax, ay]), ang = ang0 + mv.rot; if (!visS(px, py)) return;
     const blink = Math.sin(now / 90) > 0, sc = Math.max(1.15, Math.min(1.8, zs * 1.3));
     ctx.font = '800 11px system-ui,sans-serif'; const lbl = r.status === 'Sur place' ? 'Secours sur place' : 'Secours en route', lw = ctx.measureText(lbl).width + 14; ctx.fillStyle = v.kind === 'amb' ? '#E5484D' : '#E58A00'; ctx.beginPath(); ctx.roundRect ? ctx.roundRect(px - lw / 2, py - 44 * sc, lw, 18, 9) : ctx.rect(px - lw / 2, py - 44 * sc, lw, 18); ctx.fill(); ctx.fillStyle = '#fff'; ctx.textAlign = 'center'; ctx.fillText(lbl, px, py - 44 * sc + 13); ctx.textAlign = 'start';
     ctx.save(); ctx.translate(px, py); ctx.scale(sc, sc);
@@ -143,7 +144,7 @@ FX.draw = (mv, now) => {
   // 7. feu d'artifice
   if (FX.rockets.length) { ctx.globalCompositeOperation = 'lighter';
     FX.rockets = FX.rockets.filter(rk => now - rk.t0 < 3200);
-    FX.rockets.forEach(rk => { const tau = (now - rk.t0) / 1000; if (tau < 0) return; const [bx, by] = mv.proj(rk.at), H = rk.h * Math.max(.7, Math.min(1.4, zs)), cx = bx + rk.dx, cy = by - H;
+    FX.rockets.forEach(rk => { const tau = (now - rk.t0) / 1000; if (tau < 0) return; const [bx, by] = mv.projS(rk.at), H = rk.h * Math.max(.7, Math.min(1.4, zs)), cx = bx + rk.dx, cy = by - H;
       if (tau < .9) { const e = 1 - Math.pow(1 - tau / .9, 2), yy = by - H * e; ctx.strokeStyle = 'rgba(255,220,160,.8)'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(bx + rk.dx * e, yy); ctx.lineTo(bx + rk.dx * e * .9, yy + 14); ctx.stroke(); return; }
       const s = tau - .9, a = Math.max(0, 1 - s / 2.1); if (s < .35) fxGlow(ctx, cx, cy, 160 * zs, rk.rgb, .35 * (1 - s / .35));
       for (let i = 0; i < 90; i++) { const an = i / 90 * 6.283 + rk.seed, v = (60 + 40 * fxRnd(i + rk.seed * 9)) * Math.max(.7, Math.min(1.3, zs)), e = 1 - Math.exp(-3 * s), x = cx + Math.cos(an) * v * e, y = cy + Math.sin(an) * v * e + 22 * s * s;
@@ -151,18 +152,18 @@ FX.draw = (mv, now) => {
     ctx.globalCompositeOperation = 'source-over'; }
   // 8. nuages qui encadrent le site (bornes de la carte) avec léger effet de profondeur
   if (cfg.clouds !== false) {
-    const sz = Math.max(150, Math.min(420, (x1 - x0) * .09)), par = [(w / 2 - (x0 + x1) / 2) * .06, (h / 2 - (y0 + y1) / 2) * .06];
+    const sz = Math.max(150, Math.min(420, Wm * .09)), par = [(w / 2 - (C00[0] + C11[0]) / 2) * .06, (h / 2 - (C00[1] + C11[1]) / 2) * .06], rc = Math.cos(mv.rot), rn = Math.sin(mv.rot), N = (x, y) => [x * rc - y * rn, x * rn + y * rc];
     const spr = nk > .5 ? fxSprites.night : dk > .3 ? fxSprites.dusk : fxSprites.day;
     const edge = (ax, ay, bx, by, out, seed) => { const len = Math.hypot(bx - ax, by - ay), n = Math.max(4, Math.min(36, Math.ceil(len / (sz * .5))));
       for (let ring = 0; ring < 2; ring++) for (let i = 0; i <= n; i++) { const u = (i + ((t * .01 + fxRnd(seed + i)) % 1) * .6) / n, wob = Math.sin(t * .2 + i + seed) * sz * .04;
         const cx = ax + (bx - ax) * u + out[0] * (sz * (ring ? .55 : .05) + wob) + par[0] * (1 + ring), cy = ay + (by - ay) * u + out[1] * (sz * (ring ? .55 : .05) + wob) + par[1] * (1 + ring), S = sz * (ring ? 1.35 : 1) * (.8 + fxRnd(seed * 3 + i) * .5);
-        if (cx + S < 0 || cy + S < 0 || cx - S > w || cy - S > h) continue; ctx.globalAlpha = ring ? .97 : .9; ctx.drawImage(spr, cx - S / 2, cy - S * .3, S, S * .6); } };
-    edge(x0, y0, x1, y0, [0, -1], 1); edge(x0, y1, x1, y1, [0, 1], 2); edge(x0, y0, x0, y1, [-1, 0], 3); edge(x1, y0, x1, y1, [1, 0], 4); ctx.globalAlpha = 1;
+        if (cx + S < -px0 || cy + S < -py0 || cx - S > w + px0 || cy - S > h) continue; ctx.globalAlpha = ring ? .97 : .9; ctx.drawImage(spr, cx - S / 2, cy - S * .3, S, S * .6); } };
+    edge(C00[0], C00[1], C10[0], C10[1], N(0, -1), 1); edge(C01[0], C01[1], C11[0], C11[1], N(0, 1), 2); edge(C00[0], C00[1], C01[0], C01[1], N(-1, 0), 3); edge(C10[0], C10[1], C11[0], C11[1], N(1, 0), 4); ctx.globalAlpha = 1;
   }
   // 9. entrée / sortie « vue des Dieux » : les nuages s'écartent pendant la descente (ou se referment en partant)
   const io = mv.intro || mv.outro; if (io) { let k = Math.min(1, (now - io.t0) / io.dur); if (mv.outro) k = 1 - k;
     if (mv.intro && k >= 1) { mv.intro = null; mv.ov.style.opacity = ''; mv.svg.style.opacity = ''; }
-    else { const e = fxEase(k), spr = nk > .5 ? fxSprites.night : fxSprites.day; mv.host.classList.toggle('godsN', nk > .5); ctx.fillStyle = nk > .5 ? `rgba(28,24,64,${(1 - e) * .85})` : `rgba(255,255,255,${(1 - e) * .8})`; ctx.fillRect(0, 0, w, h);
+    else { const e = fxEase(k), spr = nk > .5 ? fxSprites.night : fxSprites.day; mv.host.classList.toggle('godsN', nk > .5); ctx.fillStyle = nk > .5 ? `rgba(28,24,64,${(1 - e) * .85})` : `rgba(255,255,255,${(1 - e) * .8})`; ctx.fillRect(-px0, -py0, cw, ch);
       for (let i = 0; i < 26; i++) { const ax = fxRnd(i * 3) * w, ay = fxRnd(i * 7) * h, dx = ax - w / 2, dy = ay - h / 2, d = Math.hypot(dx, dy) || 1, push = e * (w * .9 + fxRnd(i) * w * .5), S = w * (.7 + fxRnd(i * 11) * .8) * (1 + e * .8);
         ctx.globalAlpha = Math.max(0, 1 - e * .9); ctx.drawImage(spr, ax + dx / d * push - S / 2, ay + dy / d * push - S * .3, S, S * .6); } ctx.globalAlpha = 1;
       mv.ov.style.opacity = Math.max(0, (e - .55) / .45).toFixed(2); mv.svg.style.opacity = mv.ov.style.opacity; } }
