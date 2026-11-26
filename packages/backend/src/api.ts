@@ -116,7 +116,7 @@ export function createApi(opts: ApiOptions) {
     const usableEmail = email && p.email_verified !== false && p.email_verified !== 'false' && !email.endsWith('privaterelay.appleid.com') ? email : '';
     if (found) { if (usableEmail) await addIdentifier(found.id, 'email', usableEmail); return { token: await signApi(found.id), user: await me(found.id), isNew: false }; }
     const hint = typeof nameHint === 'string' && nameHint.trim() ? nameHint : typeof p.given_name === 'string' ? p.given_name : typeof p.name === 'string' ? p.name : email && !email.endsWith('privaterelay.appleid.com') ? email.split('@')[0] : 'Moi';
-    const name = String(hint).trim().replace(/\s+/g, ' ').slice(0, 40) || 'Moi';
+    const name = [...String(hint).normalize('NFC').replace(/[<>"&`\\\u0000-\u001f\u007f\u200b-\u200f\u202a-\u202e\u2066-\u2069]/g, '').trim().replace(/\s+/g, ' ')].slice(0, 40).join('') || 'Moi';
     const id = await withSystem(pool, async (c) => {
       const t = (await c.query("SELECT id FROM tenants WHERE slug = 'oneera'")).rows[0].id;
       return (await c.query('INSERT INTO users (tenant_id, display_name, is_guest, auth_provider, auth_subject) VALUES ($1, $2, false, $3, $4) RETURNING id', [t, name, provider, sub])).rows[0].id as string;
@@ -136,8 +136,25 @@ export function createApi(opts: ApiOptions) {
     const share = (await c.query('SELECT expires_at FROM location_shares WHERE owner_id = $1 AND revoked_at IS NULL AND now() < expires_at ORDER BY expires_at DESC LIMIT 1', [userId])).rows[0];
     return { id: r.id, displayName: r.display_name, avatar: r.avatar, locationConsent: !!consent, sharingUntil: share?.expires_at ?? null };
   });
-  const cleanName = (v: unknown) => { const s = typeof v === 'string' ? v.trim().replace(/\s+/g, ' ') : ''; if (s.length < 1 || s.length > 40) throw new HttpError(400, 'invalid_name', 'Le prénom doit faire entre 1 et 40 caractères.'); return s; };
-  const cleanAvatar = (v: unknown) => { if (v === undefined) return undefined; const s = JSON.stringify(v ?? {}); if (s.length > 4000) throw new HttpError(400, 'invalid_avatar'); return s; };
+  // Prénom : texte simple uniquement (aucun caractère de balisage ni caractère invisible / de contrôle).
+  const cleanName = (v: unknown) => { const s = typeof v === 'string' ? v.normalize('NFC').replace(/[<>"&`\\\u0000-\u001f\u007f\u200b-\u200f\u202a-\u202e\u2066-\u2069]/g, '').trim().replace(/\s+/g, ' ') : ''; if ([...s].length < 1 || [...s].length > 40) throw new HttpError(400, 'invalid_name', 'Le prénom doit faire entre 1 et 40 caractères.'); return s; };
+  // Avatar : objet de réglages simples uniquement (identifiants courts, nombres, booléens, listes courtes).
+  const TOKEN = /^[A-Za-z0-9_-]{0,24}$/;
+  const cleanAvatar = (v: unknown) => {
+    if (v === undefined) return undefined;
+    if (v === null || typeof v !== 'object' || Array.isArray(v)) throw new HttpError(400, 'invalid_avatar', 'Avatar invalide.');
+    const out: Record<string, unknown> = {};
+    const entries = Object.entries(v as Record<string, unknown>);
+    if (entries.length > 40) throw new HttpError(400, 'invalid_avatar', 'Avatar invalide.');
+    for (const [k, x] of entries) {
+      if (!TOKEN.test(k) || !k) continue;
+      if (typeof x === 'number' && Number.isFinite(x) && Math.abs(x) < 1000) out[k] = x;
+      else if (typeof x === 'boolean') out[k] = x;
+      else if (typeof x === 'string' && TOKEN.test(x)) out[k] = x;
+      else if (Array.isArray(x) && x.length <= 12 && x.every((y) => typeof y === 'string' && TOKEN.test(y))) out[k] = x;
+    }
+    return JSON.stringify(out);
+  };
 
   const routes: Record<string, (req: IncomingMessage, m: RegExpMatchArray) => Promise<unknown>> = {
     'GET /v1/health': async () => ({ ok: true }),
@@ -326,7 +343,8 @@ export function createApi(opts: ApiOptions) {
       res.writeHead(200, { 'content-type': 'application/json; charset=utf-8' });
       res.end(JSON.stringify(out));
     } catch (e) {
-      const he = e instanceof HttpError ? e : null;
+      const pgCode = (e as { code?: string }).code;
+      const he = e instanceof HttpError ? e : pgCode === '23514' || pgCode === '22001' || pgCode === '22P02' ? new HttpError(400, 'invalid_input', 'Donnée invalide : vérifie ce que tu as saisi.') : null;
       if (!he) console.error('[api]', req.method, path, (e as Error).message);
       res.writeHead(he?.status ?? 500, { 'content-type': 'application/json; charset=utf-8' });
       res.end(JSON.stringify({ error: he?.code ?? 'server_error', message: he?.message ?? 'Erreur serveur, réessaie.' }));

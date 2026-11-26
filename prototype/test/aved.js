@@ -1,0 +1,10 @@
+const { chromium } = require('playwright');
+(async () => { const b = await chromium.launch(); const p = await b.newPage({ viewport: { width: 1280, height: 900 } }); const errs = []; p.on('pageerror', e => errs.push(e.message));
+  await p.goto('http://127.0.0.1:8090/local.html'); await p.waitForTimeout(500); await p.evaluate('quickSetup();V.avatarEditor(null)'); await p.waitForTimeout(500);
+  const sc = p.locator('#screen'); const shot = async n => { await p.waitForTimeout(500); await sc.screenshot({ path: 'av_' + n + '.png' }); };
+  await shot('1body'); await sc.locator('[data-c="hairs"]').click(); await shot('2hair'); await sc.locator('[data-v="afro"]').click(); await sc.locator('[data-col="7"]').click(); await shot('3hair2');
+  await sc.locator('[data-c="clothes"]').click(); await sc.locator('[data-v="hoodie"]').click(); await sc.locator('[data-col="8"]').click(); await shot('4top');
+  await sc.locator('[data-c="acc"]').click(); await sc.locator('[data-v="sun"]').click(); await sc.locator('[data-s="hat"]').click(); await sc.locator('[data-v="cap"]').click(); await shot('5acc');
+  await sc.locator('[data-c="face"]').click(); await sc.locator('[data-s="mouth"]').click(); await sc.locator('[data-v="laugh"]').click(); await shot('6face');
+  await sc.locator('#ok').click(); await p.waitForTimeout(400); await shot('7settings'); await p.evaluate('V.map()'); await p.waitForTimeout(900); await shot('8map');
+  console.log(errs.join('|') || 'no errors'); await b.close(); })();

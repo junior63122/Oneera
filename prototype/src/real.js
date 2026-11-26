@@ -126,10 +126,13 @@ function wireAuth(el, signup) {
 V.signup = () => { const el = mount(authForm(true), 'white'); wireAuth(el, true); };
 V.login = () => { const el = mount(authForm(false), 'white'); wireAuth(el, false); };
 
+// Prénoms et avatars venus du serveur : rendus inoffensifs avant tout affichage (l'interface historique insère parfois du HTML).
+const safeName = (v) => String(v ?? '').replace(/[<>&"'`]/g, (c) => ({ '<': '‹', '>': '›', '&': '＆', '"': '＂', "'": '’', '`': 'ˋ' })[c]).slice(0, 60);
+const safeAvatar = (a) => { if (!a || typeof a !== 'object' || Array.isArray(a)) return null; const o = {}; for (const [k, x] of Object.entries(a)) { if (!/^[A-Za-z0-9_-]{1,24}$/.test(k)) continue; if (typeof x === 'number' && isFinite(x)) o[k] = x; else if (typeof x === 'boolean') o[k] = x; else if (typeof x === 'string' && /^[A-Za-z0-9_-]{0,24}$/.test(x)) o[k] = x; else if (Array.isArray(x) && x.every(y => typeof y === 'string' && /^[A-Za-z0-9_-]{0,24}$/.test(y))) o[k] = x.slice(0, 12); } return o.g ? o : null; };
 function realApplyUser() {
   const u = REAL.user; if (!u) return;
-  ST.me.first = u.displayName; ST.me.pseudo = u.displayName;
-  if (u.avatar && typeof u.avatar === 'object' && u.avatar.g) ST.me.av2 = u.avatar;
+  ST.me.first = safeName(u.displayName); ST.me.pseudo = safeName(u.displayName);
+  const av = safeAvatar(u.avatar); if (av) ST.me.av2 = av;
   if (REAL.testMap && !ST.perms.loc) ST.perms.loc = 'app';
 }
 
@@ -150,7 +153,7 @@ async function realSyncFriends() {
   r.friends.filter(f => f.status === 'pending' && !f.requestedByMe && !before.has(f.id) && REAL._synced).forEach(f => toast(`${esc(f.displayName)} veut t’ajouter en ami · <b>Amis</b>`));
   r.friends.filter(f => f.status === 'accepted' && !wasAcc.has(f.id) && REAL._synced).forEach(f => toast(`${esc(f.displayName)} et toi êtes maintenant amis 🎉`));
   REAL._synced = true;
-  REAL.friends = r.friends;
+  REAL.friends = r.friends.map(f => ({ ...f, displayName: safeName(f.displayName), avatar: safeAvatar(f.avatar) }));
   realApplyFriends();
 }
 function realApplyFriends() {
@@ -276,7 +279,7 @@ V.addFriends = (onboarding) => {
       contactNames = new Map(); const hashes = [];
       (r.entries || []).forEach(c => c.hashes.forEach(h => { hashes.push(h); if (!contactNames.has(h)) contactNames.set(h, c.name); }));
       const out = await api('POST', '/v1/contacts/match', { hashes: hashes.slice(0, 5000) });
-      matches = out.users; paint(); b.textContent = 'Actualiser';
+      matches = out.users.map(u => ({ ...u, displayName: safeName(u.displayName), avatar: safeAvatar(u.avatar) })); paint(); b.textContent = 'Actualiser';
     } catch (e) { msg(e.message); b.textContent = 'Trouver mes contacts'; }
     finally { b.disabled = false; }
   };

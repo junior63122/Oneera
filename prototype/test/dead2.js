@@ -1,0 +1,13 @@
+const { chromium } = require('playwright');
+(async () => { const b = await chromium.launch(); const p = await b.newPage({ viewport: { width: 1360, height: 900 } });
+ const errs=[]; p.on('pageerror', e => errs.push(e.message));
+ await p.goto('http://127.0.0.1:8090/local.html'); await p.waitForTimeout(600);
+ const t=s=>p.evaluate(s); const vis=()=>t(`[...document.querySelectorAll('#screen .mk')].filter(m=>m.style.display!=='none'&&getComputedStyle(m).display!=='none').length`);
+ await t('setVenue("bdf");quickSetup();V.map();V.rdvSheet(null)'); await p.waitForTimeout(400);
+ const btn=p.locator('.sheet button',{hasText:'Envoyer le point de RDV'}); console.log('rdv btn', await btn.count(), await btn.evaluate(e=>[e.disabled,e.className,getComputedStyle(e).opacity].join(',')).catch(()=>'-'));
+ const c0=await t('JSON.stringify(ST.convos).length'); await btn.click().catch(e=>console.log('click err',e.message.slice(0,80))); await p.waitForTimeout(400); console.log('convos changed', c0, await t('JSON.stringify(ST.convos).length'), await t(`(document.querySelector('.sheet')?.innerText||'NONE').slice(0,60)`));
+ await t('quickSetup();setVenue("selva");V.map()'); await p.waitForTimeout(400); const a=await vis(); await p.locator('#screen .chip',{hasText:/^Bars$/}).first().click(); await p.waitForTimeout(400); console.log('selva bars', a, await vis(), await t(`POIS.filter(o=>o.bar).length`));
+ await t('setVenue("bdf");quickSetup();ST.lang="en";V.map()'); await p.waitForTimeout(400); const a2=await vis(); await p.locator('#screen .chip',{hasText:/^Food$/}).first().click(); await p.waitForTimeout(400); console.log('en food', a2, await vis());
+ await t('ST.lang="fr";quickSetup();ST.role="bar";S.bar()'); await p.waitForTimeout(300); const r=p.locator('#screen button',{hasText:'Gin tonic'}).first(); const h0=await r.innerText(); await r.click(); await p.waitForTimeout(300); console.log('gin', h0.replace(/\n/g,' '), '->', (await r.innerText().catch(()=>'gone')).replace(/\n/g,' '), await t(`(document.querySelector('.sheet')?.innerText||'NONE').slice(0,80)`));
+ await t('ST.role="visitor";resetDemo();V.camera();V.store()'); await p.waitForTimeout(400); console.log(await t(`(document.querySelector('#screen').innerText).slice(0,120)`)); await p.locator('#screen button',{hasText:/^Ouvrir$/}).first().click(); await p.waitForTimeout(1200); console.log('after open', await t(`(document.querySelector('#screen').innerText).slice(0,80)`));
+ console.log('errs',errs); await b.close(); })();

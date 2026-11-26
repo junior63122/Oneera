@@ -508,3 +508,37 @@ input,textarea{font-size:16px} /* < 16 px : iOS zoome la page à la saisie */
 #screen input,#screen textarea{font-size:16px!important}
 .ctc{background:#F3F5FB;gap:10px}.ctcIco{width:46px;height:46px;border-radius:23px;background:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0}
 details.phone{background:#F7F7F9;border-radius:14px;padding:12px 14px}details.phone summary{font-weight:700;font-size:14px;cursor:pointer}
+/* ===== Studio d'avatar v9 : scène plein cadre, onglets à icônes, grandes vignettes (type Bitmoji) ===== */
+.studio.st2{display:flex;flex-direction:column;height:100%;background:#1D1A4A}
+.st2 .stStage{position:relative;flex:1 1 52%;min-height:220px;overflow:hidden;background:radial-gradient(120% 90% at 50% 30%,#8E7CF6 0%,#5B4FD6 42%,#2C2678 78%,#1D1A4A 100%);display:flex;align-items:flex-end;justify-content:center;padding-bottom:6px}
+.st2 .stGlow{position:absolute;left:50%;top:44%;width:120%;aspect-ratio:1;transform:translate(-50%,-50%);background:radial-gradient(closest-side,rgba(255,255,255,.22),rgba(255,255,255,0));pointer-events:none}
+.st2 .stFloor{position:absolute;left:50%;bottom:4%;width:62%;height:44px;transform:translateX(-50%);border-radius:50%;background:radial-gradient(closest-side,rgba(10,6,40,.55),rgba(10,6,40,0));pointer-events:none}
+.st2 #big{position:relative;z-index:2;height:94%;max-height:none;width:100%;margin:0}
+.st2 .stTop{position:absolute;left:0;right:0;top:0;z-index:5;display:flex;align-items:center;gap:8px;padding:calc(env(safe-area-inset-top,0px) + 10px) 12px 0;min-height:auto}
+.st2 .stTop .rb{width:40px;height:40px;background:rgba(255,255,255,.16);color:#fff;box-shadow:none}
+.st2 .stLater{color:#fff;font-weight:800;font-size:14px;padding:9px 12px;border-radius:20px;background:rgba(255,255,255,.14)}
+.st2 .stG{flex:1;display:flex;justify-content:center;gap:0;margin:0 auto;max-width:190px;background:rgba(0,0,0,.22);border-radius:20px;padding:3px}
+.st2 .stG button{flex:1;color:rgba(255,255,255,.8);font-weight:800;font-size:13.5px;padding:7px 0;border-radius:17px}
+.st2 .stG button.on{background:#fff;color:#2C2678}
+.st2 .stSave{position:absolute;right:12px;bottom:12px;z-index:5;background:#FFD84D;color:#1D1A4A;font-weight:850;font-size:15px;padding:11px 18px;border-radius:24px;box-shadow:0 6px 18px rgba(0,0,0,.25)}
+.st2 .stMapBtn{left:12px;right:auto;bottom:12px;background:rgba(255,255,255,.16);color:#fff}
+.st2 .stPanel{flex:0 0 auto;height:48%;max-height:none;background:#fff;border-radius:24px 24px 0 0;margin-top:-18px;position:relative;z-index:6;padding:6px 0 0;display:flex;flex-direction:column;gap:0;box-shadow:0 -8px 30px rgba(0,0,0,.25)}
+.st2 .stTabs{display:flex;gap:0;padding:4px 6px 0;border-bottom:1px solid #EEF0F6;overflow-x:auto}
+.st2 .stTabs button{flex:1 0 auto;min-width:52px;display:flex;flex-direction:column;align-items:center;gap:2px;padding:8px 6px 7px;background:none;border-radius:0;color:#9196AA;border-bottom:3px solid transparent;font-size:10.5px;font-weight:800}
+.st2 .stTabs button span{white-space:nowrap}
+.st2 .stTabs button.on{color:#4F45D6;border-bottom-color:#4F45D6;background:none}
+.st2 .stBody{flex:1 1 auto;overflow-y:auto;padding:10px 14px calc(18px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;gap:8px}
+.st2 .stLbl{font-size:11.5px;letter-spacing:.06em;color:#8A8FA4;margin:4px 0 0}
+.st2 .stTiles{grid-template-columns:repeat(3,1fr);gap:10px}
+.st2 .stTiles button{padding:0;border-radius:18px;background:linear-gradient(160deg,#F4F1FF,#ECE8FB);box-shadow:none;position:relative;overflow:hidden}
+.st2 .stTiles button .th{border-radius:18px;background:none}
+.st2 .stTiles button b{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+.st2 .stTiles button.on{box-shadow:inset 0 0 0 3px #4F45D6;background:linear-gradient(160deg,#ECEAFF,#E2DDFF)}
+.st2 .stTiles button.on::after{content:'✓';position:absolute;right:6px;top:6px;width:20px;height:20px;border-radius:10px;background:#4F45D6;color:#fff;font-size:12px;font-weight:900;display:flex;align-items:center;justify-content:center}
+.st2 .stRow{display:flex;gap:10px;overflow-x:auto;padding:4px 2px 6px;scrollbar-width:none;grid-template-columns:none}
+.st2 .stRow::-webkit-scrollbar{display:none}
+.st2 .stRow button{flex:0 0 40px;width:40px;height:40px}
+.st2 .seg.small{background:#F1F2F8}
+.st2 .stG{flex:0 1 200px;min-width:170px}.st2 .stG button{white-space:nowrap;padding:7px 12px}
+.st2 .stTabs button{flex:1 1 0;min-width:0}
+.st2 .stLater{white-space:nowrap}

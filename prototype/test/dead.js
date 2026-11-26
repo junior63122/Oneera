@@ -1,0 +1,13 @@
+const { chromium } = require('playwright');
+(async () => { const b = await chromium.launch(); const p = await b.newPage({ viewport: { width: 1360, height: 900 } });
+ const errs=[]; p.on('pageerror', e => errs.push(e.message));
+ await p.goto('http://127.0.0.1:8090/local.html'); await p.waitForTimeout(600);
+ const t=s=>p.evaluate(s);
+ await t('resetDemo();V.welcome()'); await p.waitForTimeout(300); await p.locator('[data-legal]').first().click(); await p.waitForTimeout(500);
+ console.log('legal sheet:', await t(`(document.querySelector('.sheet')?.innerText||'NONE').slice(0,80)`), await t(`typeof V.legal`));
+ await t('quickSetup();V.chat("lea")'); await p.waitForTimeout(300); const n0=await t(`ST.convos.lea.length`); await p.locator('[data-q="📍 Ma position"]').click(); await p.waitForTimeout(300);
+ console.log('chat pos', n0, await t(`ST.convos.lea.length`));
+ await t('quickSetup();V.map()'); await p.waitForTimeout(500); const m=p.locator('#screen [aria-label="Carré VIP"]').first(); console.log('vip marker count', await m.count(), await m.evaluate(e=>e.outerHTML.slice(0,200)));
+ await m.click({force:true}); await p.waitForTimeout(500); console.log('vip sheet:', await t(`(document.querySelector('.sheet')?.innerText||'NONE').slice(0,60)`));
+ await t('resetDemo();V.phone()'); await p.waitForTimeout(300); console.log(await t(`[...document.querySelectorAll('#screen button')].map(b=>b.innerText.trim()).join('|').slice(0,300)`));
+ console.log('errs',errs); await b.close(); })();

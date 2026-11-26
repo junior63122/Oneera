@@ -1,5 +1,5 @@
 // ===== v7 : vrai créateur d'avatar (nouveau moteur illustré) — femme / homme séparés, éléments interchangeables =====
-const myAv2 = () => { if (!ST.me.av2) ST.me.av2 = { ...AV2_DEFAULT, g: 'm', skin: 3, hair: 'wavy', hairC: 2, top: 'openshirt', topC: 2, bottom: 'chinos', bottomC: 2, shoes: 'sneakers', jewel: ['necklace', 'bracelets'], pose: 'pocket' }; return ST.me.av2; };
+const myAv2 = () => { if (!ST.me.av2) ST.me.av2 = { ...AV2_DEFAULT, g: 'm', skin: 3, hair: 'crop', hairC: 2, top: 'openshirt', topC: 2, bottom: 'chinos', bottomC: 2, shoes: 'sneakers', jewel: ['necklace', 'bracelets'], pose: 'pocket' }; return ST.me.av2; };
 meHead = () => av2URI(myAv2(), 'head');
 // visages des amis : nouveau moteur (la liste FRIEND_CHAR est vidée pour ne plus utiliser les images figées)
 Object.keys(FRIEND_CHAR).forEach(k => delete FRIEND_CHAR[k]);
@@ -15,17 +15,33 @@ personMarker = function (id, name, head, at, o = {}) {
 // ---------- Le studio ----------
 V.avatarPick = (onDone, step = true) => {
   const L = JSON.parse(JSON.stringify(myAv2())), undo = []; let tab = 'hair';
-  const TABS = [['body', 'Silhouette'], ['face', 'Visage'], ['hair', 'Cheveux'], ['top', 'Haut'], ['bottom', 'Bas'], ['shoes', 'Chaussures'], ['acc', 'Accessoires']];
-  const el = mount(`${statusBar()}<div class="studio">
-    <div class="stTop">${step ? '<span class="tiny" style="font-weight:800;color:var(--pri)">ÉTAPE 2 SUR 4</span>' : `<button class="rb" id="bk" aria-label="Retour">${I.back}</button>`}<b>Crée ton avatar</b><span style="flex:1"></span><button class="rb" id="un" aria-label="Annuler la dernière modification">↶</button><button class="rb" id="rd" aria-label="Surprends-moi">${I.dice}</button></div>
-    <div class="stStage">${clouds()}<div class="stPed"></div><div id="big" class="av2big"></div><button class="stMapBtn" id="pv">Voir sur la carte</button><div class="stMap" id="mp" hidden><img src="${VENUE.map.src}" alt="" class="stMapBg" style="object-position:${ST.me.pos[0]}% ${ST.me.pos[1]}%"><div class="stMapMe"><span class="name">Moi</span><img id="mpi" alt=""><i></i></div></div></div>
-    <div class="stPanel"><div class="seg" id="gd"><button data-g="f">Femme</button><button data-g="m">Homme</button></div>
-      <div class="stTabs" id="tb">${TABS.map(t => `<button data-t="${t[0]}">${t[1]}</button>`).join('')}</div>
+  const ic = (d) => `<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d}</svg>`;
+  const TABS = [
+    ['body', 'Corps', ic('<circle cx="12" cy="5" r="2.6"/><path d="M8 21v-6l-2-1 1.5-5.5h9L18 14l-2 1v6"/>')],
+    ['face', 'Visage', ic('<circle cx="12" cy="12" r="8.5"/><circle cx="9" cy="10.5" r=".8" fill="currentColor"/><circle cx="15" cy="10.5" r=".8" fill="currentColor"/><path d="M8.8 14.6c1.8 1.8 4.6 1.8 6.4 0"/>')],
+    ['hair', 'Cheveux', ic('<path d="M5 14c-.5-6 3-10 7-10s7.5 4 7 10"/><path d="M5 14c2-1 3-4 3.5-6 2 2.5 6 3.5 10.5 6"/><path d="M5 14v4M19 14v4"/>')],
+    ['top', 'Haut', ic('<path d="M8 3.5 4 6l1.5 4.5L7.5 10V20h9V10l2 .5L20 6l-4-2.5c-.7 1.4-2.2 2.3-4 2.3s-3.3-.9-4-2.3z"/>')],
+    ['bottom', 'Bas', ic('<path d="M7 3h10l1 18h-4.2L12 10l-1.8 11H6z"/>')],
+    ['shoes', 'Pieds', ic('<path d="M3 15.5V9h4l1.5 2.5c2 .5 6 1 9 2.3 1.6.7 2.5 1.6 2.5 2.7v.5H3z"/><path d="M3 18.5h18"/>')],
+    ['acc', 'Style', ic('<circle cx="7" cy="13" r="3.4"/><circle cx="17" cy="13" r="3.4"/><path d="M10.4 13h3.2M3.6 12 2.5 9.5M20.4 12l1.1-2.5"/>')],
+  ];
+  const el = mount(`<div class="studio st2">
+    <div class="stStage">
+      <div class="stGlow"></div><div class="stFloor"></div><div id="big" class="av2big"></div>
+      <div class="stTop">${step ? '<button class="stLater" id="later">Plus tard</button>' : `<button class="rb" id="bk" aria-label="Retour">${I.back}</button>`}
+        <div class="stG" id="gd" role="group" aria-label="Genre de l'avatar"><button data-g="f">Femme</button><button data-g="m">Homme</button></div>
+        <button class="rb" id="un" aria-label="Annuler la dernière modification">↶</button><button class="rb" id="rd" aria-label="Surprends-moi">${I.dice}</button></div>
+      <button class="stMapBtn" id="pv">Voir sur la carte</button>
+      <div class="stMap" id="mp" hidden><img src="${VENUE.map.src}" alt="" class="stMapBg" style="object-position:${ST.me.pos[0]}% ${ST.me.pos[1]}%"><div class="stMapMe"><span class="name">Moi</span><img id="mpi" alt=""><i></i></div></div>
+      <button class="stSave" id="go">${step ? 'C’est moi !' : 'Enregistrer'}</button>
+    </div>
+    <div class="stPanel">
+      <div class="stTabs" id="tb" role="tablist">${TABS.map(t => `<button data-t="${t[0]}" role="tab" aria-label="${t[1]}">${t[2]}<span>${t[1]}</span></button>`).join('')}</div>
       <div class="stBody" id="bd"></div>
-      <button class="btn" id="go">${step ? 'C’est moi !' : 'Enregistrer'}</button>${step ? '<button class="link" id="later" style="min-height:30px">Une prochaine fois</button>' : ''}</div></div>`, 'sky');
+    </div></div>`, 'sky');
   const big = $('#big', el), bd = $('#bd', el);
-  const tiles = (key, list, view, extra = {}) => `<div class="stTiles">${list.map(([k, n]) => { const on = Array.isArray(L[key]) ? L[key].includes(k) : L[key] === k; return `<button data-k="${key}" data-v="${k}" class="${on ? 'on' : ''}" aria-pressed="${on}"><span class="th">${avatar2SVG({ ...L, ...extra, [key]: Array.isArray(L[key]) ? (L[key].includes(k) ? L[key] : [...L[key], k]) : k }, { view, style: 'width:100%;height:100%' })}</span><b>${n}</b></button>`; }).join('')}</div>`;
-  const colors = (key, pal, label) => `<div class="stLbl">${label}</div><div class="stSw small">${pal.map((h, i) => `<button data-c="${key}" data-i="${i}" class="${L[key] === i ? 'on' : ''}" aria-label="Couleur ${i + 1}"><i style="background:${h}"></i></button>`).join('')}</div>`;
+  const tiles = (key, list, view, extra = {}) => `<div class="stTiles">${list.map(([k, n]) => { const on = Array.isArray(L[key]) ? L[key].includes(k) : L[key] === k; return `<button data-k="${key}" data-v="${k}" class="${on ? 'on' : ''}" aria-pressed="${on}" aria-label="${n}" title="${n}"><span class="th">${avatar2SVG({ ...L, ...extra, [key]: Array.isArray(L[key]) ? (L[key].includes(k) ? L[key] : [...L[key], k]) : k }, { view, style: 'width:100%;height:100%' })}</span><b>${n}</b></button>`; }).join('')}</div>`;
+  const colors = (key, pal, label) => `<div class="stLbl">${label}</div><div class="stSw small stRow">${pal.map((h, i) => `<button data-c="${key}" data-i="${i}" class="${L[key] === i ? 'on' : ''}" aria-label="Couleur ${i + 1}"><i style="background:${h}"></i></button>`).join('')}</div>`;
   const draw = () => {
     $$('#gd button', el).forEach(b => b.classList.toggle('on', b.dataset.g === L.g)); $$('#tb button', el).forEach(b => b.classList.toggle('on', b.dataset.t === tab));
     const G = L.g, one = L.outfit && L.outfit !== 'none';
@@ -38,7 +54,7 @@ V.avatarPick = (onDone, step = true) => {
       shoes: () => `${tiles('shoes', AV2.shoes, 'feet', { bottom: 'shorts', outfit: 'none' })}${colors('shoesC', AV2.cloth, 'Couleur')}`,
       acc: () => `<div class="stLbl">Lunettes</div>${tiles('glasses', AV2.glasses, 'head')}<div class="stLbl">Couvre-chef</div>${tiles('hat', AV2.hat, 'hair')}${L.hat !== 'none' ? colors('hatC', AV2.cloth, 'Couleur') : ''}<div class="stLbl">Bijoux (plusieurs possibles)</div>${tiles('jewel', AV2.jewel, 'torso', { pose: 'relax' })}`
     })[tab]();
-    big.innerHTML = avatar2SVG(L, { pedestal: true, style: 'width:100%;height:100%' }); cam(); $('#un', el).disabled = !undo.length; $('#mpi', el).src = av2URI(L);
+    big.innerHTML = avatar2SVG(L, { pedestal: false, style: 'width:100%;height:100%' }); cam(); $('#un', el).disabled = !undo.length; $('#mpi', el).src = av2URI(L);
   };
   // caméra du studio : zoom sur le visage pour cheveux / visage / accessoires, sur le buste pour le haut, sur les pieds pour les chaussures
   const CAM = { face: [42, 4, 116, 146], hair: [38, -2, 124, 156], acc: [38, -2, 124, 156], top: [8, 26, 184, 262], bottom: [4, 120, 192, 292], shoes: [52, 318, 96, 92] }, FULL = [14, -4, 172, 428];
@@ -46,7 +62,7 @@ V.avatarPick = (onDone, step = true) => {
   const cam = () => { const svg = big.querySelector('svg'); if (!svg) return; const to = CAM[tab] || FULL, from = camV.slice(), t0 = performance.now(); cancelAnimationFrame(camT);
     const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
     const step = now => { const k = reduce ? 1 : Math.min(1, (now - t0) / 380), e = 1 - Math.pow(1 - k, 3); camV = from.map((v, i) => v + (to[i] - v) * e); const sv = big.querySelector('svg'); sv && sv.setAttribute('viewBox', camV.map(v => v.toFixed(1)).join(' ')); if (k < 1) camT = requestAnimationFrame(step); };
-    svg.setAttribute('viewBox', camV.join(' ')); el.querySelector('.stPed').style.opacity = CAM[tab] ? 0 : 1; camT = requestAnimationFrame(step); };
+    svg.setAttribute('viewBox', camV.join(' ')); { const fl = el.querySelector('.stPed, .stFloor'); if (fl) fl.style.opacity = CAM[tab] ? 0 : 1; } camT = requestAnimationFrame(step); };
   const push = () => { undo.push(JSON.stringify(L)); if (undo.length > 50) undo.shift(); };
   const pop = () => { big.classList.remove('pop'); void big.offsetWidth; big.classList.add('pop'); };
   $('#gd', el).onclick = e => { const b = e.target.closest('[data-g]'); if (!b || b.dataset.g === L.g) return; push(); const G = b.dataset.g; Object.assign(L, { g: G, hair: AV2.hair[G][G === 'f' ? 1 : 1][0], top: G === 'f' ? 'crop' : 'tee', bottom: G === 'f' ? 'cargo' : 'chinos', outfit: 'none', build: 'moyenne', beard: 'none' }); pop(); draw(); };
