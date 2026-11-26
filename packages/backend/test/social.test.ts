@@ -1,5 +1,5 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { createLocalJWKSet, exportJWK, generateKeyPair, SignJWT } from 'jose';
+import { createLocalJWKSet, exportJWK, generateKeyPair, KeyLike, SignJWT } from 'jose';
 import { createApi } from '../src/api';
 import { Pool } from '../src/db';
 import { Gateway } from '../src/gateway';
@@ -10,8 +10,8 @@ const secret = new TextEncoder().encode('test-secret-not-for-production-01234567
 let pool: Pool, gw: Gateway, base: string;
 let apple: Awaited<ReturnType<typeof generateKeyPair>>, google: Awaited<ReturnType<typeof generateKeyPair>>, rogue: Awaited<ReturnType<typeof generateKeyPair>>;
 
-const jwk = async (k: CryptoKey, kid: string) => ({ ...(await exportJWK(k)), kid, alg: 'RS256', use: 'sig' });
-const tok = (key: CryptoKey, kid: string, iss: string, aud: string, claims: Record<string, unknown>, exp = '10m') =>
+const jwk = async (k: KeyLike, kid: string) => ({ ...(await exportJWK(k)), kid, alg: 'RS256', use: 'sig' });
+const tok = (key: KeyLike, kid: string, iss: string, aud: string, claims: Record<string, unknown>, exp = '10m') =>
   new SignJWT(claims).setProtectedHeader({ alg: 'RS256', kid }).setIssuer(iss).setAudience(aud).setIssuedAt().setExpirationTime(exp).sign(key);
 
 beforeAll(async () => {

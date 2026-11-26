@@ -42,6 +42,7 @@ export type ServerMsg =
   | { type: 'gone'; userId: string; reason: 'share_stopped' }
   /** Présence d'un ami (connecté / hors ligne), envoyée aux seuls spectateurs autorisés. */
   | { type: 'presence'; userId: string; online: boolean; at: number }
+  | { type: 'refresh'; what: 'friends' }
   | { type: 'error'; code: string };
 
 export interface FriendPosition {
@@ -287,6 +288,8 @@ export class Gateway {
 
   /** Un partage, un consentement ou une amitié de `owner` a changé. */
   private async onShareChanged(owner: string): Promise<void> {
+    // Amitiés / partages modifiés : l'app de l'intéressé recharge sa liste (demande reçue, ami accepté…).
+    for (const c of this.conns.get(owner) ?? []) this.send(c.ws, { type: 'refresh', what: 'friends' });
     const affected = [...this.audience.entries()].filter(([k]) => k.startsWith(owner + '|'));
     for (const [key, { viewers: before }] of affected) {
       this.audience.delete(key);

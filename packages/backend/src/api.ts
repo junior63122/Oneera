@@ -6,7 +6,7 @@
  * - Toutes les lectures/écritures « métier » passent par `withContext` → Row-Level Security de la base.
  * - CORS ouvert (l'app charge son interface depuis un fichier local : origine « null »).
  */
-import { randomBytes, scrypt as scryptCb, timingSafeEqual } from 'node:crypto';
+import { createHash, randomBytes, scrypt as scryptCb, timingSafeEqual } from 'node:crypto';
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import { promisify } from 'node:util';
 import { createRemoteJWKSet, JWTVerifyGetKey, jwtVerify, SignJWT } from 'jose';
@@ -30,6 +30,24 @@ export async function verifyPassword(pw: string, stored: string): Promise<boolea
   const h = await scrypt(pw, Buffer.from(salt, 'base64'), expected.length, { N: +N, r: +r, p: +p });
   return h.length === expected.length && timingSafeEqual(h, expected);
 }
+
+/** Numéro au format international (+33612345678). Par défaut France ; null si invalide. Identique côté app. */
+export function normalizePhone(raw: string, cc = '33'): string | null {
+  let s = String(raw ?? '').trim().replace(/[\s.\-()/]/g, '');
+  if (!s) return null;
+  if (s.startsWith('00')) s = '+' + s.slice(2);
+  if (!s.startsWith('+')) {
+    if (!/^\d+$/.test(s)) return null;
+    if (s.startsWith('0') && s.length === 10) s = '+' + cc + s.slice(1);
+    else if (s.length === 9 && cc === '33') s = '+33' + s;
+    else return null;
+  }
+  if (!/^\+\d{8,15}$/.test(s)) return null;
+  if (s.startsWith('+330')) s = '+33' + s.slice(4); // « +33 0 6… »
+  return s;
+}
+export const sha256 = (v: string) => createHash('sha256').update(v, 'utf8').digest('hex');
+const HEX64 = /^[0-9a-f]{64}$/;
 
 class HttpError extends Error {
   constructor(readonly status: number, readonly code: string, message?: string) { super(message ?? code); }
@@ -95,15 +113,22 @@ export function createApi(opts: ApiOptions) {
     const sub = String(p.sub ?? ''); if (!sub) throw new HttpError(401, 'invalid_identity');
     const email = typeof p.email === 'string' ? p.email.toLowerCase() : '';
     const found = await withSystem(pool, async (c) => (await c.query('SELECT id FROM users WHERE auth_provider = $1 AND auth_subject = $2 AND deleted_at IS NULL', [provider, sub])).rows[0]);
-    if (found) return { token: await signApi(found.id), user: await me(found.id), isNew: false };
+    const usableEmail = email && p.email_verified !== false && p.email_verified !== 'false' && !email.endsWith('privaterelay.appleid.com') ? email : '';
+    if (found) { if (usableEmail) await addIdentifier(found.id, 'email', usableEmail); return { token: await signApi(found.id), user: await me(found.id), isNew: false }; }
     const hint = typeof nameHint === 'string' && nameHint.trim() ? nameHint : typeof p.given_name === 'string' ? p.given_name : typeof p.name === 'string' ? p.name : email && !email.endsWith('privaterelay.appleid.com') ? email.split('@')[0] : 'Moi';
     const name = String(hint).trim().replace(/\s+/g, ' ').slice(0, 40) || 'Moi';
     const id = await withSystem(pool, async (c) => {
       const t = (await c.query("SELECT id FROM tenants WHERE slug = 'oneera'")).rows[0].id;
       return (await c.query('INSERT INTO users (tenant_id, display_name, is_guest, auth_provider, auth_subject) VALUES ($1, $2, false, $3, $4) RETURNING id', [t, name, provider, sub])).rows[0].id as string;
     });
+    if (usableEmail) await addIdentifier(id, 'email', usableEmail);
     return { token: await signApi(id), user: await me(id), isNew: true };
   }
+
+  /** Empreinte d'un identifiant de l'utilisateur (e-mail ou téléphone) : seule l'empreinte est stockée. */
+  const addIdentifier = (userId: string, kind: 'email' | 'phone', value: string) => withSystem(pool, (c) => c.query('INSERT INTO user_identifiers (user_id, kind, hash) VALUES ($1, $2, $3) ON CONFLICT DO NOTHING', [userId, kind, sha256(value)]));
+  const perUser = new Map<string, { n: number; t: number }>();
+  const limitUser = (u: string, max: number) => { const now = Date.now(), e = perUser.get(u); if (!e || now - e.t > 60_000) { perUser.set(u, { n: 1, t: now }); return; } if (++e.n > max) throw new HttpError(429, 'too_many_requests', 'Trop de demandes, réessaie dans une minute.'); };
 
   const me = (userId: string) => withContext(pool, { userId }, async (c) => {
     const r = (await c.query('SELECT id, display_name, avatar FROM users WHERE id = $1', [userId])).rows[0];
@@ -135,6 +160,7 @@ export function createApi(opts: ApiOptions) {
         if (b.locationConsent === true) await c.query("INSERT INTO consents (user_id, purpose, policy_version) VALUES ($1, 'location_friends', $2)", [id, POLICY]);
         return id;
       });
+      await addIdentifier(userId, 'email', email);
       return { token: await signApi(userId), user: await me(userId) };
     },
 
@@ -163,6 +189,42 @@ export function createApi(opts: ApiOptions) {
         if (av !== undefined) await c.query('UPDATE users SET avatar = $2::jsonb WHERE id = $1', [u, av]);
       });
       return me(u);
+    },
+
+    'POST /v1/me/phone': async (req) => {
+      const u = await auth(req); const b = await body(req);
+      const ph = normalizePhone(String(b.phone ?? ''));
+      if (!ph) throw new HttpError(400, 'invalid_phone', 'Numéro invalide. Exemple : 06 12 34 56 78 ou +33 6 12 34 56 78.');
+      await withSystem(pool, async (c) => { await c.query("DELETE FROM user_identifiers WHERE user_id = $1 AND kind = 'phone'", [u]); await c.query("INSERT INTO user_identifiers (user_id, kind, hash) VALUES ($1, 'phone', $2) ON CONFLICT DO NOTHING", [u, sha256(ph)]); });
+      return { ok: true, phoneSet: true };
+    },
+    'DELETE /v1/me/phone': async (req) => { const u = await auth(req); await withSystem(pool, (c) => c.query("DELETE FROM user_identifiers WHERE user_id = $1 AND kind = 'phone'", [u])); return { ok: true, phoneSet: false }; },
+
+    'POST /v1/contacts/match': async (req) => {
+      const u = await auth(req); limitUser(u, 6); const b = await body(req);
+      const hashes = Array.isArray(b.hashes) ? [...new Set(b.hashes.map(String).filter((h) => HEX64.test(h)))] : [];
+      if (hashes.length > 5000) throw new HttpError(400, 'too_many', 'Trop de contacts en une fois.');
+      if (!hashes.length) return { users: [] };
+      const rows = await withContext(pool, { userId: u }, async (c) => (await c.query('SELECT * FROM app.match_contacts($1::text[])', [hashes])).rows);
+      return { users: rows.map((r) => ({ id: r.user_id, displayName: r.display_name, avatar: r.avatar, status: r.status, requestedByMe: r.requested_by_me, matched: r.matched })) };
+    },
+
+    'POST /v1/friends/requests': async (req) => {
+      const u = await auth(req); const b = await body(req);
+      const ids = Array.isArray(b.userIds) ? [...new Set(b.userIds.map(String).filter((x) => UUID.test(x)))].slice(0, 500) : [];
+      const results: Record<string, string> = {};
+      await withContext(pool, { userId: u }, async (c) => { for (const id of ids) results[id] = (await c.query('SELECT app.request_friend($1) AS s', [id])).rows[0].s; });
+      return { results };
+    },
+    'POST /v1/friends/(?<id>[0-9a-f-]{36})/accept': async (req, m) => {
+      const u = await auth(req);
+      const st = await withContext(pool, { userId: u }, async (c) => (await c.query('SELECT app.request_friend($1) AS s', [m.groups!.id])).rows[0].s);
+      return { status: st };
+    },
+    'POST /v1/friends/(?<id>[0-9a-f-]{36})/decline': async (req, m) => {
+      const u = await auth(req); const id = m.groups!.id;
+      await withContext(pool, { userId: u }, (c) => c.query("DELETE FROM friendships WHERE user_a = least($1::uuid, $2::uuid) AND user_b = greatest($1::uuid, $2::uuid) AND status = 'pending'", [u, id]));
+      return { declined: true };
     },
 
     'DELETE /v1/me': async (req) => {
@@ -272,6 +334,6 @@ export function createApi(opts: ApiOptions) {
   };
 }
 
-function friendOut(r: { user_id: string; display_name: string; avatar: unknown; status: string; requested_by_me: boolean }): User & { status: string } {
-  return { id: r.user_id, displayName: r.display_name, avatar: r.avatar, status: r.status };
+function friendOut(r: { user_id: string; display_name: string; avatar: unknown; status: string; requested_by_me: boolean }): User & { status: string; requestedByMe: boolean } {
+  return { id: r.user_id, displayName: r.display_name, avatar: r.avatar, status: r.status, requestedByMe: !!r.requested_by_me };
 }
