@@ -21,11 +21,12 @@ import { surveyFor } from './bench';
 import { buildTestClub } from './venues/testClub';
 import { generateTrajectory, PdrSimulator, TruthSample, Waypoint, World } from './world';
 
-interface Sol { name: string; x2?: boolean; uwb?: boolean }
+interface Sol { name: string; x2?: boolean; uwb?: boolean; danceOnly?: boolean }
 const SOLS: Sol[] = [
   { name: 'BLE balises (actuel)' },
   { name: 'BLE, 2× plus de balises', x2: true },
   { name: 'BLE 2× + UWB ancres', x2: true, uwb: true },
+  { name: 'Économique : BLE 2× + 6 ancres UWB dancefloor', x2: true, uwb: true, danceOnly: true },
 ];
 const DENS = [{ label: 'club plein', crowd: 0.8 }, { label: 'compact', crowd: 3 }];
 const OUTAGE = [8 * 60, 16 * 60]; // coupure réseau (s)
@@ -78,7 +79,8 @@ function transitions(seq: { t: number; z: string }[]) {
 export function runCrowdflow(people: number, durS: number, particles: number) {
   const std = new Venue(buildTestClub(), 0.5), x2 = new Venue(densify(buildTestClub()), 0.5);
   const rows: { sol: string; dens: string; m: Record<string, number> }[] = [];
-  for (const d of DENS) for (const sol of SOLS) {
+  const only = process.env.ONLY;
+  for (const d of DENS) for (const sol of SOLS.filter((x) => !only || x.name.includes(only))) {
     const venue = sol.x2 ? x2 : std;
     const seed = 900 + Math.round(d.crowd * 10);
     const base = new World(venue, { crowd: d.crowd, platform: 'android', seed });
@@ -116,7 +118,7 @@ export function runCrowdflow(people: number, durS: number, particles: number) {
           pend = [];
           eng.setStill(mot.state !== 'walking');
           eng.updateBle(s.t, world.scanBle(s.floorId, s, s.heading, s.t));
-          if (sol.uwb) eng.updateRanges(s.t, world.rangeUwb(s.floorId, s, s.heading));
+          if (sol.uwb) eng.updateRanges(s.t, world.rangeUwb(s.floorId, s, s.heading, 25, sol.danceOnly ? new Set(venue.def.beacons.filter((b) => b.floorId === 'L0' && !b.id.startsWith('X') && b.pos.x >= 10 && b.pos.x <= 40 && b.pos.y >= 12 && b.pos.y <= 34).map((b) => b.id)) : undefined));
           const e = eng.estimate(s.t);
           disp.setTarget(e);
           if (s.t >= 30 && e.quality !== 'unknown') {
@@ -208,7 +210,7 @@ if (isMain) {
   }
   const dir = resolve(dirname(fileURLToPath(import.meta.url)), '../../../reports');
   mkdirSync(dir, { recursive: true });
-  writeFileSync(resolve(dir, quick ? 'app-sim-quick.md' : 'app-sim.md'), md);
-  writeFileSync(resolve(dir, quick ? 'app-sim-quick.json' : 'app-sim.json'), JSON.stringify(rows, null, 1));
+  writeFileSync(resolve(dir, process.env.ONLY ? 'app-sim-eco.md' : quick ? 'app-sim-quick.md' : 'app-sim.md'), md);
+  writeFileSync(resolve(dir, process.env.ONLY ? 'app-sim-eco.json' : quick ? 'app-sim-quick.json' : 'app-sim.json'), JSON.stringify(rows, null, 1));
   console.log(md);
 }

@@ -118,7 +118,7 @@ export class World {
    * avec une probabilité croissante avec la densité et la distance ; la distance mesurée est alors trop longue
    * (excès exponentiel) ou la mesure est perdue. Portée utile réduite en foule. Hypothèses de SIMULATION.
    */
-  rangeUwb(floorId: string, p: Vec2, heading: number, maxRange = 25): { anchorId: string; distM: number; sigmaM: number }[] {
+  rangeUwb(floorId: string, p: Vec2, heading: number, maxRange = 25, only?: Set<string>): { anchorId: string; distM: number; sigmaM: number }[] {
     const c = this.params.crowd;
     const out: { anchorId: string; distM: number; sigmaM: number }[] = [];
     // Tour de mesure manqué (trop peu d'ancres reçues pour résoudre) : plus fréquent en foule.
@@ -128,7 +128,7 @@ export class World {
     const refBlocked = this.rng.chance(Math.min(0.8, 0.15 + 0.15 * c));
     const common = refBlocked ? -(-Math.log(1 - this.rng.next()) * (0.5 + 0.4 * c)) : 0;
     for (const b of this.venue.def.beacons) {
-      if (b.floorId !== floorId) continue;
+      if (b.floorId !== floorId || (only && !only.has(b.id))) continue;
       const d = Math.hypot(p.x - b.pos.x, p.y - b.pos.y, 2.2); // ancre à ~3,5 m, téléphone à ~1,3 m
       if (d > maxRange * (1 - 0.12 * Math.min(c, 3))) continue;
       const walls = this.venue.grid(floorId).walls.countCrossings(b.pos.x, b.pos.y, p.x, p.y, 2);

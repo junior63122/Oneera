@@ -22,7 +22,7 @@ import { buildTestClub } from './venues/testClub';
 import { generateTrajectory, PdrSimulator, TruthSample, Waypoint, World } from './world';
 
 type Direct = 'none' | 'uwb-peer' | 'cs-peer';
-interface Tech { name: string; dense2x?: boolean; uwbAnchors?: boolean; direct: Direct; note: string }
+interface Tech { name: string; dense2x?: boolean; uwbAnchors?: boolean; uwbDanceOnly?: boolean; direct: Direct; note: string }
 
 const TECHS: Tech[] = [
   { name: 'BLE balises (actuel)', direct: 'none', note: 'tous téléphones' },
@@ -31,6 +31,7 @@ const TECHS: Tech[] = [
   { name: 'BLE + recherche de précision UWB entre amis', direct: 'uwb-peer', note: 'deux téléphones UWB, app ouverte' },
   { name: 'BLE + Channel Sounding entre amis', direct: 'cs-peer', note: 'deux téléphones BT 6, app ouverte' },
   { name: 'BLE 2× + UWB ancres + UWB entre amis', dense2x: true, uwbAnchors: true, direct: 'uwb-peer', note: 'cible « premium »' },
+  { name: 'Économique : BLE 2× (stock existant) + 6 ancres UWB sur le dancefloor', dense2x: true, uwbAnchors: true, uwbDanceOnly: true, direct: 'none', note: 'téléphones UWB sur le dancefloor ; BLE ailleurs' },
 ];
 
 const DENSITIES = [
@@ -97,7 +98,7 @@ function run(tech: Tech, crowd: number, seed: number, venues: { std: Venue; x2: 
       p.engine.setStill(p.motion.state !== 'walking');
       for (const st of ok) p.engine.onStep(st);
       p.engine.updateBle(s.t, p.world.scanBle(s.floorId, s, s.heading, s.t));
-      if (tech.uwbAnchors) p.engine.updateRanges(s.t, p.world.rangeUwb(s.floorId, s, s.heading));
+      if (tech.uwbAnchors) p.engine.updateRanges(s.t, p.world.rangeUwb(s.floorId, s, s.heading, 25, tech.uwbDanceOnly ? danceAnchors(venue) : undefined));
       const e = p.engine.estimate(s.t);
       p.est = e.quality === 'unknown' ? null : { x: e.x, y: e.y, floorId: e.floorId, r68: e.r68 };
     });
@@ -146,11 +147,15 @@ function run(tech: Tech, crowd: number, seed: number, venues: { std: Venue; x2: 
   }
 }
 
+/** Ancres UWB limitées au dancefloor (salle principale 10–40 × 12–34, RDC) : 6 points, aux emplacements des balises d'origine. */
+const danceAnchors = (v: Venue) => new Set(v.def.beacons.filter((b) => b.floorId === 'L0' && !b.id.startsWith('X') && b.pos.x >= 10 && b.pos.x <= 40 && b.pos.y >= 12 && b.pos.y <= 34).map((b) => b.id));
+
 export function runFriends(runs: number, visits: number) {
   const std = new Venue(buildTestClub(), 0.5);
   const x2 = new Venue(densify(buildTestClub()), 0.5);
   const out: { density: string; tech: Tech; m: Record<string, number> }[] = [];
-  for (const d of DENSITIES) for (const tech of TECHS) {
+  const only = process.env.ONLY;
+  for (const d of DENSITIES) for (const tech of TECHS.filter((t) => !only || t.name.includes(only))) {
     const acc: Acc = { abs: [], rel: [], found3: 0, found5: 0, n: 0, directN: 0, sameZone: 0 };
     for (let r = 0; r < runs; r++) run(tech, d.crowd, 4242 + r * 101 + Math.round(d.crowd * 10), { std, x2 }, acc, visits);
     out.push({ density: d.label, tech, m: { absMed: q(acc.abs, 0.5), absP95: q(acc.abs, 0.95), relMed: q(acc.rel, 0.5), relP90: q(acc.rel, 0.9), found3: acc.found3 / Math.max(1, acc.n), found5: acc.found5 / Math.max(1, acc.n), direct: acc.directN / Math.max(1, acc.n), n: acc.n } });
@@ -174,7 +179,7 @@ if (isMain) {
   }
   const dir = resolve(dirname(fileURLToPath(import.meta.url)), '../../../reports');
   mkdirSync(dir, { recursive: true });
-  writeFileSync(resolve(dir, quick ? 'friends-sim-quick.md' : 'friends-sim.md'), md);
-  writeFileSync(resolve(dir, quick ? 'friends-sim-quick.json' : 'friends-sim.json'), JSON.stringify(out, null, 1));
+  writeFileSync(resolve(dir, process.env.ONLY ? 'friends-sim-eco.md' : quick ? 'friends-sim-quick.md' : 'friends-sim.md'), md);
+  writeFileSync(resolve(dir, process.env.ONLY ? 'friends-sim-eco.json' : quick ? 'friends-sim-quick.json' : 'friends-sim.json'), JSON.stringify(out, null, 1));
   console.log(md);
 }
