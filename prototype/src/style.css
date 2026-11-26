@@ -548,3 +548,4 @@ details.phone{background:#F7F7F9;border-radius:14px;padding:12px 14px}details.ph
 .odot.on{background:#22C55E}
 #screen .pill.ok,#screen .pill.warn,#screen .pill.gray{white-space:nowrap}
 .locmsg + .tiny,.bub + .tiny{margin-top:-4px}
+#screen.realmode #fab-panel{display:none!important}

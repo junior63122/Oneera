@@ -12,7 +12,7 @@
     ],
     "ios": {
       "bundleIdentifier": "com.mapping.festival",
-      "buildNumber": "102",
+      "buildNumber": "103",
       "supportsTablet": false,
       "config": {
         "usesNonExemptEncryption": false
@@ -20,7 +20,7 @@
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
       },
-      "usesAppleSignIn": true
+      "usesAppleSignIn": false
     },
     "android": {
       "package": "fr.oneera.app",

@@ -4,7 +4,7 @@ const API = process.argv[2] || 'http://127.0.0.1:8787';
 (async () => {
   const b = await chromium.launch(); let n = 0, f = 0; const ok = (c, m) => { n++; if (!c) f++; console.log((c ? 'OK   ' : 'FAIL ') + m); };
   const U = 'http://127.0.0.1:8090/local.html?api=' + encodeURIComponent(API);
-  const mk = async (name, dev) => { const ctx = await b.newContext({ ...devices[dev] }); const p = await ctx.newPage(); p.errs = []; p.on('pageerror', e => p.errs.push(e.message));
+  const mk = async (name, dev) => { const ctx = await b.newContext({ ...devices[dev], ...(process.env.PROXY ? { proxy: { server: process.env.PROXY, bypass: '127.0.0.1,localhost' }, ignoreHTTPSErrors: true } : {}) }); const p = await ctx.newPage(); p.errs = []; p.on('pageerror', e => p.errs.push(e.message));
     const em = `${name.toLowerCase()}${Date.now()}@chat.test`;
     const r = await (await fetch(API + '/v1/auth/signup', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ email: em, password: 'Motdepasse-42', displayName: name }) })).json();
     await p.goto(U + '&nouveau'); await p.waitForTimeout(400);

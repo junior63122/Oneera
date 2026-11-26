@@ -54,7 +54,16 @@ V.welcome = () => {
     catch (e) { err.textContent = e.message; err.hidden = false; }
     finally { if (document.body.contains(btn)) { btn.disabled = false; btn.innerHTML = label; } }
   };
-  const N = window.ONEERA_NATIVE; if (N && window.ReactNativeWebView) { if (!N.apple) $('#ap', el).hidden = true; if (!N.google) $('#gg', el).hidden = true; }
+  const N = window.ONEERA_NATIVE;
+  if (N && window.ReactNativeWebView) {
+    if (!N.apple) $('#ap', el).style.display = 'none'; if (!N.google) $('#gg', el).style.display = 'none';
+    if (!N.apple && !N.google) { // ni Apple ni Google disponibles : parcours e-mail mis en avant, texte cohérent
+      $('h1', el).textContent = 'Ton compte en 20 secondes';
+      $('.lead', el).textContent = 'Un prénom, un e-mail, un mot de passe : c’est tout. Tes amis te retrouvent ensuite avec ton code ONEERA ou depuis leurs contacts.';
+      const su = $('#su', el), li = $('#li', el), g = su.parentElement; su.className = 'btn'; su.textContent = 'Créer mon compte'; su.style.fontSize = '';
+      li.className = 'btn white'; li.textContent = 'J’ai déjà un compte'; li.style.fontSize = ''; g.replaceWith(su, li);
+    } else if (!N.apple || !N.google) $('.lead', el).textContent = `Pas de mot de passe à retenir : ton compte ${N.apple ? 'Apple' : 'Google'} suffit. Tes amis te retrouvent avec ton code ONEERA.`;
+  }
   $('#ap', el).onclick = () => go('apple', $('#ap', el));
   $('#gg', el).onclick = () => go('google', $('#gg', el));
   $('#demo', el).onclick = () => { realSetDemo(true); _welcomeDemo(); };

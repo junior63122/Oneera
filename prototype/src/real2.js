@@ -28,7 +28,15 @@ realApplyFriends = function () { _applyFriends2(); realBadges(); if (REAL.onFrie
 // À la première synchro : plus aucune donnée de démonstration (bulles, discussions, demandes).
 function realPurgeDemo() { if (REAL._purged) return; REAL._purged = true; ST.bubbles = {}; ST.convos = {}; ST.unread = { by: {} }; ST.pending = []; }
 const _sync2 = realSyncFriends;
-realSyncFriends = async function () { if (realOn()) realPurgeDemo(); await _sync2(); if (realOn() && !REAL._convOnce) { REAL._convOnce = true; realSyncConvos().catch(() => {}); } };
+REAL.feed = [];
+const realFeed = (o) => { REAL.feed.unshift({ ...o, t: Date.now() }); REAL.feed.length = Math.min(REAL.feed.length, 60); };
+realSyncFriends = async function () {
+  if (realOn()) realPurgeDemo();
+  const first = !REAL._synced, recB = new Set(rReceived().map(f => f.id)), accB = new Set(rAccepted().map(f => f.id));
+  await _sync2();
+  if (!first) { rReceived().filter(f => !recB.has(f.id)).forEach(f => realFeed({ k: 'req', id: f.id, n: f.displayName })); rAccepted().filter(f => !accB.has(f.id)).forEach(f => realFeed({ k: 'acc', id: f.id, n: f.displayName })); }
+  if (realOn() && !REAL._convOnce) { REAL._convOnce = true; realSyncConvos().catch(() => {}); }
+};
 
 // ---------- Onglet Amis ----------
 const _friendsTabDemo = V.friendsTab;
@@ -140,7 +148,7 @@ function realOnMessage(msg) {
   if (!mine) {
     ST.bubbles[other] = { t: msg.body.length > 60 ? msg.body.slice(0, 57) + '…' : msg.body, at: ST.clock, v: VENUE.id };
     if (REAL.chatOpen === other) api('POST', `/v1/messages/${other}/read`, {}).catch(() => {});
-    else { ST.unread.by[other] = (ST.unread.by[other] || 0) + 1; const f = rFriend(other); showPush({ title: esc(f ? f.displayName : 'Nouveau message'), text: esc(msg.body.length > 140 ? msg.body.slice(0, 137) + '…' : msg.body), icon: fHead(other), onTap: () => V.chat(other) }); }
+    else { realFeed({ k: 'msg', id: other, n: (rFriend(other) || {}).displayName || 'Un ami', body: msg.kind === 'text' ? msg.body : msg.kind === 'meet' ? '🙋 Rejoins-moi ici' : '📍 Position partagée' }); ST.unread.by[other] = (ST.unread.by[other] || 0) + 1; const f = rFriend(other); showPush({ title: esc(f ? f.displayName : 'Nouveau message'), text: esc(msg.body.length > 140 ? msg.body.slice(0, 137) + '…' : msg.body), icon: fHead(other), onTap: () => V.chat(other) }); }
     emit();
   }
   REAL.onChat && REAL.onChat(other); realBadges();
@@ -202,7 +210,7 @@ V.chat = (id) => {
     .catch(e => { c.loaded = true; draw(); toast(esc(e.message)); });
 };
 // Quitter l'écran de discussion (navigation) : la discussion n'est plus « ouverte ».
-const _mount2 = mount; mount = function (html, cls) { const el = _mount2(html, cls); if (REAL.chatOpen && !/id="ms"/.test(html)) REAL.chatOpen = null; return el; };
+const _mount2 = mount; mount = function (html, cls) { const el = _mount2(html, cls); if (REAL.chatOpen && !/id="ms"/.test(html)) REAL.chatOpen = null; SCREEN.classList.toggle('realmode', realOn()); return el; };
 
 // Profil réel : le prénom se modifie sur le serveur (tes amis le voient aussitôt).
 const _editProfileDemo = V.editProfile;
@@ -217,3 +225,107 @@ V.editProfile = () => {
     try { const r = await api('PATCH', '/v1/me', { displayName: v }); REAL.user = r && r.id ? { ...r, displayName: safeName(r.displayName), avatar: safeAvatar(r.avatar) } : { ...REAL.user, displayName: v }; realApplyUser(); realSave(); closeSheet(true); V.settings(); toast('Profil mis à jour'); }
     catch (e) { er.hidden = false; er.textContent = e.message; $('#ok', sb).disabled = false; } };
 };
+
+// ---------- Notifications (compte réel) : uniquement ce qui s'est vraiment passé ----------
+const _notifsDemo = V.notifs;
+V.notifs = () => {
+  if (!realOn()) return _notifsDemo();
+  const ago = t => { const m = Math.round((Date.now() - t) / 60000); return m < 1 ? 'à l’instant' : 'il y a ' + fmtAge(m); };
+  const rec = rReceived(), unread = Object.entries(ST.unread.by).filter(([id, n]) => n && rFriend(id));
+  const rows = [
+    ...rec.map(f => `<button class="row" data-go="req"><img class="av" src="${fHead(f.id)}" alt=""><div class="grow"><div class="t">${esc(f.displayName)} veut t’ajouter</div><div class="s">Demande d’ami en attente · touche pour répondre</div></div><span class="badge" style="position:static">1</span></button>`),
+    ...unread.map(([id, n]) => `<button class="row" data-chat="${id}"><img class="av" src="${fHead(id)}" alt=""><div class="grow"><div class="t">${esc(rFriend(id).displayName)} t’a écrit</div><div class="s">${n} message${n > 1 ? 's' : ''} non lu${n > 1 ? 's' : ''}</div></div><span class="badge" style="position:static">${n}</span></button>`),
+    ...REAL.feed.filter(e => !(e.k === 'req' && rec.some(f => f.id === e.id))).map(e => `<button class="row" ${e.k === 'msg' ? `data-chat="${e.id}"` : `data-f="${e.id}"`}><img class="av" src="${fHead(e.id)}" alt=""><div class="grow" style="min-width:0"><div class="t">${e.k === 'acc' ? `${esc(e.n)} et toi êtes amis 🎉` : e.k === 'req' ? `${esc(e.n)} t’a demandé en ami` : `Message de ${esc(e.n)}`}</div><div class="s" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${e.k === 'msg' ? esc(e.body) + ' · ' : ''}${ago(e.t)}</div></div></button>`)];
+  const el = mount(`${statusBar()}<div class="topbar"><button class="rb ghost" id="bk" aria-label="Retour">${I.back}</button><h1>Notifications</h1><span style="width:44px"></span></div>
+    <div class="body">${rows.length ? `<div class="list">${rows.join('')}</div>` : `<div class="card" style="align-items:center;text-align:center;gap:8px;margin-top:20px"><div style="font-size:42px">🔔</div><b style="font-size:17px">Rien de nouveau</b><span class="small">Les demandes d’amis, messages et alertes du lieu apparaîtront ici.</span></div>`}</div>`);
+  el.onclick = e => { const c = e.target.closest('[data-chat]'), g = e.target.closest('[data-go]'), f = e.target.closest('[data-f]');
+    if (c) V.chat(c.dataset.chat); else if (g) V.friendsTab('req'); else if (f && rFriend(f.dataset.f)) { V.map(); setTimeout(() => V.friendSheet(f.dataset.f), 300); } };
+  $('#bk', el).onclick = () => V.map();
+};
+
+// ---------- Trajet réel (sur ce téléphone uniquement) : base du récap et du replay ----------
+const TRACK_KEY = () => 'oneera.track.' + ((REAL.user && REAL.user.id) || 'x');
+REAL.track = null;
+function realTrack() { if (REAL.track) return REAL.track; try { REAL.track = JSON.parse(localStorage.getItem(TRACK_KEY()) || '[]'); } catch (_) { REAL.track = []; } const lim = Date.now() - 24 * 3600e3; REAL.track = REAL.track.filter(p => p.t > lim); return REAL.track; }
+let _trkAcc = 0, _trkSave = 0;
+tickers.add(dt => {
+  _trkAcc += dt; if (_trkAcc < 5) return; _trkAcc = 0;
+  if (!realOn() || !ST.perms.loc || !ST.me || !ST.me.pos) return;
+  const T = realTrack(), p = ST.me.pos, last = T[T.length - 1];
+  if (last && last.v === VENUE.id && Math.hypot(p[0] - last.x, p[1] - last.y) < .15 && Date.now() - last.t < 60e3) return; // immobile : un point par minute suffit
+  T.push({ t: Date.now(), x: +p[0].toFixed(2), y: +p[1].toFixed(2), v: VENUE.id }); if (T.length > 5000) T.splice(0, T.length - 5000);
+  if (Date.now() - _trkSave > 20e3) { _trkSave = Date.now(); try { localStorage.setItem(TRACK_KEY(), JSON.stringify(T)); } catch (_) {} }
+});
+function realTrackStats() {
+  const T = realTrack().filter(p => p.v === VENUE.id); if (T.length < 3) return null;
+  let distM = 0, onSite = 0, still = 0; const zt = {};
+  for (let i = 1; i < T.length; i++) { const a = T[i - 1], b = T[i], dtm = (b.t - a.t) / 1000; if (dtm > 600) continue; // pause > 10 min : app fermée
+    const d = Math.hypot(b.x - a.x, b.y - a.y) * PCT_TO_M; onSite += dtm; if (d < 2) still += dtm; else if (d / dtm < 4) distM += d; // > 4 m/s : saut (changement de plan), ignoré
+    const z = zoneOf([a.x, a.y]); zt[z] = (zt[z] || 0) + dtm; }
+  const zones = Object.entries(zt).sort((a, b) => b[1] - a[1]);
+  return { T, distM, onSite, still, zones, steps: Math.round(distM / .72), from: T[0].t, to: T[T.length - 1].t };
+}
+const fmtDur = s => { const m = Math.round(s / 60); return m < 60 ? `${m} min` : `${Math.floor(m / 60)} h ${String(m % 60).padStart(2, '0')}`; };
+const _recapDemo = V.recap;
+V.recap = () => {
+  if (!realOn()) return _recapDemo();
+  const S = realTrackStats();
+  if (!S) { const el = mount(`${statusBar()}<div class="topbar"><button class="rb" id="bk" aria-label="Retour">${I.back}</button><h1>Le récap de ta soirée ✨</h1><span style="width:44px"></span></div>
+      <div class="body"><div class="card" style="align-items:center;text-align:center;gap:10px;margin-top:14px"><div style="font-size:44px">✨</div><b style="font-size:18px">Ton récap se construit pendant la soirée</b><span class="small">Temps passé, distance, zones préférées et replay de ton parcours : tout est calculé à partir de ta vraie position, sur ton téléphone. Active ta position et profite !</span><button class="btn" id="go">Aller sur la carte</button></div></div>`);
+    $('#bk', el).onclick = V.settings; $('#go', el).onclick = () => V.map(); return; }
+  const cols = ['#F26B6B', '#86A6F5', '#A6E04A', '#F5B841', '#B58CF5'], top = S.zones.slice(0, 5), tot = top.reduce((a, z) => a + z[1], 0) || 1;
+  let acc = 0; const segs = top.map((z, i) => { const p = z[1] / tot * 100, s = `<circle r="15.9" cx="20" cy="20" fill="none" stroke="${cols[i]}" stroke-width="6" stroke-dasharray="${p} ${100 - p}" stroke-dashoffset="${25 - acc}"/>`; acc += p; return s; }).join('');
+  const km = (S.distM / 1000).toFixed(1).replace('.', ','), hm = (t) => new Date(t).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+  const el = mount(`${statusBar()}<div class="topbar"><button class="rb" id="bk" aria-label="Retour">${I.back}</button><h1>Le récap de ta soirée ✨</h1><button class="rb" id="sh" aria-label="Partager">${I.share}</button></div>
+    <div class="body"><div class="card" style="flex-direction:row;align-items:center;gap:12px;background:linear-gradient(135deg,#4A63E8,#8B5CF6);color:#fff"><img src="${av2URI(ST.me.av2 || (REAL.user && REAL.user.avatar) || { g: 'm' })}" alt="" style="height:124px;width:auto"><div><div style="font-size:13px;opacity:.85">${esc(EVENT.name)}</div><b style="font-size:30px">${fmtDur(S.onSite)}</b><div style="font-size:13px;opacity:.85">sur place · ${hm(S.from)} → ${hm(S.to)}</div></div></div>
+    <div class="grid2"><div class="stat"><span>Distance</span><b>${km} km</b></div><div class="stat"><span>Pas (estimés)</span><b>${S.steps.toLocaleString('fr-FR')}</b></div><div class="stat"><span>Zones visitées</span><b>${S.zones.length}</b></div><div class="stat"><span>À l’arrêt</span><b>${fmtDur(S.still)}</b>${top[0] ? `<span class="tiny">surtout à ${esc(top[0][0])}</span>` : ''}</div></div>
+    <div class="card"><b>Où tu as passé ta soirée</b><div style="display:flex;gap:14px;align-items:center"><svg viewBox="0 0 40 40" width="120" height="120">${segs}<text x="20" y="21" text-anchor="middle" font-size="5.5" font-weight="800" fill="#1C1F2A">${fmtDur(S.onSite)}</text></svg><div style="display:flex;flex-direction:column;gap:4px;font-size:13px">${top.map((z, i) => `<span><span style="display:inline-block;width:9px;height:9px;border-radius:5px;background:${cols[i]};margin-right:6px"></span>${esc(z[0])} · ${fmtDur(z[1])}</span>`).join('')}</div></div></div>
+    <button class="btn" id="rp">${I.replay.replace('<svg', '<svg width="20"')} Revoir ma soirée (replay)</button>
+    <div class="tiny">Calculé sur ton téléphone à partir de ta position réelle. Ton parcours détaillé reste sur cet appareil et s’efface après 24 h.</div></div>`);
+  $('#bk', el).onclick = V.settings; $('#rp', el).onclick = V.replay;
+  $('#sh', el).onclick = () => V.shareSheet(`Ma soirée à ${EVENT.name} : ${fmtDur(S.onSite)}, ${km} km ✨ via ONEERA`);
+};
+const _replayDemo = V.replay;
+V.replay = () => {
+  if (!realOn()) return _replayDemo();
+  const S = realTrackStats(); if (!S) return V.recap();
+  const T = S.T, t0 = T[0].t, t1 = T[T.length - 1].t;
+  const el = mount(`<div id="mv"></div>${statusBar()}<div class="mapTop"><div class="evbar"><button class="rb ghost" id="bk" aria-label="Retour">${I.back}</button><div style="flex:1"><b>Replay de ma soirée</b><div class="small"><span class="pill ok" style="padding:1px 7px">● REPLAY</span> ${esc(EVENT.name)}</div></div></div></div>
+    <div style="position:absolute;right:12px;top:150px;z-index:20;display:flex;flex-direction:column;gap:6px;width:118px">${[['Heure', 'h'], ['Distance', 'd'], ['Zone', 'z']].map(s => `<div class="mini" style="flex-direction:column;align-items:flex-start;gap:0;padding:8px 10px"><span class="tiny">${s[0]}</span><b id="r${s[1]}" style="font-size:15px">—</b></div>`).join('')}</div>
+    <div class="livebar" style="bottom:26px"><div class="mini" style="flex-direction:column;align-items:stretch;gap:6px"><div style="display:flex;align-items:center;gap:8px"><button class="rb" id="pp" aria-label="Lecture" style="width:40px;height:40px;background:var(--pri);color:#fff">${I.play}</button><input type="range" id="sl" min="0" max="1000" value="0" style="flex:1" aria-label="Moment de la soirée"><button class="chip" id="spd">×1</button></div></div></div>`);
+  if (MV) MV.destroy();
+  const cum = [0]; for (let i = 1; i < T.length; i++) { const d = Math.hypot(T[i].x - T[i - 1].x, T[i].y - T[i - 1].y) * PCT_TO_M, dt = (T[i].t - T[i - 1].t) / 1000; cum.push(cum[i - 1] + (dt > 0 && d / dt < 4 ? d : 0)); }
+  let k = 0, playing = false, speed = 1;
+  const idxAt = k => { const t = t0 + k / 1000 * (t1 - t0); let i = 1; while (i < T.length - 1 && T[i].t < t) i++; return i; };
+  const posAt = k => { const i = idxAt(k), a = T[i - 1], b = T[i], t = t0 + k / 1000 * (t1 - t0), f = Math.max(0, Math.min(1, (t - a.t) / Math.max(1, b.t - a.t))); return [a.x + (b.x - a.x) * f, a.y + (b.y - a.y) * f]; };
+  MV = new MapView($('#mv', el), { at: [T[0].x, T[0].y], zoom: .4, cluster: false, strict: true, markers: () => [personMarker('me', 'Moi', meHead(), posAt(k), { me: true, acc: 3 })] });
+  const upd = () => { const i = idxAt(k); MV.setRoute(T.slice(0, i).map(p => [p.x, p.y]).concat([posAt(k)]), '#8B5CF6');
+    $('#rh', el).textContent = new Date(t0 + k / 1000 * (t1 - t0)).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }); $('#rd', el).textContent = (cum[i - 1] / 1000).toFixed(1).replace('.', ',') + ' km'; $('#rz', el).textContent = zoneOf(posAt(k)); $('#sl', el).value = k; emit(); };
+  const tk = dt => { if (!document.body.contains(el)) { tickers.delete(tk); return; } if (playing) { k = Math.min(1000, k + dt * 40 * speed); if (k >= 1000) playing = false; upd(); $('#pp', el).innerHTML = playing ? I.pause : I.play; } };
+  tickers.add(tk);
+  $('#pp', el).onclick = () => { playing = !playing; if (k >= 1000) k = 0; $('#pp', el).innerHTML = playing ? I.pause : I.play; };
+  $('#sl', el).oninput = e => { k = +e.target.value; upd(); };
+  $('#spd', el).onclick = () => { speed = speed === 1 ? 2 : speed === 2 ? 5 : 1; $('#spd', el).textContent = '×' + speed; };
+  $('#bk', el).onclick = V.recap; upd();
+};
+
+// ---------- Fiche « Moi » : invitation réelle ; pas de bulle locale que personne ne verrait ----------
+const _meSheetDemo = V.meSheet;
+V.meSheet = () => {
+  if (!realOn()) return _meSheetDemo();
+  const acc = rAccepted(), sharing = ST.sharing && ST.sharing.mode === 'off' ? 'personne' : `${acc.length} ami${acc.length > 1 ? 's' : ''}`;
+  const sb = openSheet(`<div style="display:flex;gap:12px;align-items:center"><img src="${meHead()}" alt="" style="width:56px;height:56px;border-radius:28px;box-shadow:0 0 0 3px #4F6BF5"><div><h2 class="h2">Moi · ${esc(zoneOf(ST.me.pos))}</h2><div class="small">Visible par ${sharing}</div></div></div>
+    <button class="btn" id="inv">${I.users.replace('<svg', '<svg width="18"')} Inviter un ami à me rejoindre ici</button>
+    <button class="row" id="sh"><div class="ico">${I.eye}</div><div class="grow"><div class="t">Partage de ma position</div><div class="s">${shareLabel()}</div></div></button>`);
+  $('#inv', sb).onclick = () => { if (!acc.length) { closeSheet(true); return V.addFriends(false); }
+    const s2 = openSheet(`<h2 class="h2">Inviter à me rejoindre ici</h2><div class="small" style="margin-top:-6px">Ils reçoivent ta position (${esc(zoneOf(ST.me.pos))}) avec l’itinéraire.</div><div class="list" id="pk">${acc.map(f => `<button class="row" data-u="${f.id}"><img class="av" src="${fHead(f.id)}" alt=""><div class="grow"><div class="t">${esc(f.displayName)}</div></div><span class="tog"></span></button>`).join('')}</div><button class="btn" id="snd" disabled>Envoyer l’invitation</button>`);
+    const sel = new Set(); $('#pk', s2).onclick = e => { const r = e.target.closest('[data-u]'); if (!r) return; const id = r.dataset.u; sel.has(id) ? sel.delete(id) : sel.add(id); r.querySelector('.tog').classList.toggle('on', sel.has(id)); $('#snd', s2).disabled = !sel.size; $('#snd', s2).textContent = sel.size > 1 ? `Envoyer à ${sel.size} amis` : 'Envoyer l’invitation'; };
+    $('#snd', s2).onclick = async () => { $('#snd', s2).disabled = true; const ids = [...sel]; const res = await Promise.allSettled(ids.map(id => realSendLoc(id, 'meet'))); const okN = res.filter(r => r.status === 'fulfilled').length; closeSheet(true);
+      toast(okN === ids.length ? `Invitation envoyée à ${ids.map(id => esc(rFriend(id).displayName)).join(', ')}` : `Envoyée à ${okN}/${ids.length} : ${esc((res.find(r => r.status === 'rejected') || {}).reason?.message || 'erreur')}`); }; };
+  $('#sh', sb).onclick = V.shareSettings;
+};
+
+// ---------- Signalement : en version de test, aucune équipe n'est encore branchée — on le dit clairement ----------
+const _reportDemo = V.report;
+V.report = (...a) => { _reportDemo(...a); if (!realOn()) return; const sb = $('.sheet .sbody'); if (!sb || $('#tstw', sb)) return;
+  const h = sb.querySelector('h2'); h && h.insertAdjacentHTML('afterend', `<div id="tstw" class="card" style="background:#FFF4E5;padding:10px 12px"><div class="small" style="color:#8A4B00"><b>Version de test :</b> l’alerte n’est pas encore transmise à une équipe du lieu. En cas d’urgence, appelle directement le 112.</div></div>`); };

@@ -6,6 +6,7 @@ const { chromium, devices } = createRequire('/tmp/claude-0/-home-user-Oneera/e47
 const { createApi } = await import('/home/user/Oneera/packages/backend/src/api.ts');
 const { createPool, migrate } = await import('/home/user/Oneera/packages/backend/src/db.ts');
 const { Gateway } = await import('/home/user/Oneera/packages/backend/src/gateway.ts');
+const RUN = Date.now().toString(36);
 const DB = 'postgres://oneera@127.0.0.1:55432/oneera_e2e_social';
 const pool = createPool(DB); await migrate(pool);
 const ap = await generateKeyPair('RS256'), gg = await generateKeyPair('RS256');
@@ -22,7 +23,7 @@ const phone = async (identity) => {
   await p.addInitScript(() => { window.ONEERA_NATIVE = { apple: true, google: true }; window.ReactNativeWebView = { postMessage: async (s) => { const m = JSON.parse(s); const r = await window.__testSign(m.provider); setTimeout(() => window.__oneeraNative({ id: m.id, ...r }), 50); } }; });
   await p.goto(`http://127.0.0.1:8090/local.html?nouveau&api=http://127.0.0.1:${port}`); await p.waitForTimeout(700); return p;
 };
-const A = await phone({ sub: 'apple-001', first: 'Inès' });
+const A = await phone({ sub: 'apple-' + RUN, first: 'Inès' });
 ok(await A.locator('#ap').isVisible() && await A.locator('#gg').isVisible(), 'accueil : boutons Apple et Google');
 await A.click('#ap'); await A.waitForSelector('.studio', { timeout: 15000 }).then(() => ok(true, 'Apple, 1re fois : compte créé en un geste → studio d’avatar')).catch(() => ok(false, 'Apple → studio'));
 ok(await A.evaluate(() => REAL.user && REAL.user.displayName) === 'Inès', 'prénom transmis par Apple : Inès');
@@ -31,10 +32,10 @@ const sys = A.locator('.sysBack button, .sys button').first(); if (await sys.cou
 await A.waitForTimeout(1500);
 ok(await A.evaluate(async () => (await (await fetch(REAL.api + '/v1/me', { headers: { authorization: 'Bearer ' + REAL.token } })).json()).locationConsent === true), 'autorisation de position → consentement enregistré sur le serveur');
 // Reconnexion Apple sur un autre téléphone → même compte, directement sur la carte
-const A2 = await phone({ sub: 'apple-001', first: null });
+const A2 = await phone({ sub: 'apple-' + RUN, first: null });
 await A2.click('#ap'); await A2.waitForSelector('#mv', { timeout: 15000 }).then(() => ok(true, 'Apple, fois suivante : directement sur la carte (même compte)')).catch(() => ok(false, 'Apple reconnexion → carte'));
 ok(await A2.evaluate(() => REAL.user.displayName) === 'Inès', 'même compte retrouvé (Inès)');
-const G = await phone({ sub: 'google-77', first: 'Maya' });
+const G = await phone({ sub: 'google-' + RUN, first: 'Maya' });
 await G.click('#gg'); await G.waitForSelector('.studio', { timeout: 15000 }).then(() => ok(true, 'Google : compte créé en un geste (Maya)')).catch(() => ok(false, 'Google → studio'));
 // Dans un simple navigateur (sans l'app) : message clair
 const W = await b.newPage(); await W.goto(`http://127.0.0.1:8090/local.html?nouveau&api=http://127.0.0.1:${port}`); await W.waitForTimeout(600); await W.click('#ap'); await W.waitForTimeout(200);

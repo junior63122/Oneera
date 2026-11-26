@@ -14,7 +14,14 @@ const MODE = process.argv[4] || 'both';
     await p.goto(url); await p.waitForTimeout(800);
     if (mode === 'real') { // vrai compte sur le serveur local
       const em = `m${seed}_${Date.now()}@monkey.test`;
-      await p.evaluate(async (em) => { const r = await fetch('http://127.0.0.1:8787/v1/auth/signup', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ email: em, password: 'Monkey-pass-42', displayName: 'Singe' }) }); const j = await r.json(); localStorage.setItem('oneera.real.v1', JSON.stringify({ token: j.token, user: j.user, email: em })); }, em);
+      await p.evaluate(async (em) => { const r = await fetch('http://127.0.0.1:8787/v1/auth/signup', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ email: em, password: 'Monkey-pass-42', displayName: 'Singe' }) }); const j = await r.json(); localStorage.setItem('oneera.real.v1', JSON.stringify({ token: j.token, user: j.user, email: em }));
+        // un vrai ami, qui a déjà écrit et envoyé sa position
+        const H = (t) => ({ 'content-type': 'application/json', authorization: 'Bearer ' + t });
+        const k = await (await fetch('http://127.0.0.1:8787/v1/auth/signup', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ email: 'ami.' + em, password: 'Monkey-pass-42', displayName: 'Kim' }) })).json();
+        await fetch('http://127.0.0.1:8787/v1/friends/requests', { method: 'POST', headers: H(k.token), body: JSON.stringify({ userIds: [j.user.id] }) });
+        await fetch(`http://127.0.0.1:8787/v1/friends/${k.user.id}/accept`, { method: 'POST', headers: H(j.token), body: '{}' });
+        await fetch('http://127.0.0.1:8787/v1/messages', { method: 'POST', headers: H(k.token), body: JSON.stringify({ to: j.user.id, body: 'Tu es où ?' }) });
+        await fetch('http://127.0.0.1:8787/v1/messages', { method: 'POST', headers: H(k.token), body: JSON.stringify({ to: j.user.id, kind: 'meet', body: 'Rejoins-moi', loc: { x: 50, y: 50, floor: 'bdf', label: 'Scène' } }) }); }, em);
       await p.goto(url.replace('?nouveau&', '?')); await p.waitForTimeout(2000);
       const li = await p.evaluate(() => !!(REAL.token && REAL.user)); if (!li) { fail++; console.log(`FAIL real #${seed} : compte non connecté`); }
       await p.evaluate(() => { document.querySelectorAll('.tour,.tourOv,.coach').forEach(e => e.remove()); }).catch(() => {});
