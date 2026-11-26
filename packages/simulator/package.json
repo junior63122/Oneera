@@ -7,7 +7,10 @@
   "scripts": {
     "test": "vitest run",
     "typecheck": "tsc --noEmit -p .",
-    "bench": "tsx src/bench.ts"
+    "bench": "tsx src/bench.ts",
+    "friends": "tsx src/friends.ts",
+    "mesh": "tsx src/mesh.ts",
+    "crowdflow": "tsx src/crowdflow.ts"
   },
   "dependencies": { "@oneera/positioning": "workspace:*" },
   "devDependencies": { "typescript": "^5.6.3", "vitest": "^2.1.8", "tsx": "^4.19.2" }

@@ -232,7 +232,7 @@ function runOne(venue: Venue, truth: TruthSample[], world: World, estimators: Es
     let gnss: GnssObservation | null = null;
     let baro = 0;
     if (isEpoch) {
-      ble = world.scanBle(s.floorId, s, s.heading);
+      ble = world.scanBle(s.floorId, s, s.heading, s.t);
       gnss = world.gnss(s.floorId, s, 1);
       baro = world.barometer(s.floorId, 1);
     }
@@ -386,7 +386,7 @@ export function runBench(cfg: BenchConfig) {
 }
 
 /** Relevé à vide avec le même jeu de balises que `world`. */
-function surveyFor(venue: Venue, world: World): CalibrationSample[] {
+export function surveyFor(venue: Venue, world: World): CalibrationSample[] {
   const out: CalibrationSample[] = [];
   const crowd = world.params.crowd;
   (world.params as { crowd: number }).crowd = 0;

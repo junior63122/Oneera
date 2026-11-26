@@ -11,7 +11,11 @@ import {
 } from '@oneera/positioning';
 
 export interface WorldParams {
-  /** Densité de foule : 0 (vide) → 1 (club plein). */
+  /**
+   * Densité de foule : 0 (vide) → 1 (club plein). Au-delà : 2 = très dense (devant de scène), 3 = compact (« sardines »,
+   * 4–6 pers./m²). Atténuation 2,4 GHz ajoutée : 0,5 dB/m × densité (≈ 1,5 dB/m en compact), cohérente avec les
+   * mesures publiées (corps 5–8 dB, foule jusqu'à 8,6 dB de décalage) ; évanouissement rapide renforcé au-delà de 1.
+   */
   crowd: number;
   /** Plateforme simulée : iOS fournit un RSSI moyenné 1 Hz ; Android des paquets bruts. */
   platform: 'ios' | 'android';
@@ -33,6 +37,9 @@ export class World {
   /** Dérive lente du biais GNSS (m). */
   private gnssBias = { x: 0, y: 0 };
   private baroDrift = 0;
+  /** Facteur d'atténuation foule propre à chaque lien balise→téléphone, variant dans le temps (les corps bougent). */
+  private crowdMul: Float64Array;
+  private crowdMulT = -1;
 
   constructor(readonly venue: Venue, readonly params: WorldParams) {
     this.rng = new Rng(params.seed);
@@ -47,6 +54,19 @@ export class World {
         return { kx: (Math.cos(a) * 2 * Math.PI) / lambda, ky: (Math.sin(a) * 2 * Math.PI) / lambda, ph: this.rng.uniform(0, 6.28), amp: this.rng.uniform(1.5, 3) };
       }),
     }));
+    this.crowdMul = new Float64Array(venue.def.beacons.length).fill(1);
+  }
+
+  /** Fait évoluer l'atténuation aléatoire de la foule (processus AR(1), τ ≈ 8 s). Appelé à chaque balayage. */
+  private stepCrowd(t: number) {
+    if (t === this.crowdMulT) return;
+    const dt = this.crowdMulT < 0 ? 10 : Math.min(10, Math.max(0, t - this.crowdMulT));
+    this.crowdMulT = t;
+    const a = Math.exp(-dt / 8);
+    for (let i = 0; i < this.crowdMul.length; i++) {
+      const v = 1 + a * (this.crowdMul[i] - 1) + Math.sqrt(1 - a * a) * this.rng.normal(0, 0.55);
+      this.crowdMul[i] = Math.min(2.2, Math.max(0.15, v));
+    }
   }
 
   /** RSSI moyen « vrai » (sans évanouissement rapide) d'une balise en un point. */
@@ -66,13 +86,14 @@ export class World {
     const toBeacon = Math.atan2(b.pos.y - p.y, b.pos.x - p.x);
     let ang = Math.abs(((toBeacon - heading + Math.PI) % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI) - Math.PI);
     const body = ang > (2 * Math.PI) / 3 ? 7 : ang > Math.PI / 2 ? 3 : 0;
-    const crowdLoss = this.params.crowd * 0.5 * Math.max(0, d - 1);
+    const crowdLoss = this.params.crowd * 0.5 * Math.max(0, d - 1) * this.crowdMul[bi];
     return b.txPowerAt1m + t.txOffset - 10 * t.exponent * Math.log10(d) - walls * t.wallLoss - floorLoss - body - crowdLoss + shadow;
   }
 
   /** Fenêtre de 1 s de mesures BLE au point donné. */
-  scanBle(floorId: string, p: Vec2, heading: number): BleObservation[] {
+  scanBle(floorId: string, p: Vec2, heading: number, t?: number): BleObservation[] {
     const out: BleObservation[] = [];
+    this.stepCrowd(t ?? this.crowdMulT + 1);
     // Publicité 10 Hz ; réception partielle (radio partagée, Wi-Fi, foule).
     const rxProb = this.params.platform === 'ios' ? 0.35 : 0.25;
     this.venue.def.beacons.forEach((b, bi) => {
@@ -80,7 +101,7 @@ export class World {
       const pk: number[] = [];
       for (let k = 0; k < 10; k++) {
         if (!this.rng.chance(rxProb)) continue;
-        const v = mean + this.rng.normal(0, 4); // évanouissement rapide
+        const v = mean + this.rng.normal(0, 4 + Math.max(0, this.params.crowd - 1)); // évanouissement rapide (plus fort en foule compacte)
         if (v > -97) pk.push(Math.round(v));
       }
       if (!pk.length) return;
@@ -88,6 +109,39 @@ export class World {
       const rssi = pk.reduce((a, c) => a + c, 0) / pk.length;
       out.push({ beaconId: b.id, rssi: Math.round(rssi), count: pk.length });
     });
+    return out;
+  }
+
+  /**
+   * Mesures UWB « downlink » (DL-TDoA : le téléphone écoute des ancres, n'émet rien), modélisées comme des distances
+   * vers les ancres (co-localisées avec les balises). Vue directe : σ ≈ 0,15 m. Les corps bloquent la vue directe
+   * avec une probabilité croissante avec la densité et la distance ; la distance mesurée est alors trop longue
+   * (excès exponentiel) ou la mesure est perdue. Portée utile réduite en foule. Hypothèses de SIMULATION.
+   */
+  rangeUwb(floorId: string, p: Vec2, heading: number, maxRange = 25): { anchorId: string; distM: number; sigmaM: number }[] {
+    const c = this.params.crowd;
+    const out: { anchorId: string; distM: number; sigmaM: number }[] = [];
+    // Tour de mesure manqué (trop peu d'ancres reçues pour résoudre) : plus fréquent en foule.
+    if (this.rng.chance(0.1 + 0.1 * Math.min(c, 3))) return out;
+    // DL-TDoA : toutes les mesures sont relatives à une ancre de référence ; si elle est masquée,
+    // son excès de trajet se reporte (en sens inverse) sur toutes les distances déduites.
+    const refBlocked = this.rng.chance(Math.min(0.8, 0.15 + 0.15 * c));
+    const common = refBlocked ? -(-Math.log(1 - this.rng.next()) * (0.5 + 0.4 * c)) : 0;
+    for (const b of this.venue.def.beacons) {
+      if (b.floorId !== floorId) continue;
+      const d = Math.hypot(p.x - b.pos.x, p.y - b.pos.y, 2.2); // ancre à ~3,5 m, téléphone à ~1,3 m
+      if (d > maxRange * (1 - 0.12 * Math.min(c, 3))) continue;
+      const walls = this.venue.grid(floorId).walls.countCrossings(b.pos.x, b.pos.y, p.x, p.y, 2);
+      if (walls > 1) continue;
+      const toB = Math.atan2(b.pos.y - p.y, b.pos.x - p.x);
+      const ang = Math.abs(((toB - heading + Math.PI) % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI) - Math.PI);
+      const ownBody = ang > (2 * Math.PI) / 3;
+      const pBlock = 1 - Math.exp(-0.06 * c * d) + (ownBody ? 0.5 : 0) + walls * 0.5;
+      const blocked = this.rng.chance(Math.min(0.95, pBlock));
+      if (blocked && this.rng.chance(0.35)) continue; // perte de la mesure
+      const excess = blocked ? -Math.log(1 - this.rng.next()) * (0.6 + 0.5 * c) : 0;
+      out.push({ anchorId: b.id, distM: Math.max(0.3, d + excess + common + this.rng.normal(0, 0.2)), sigmaM: 0.25 });
+    }
     return out;
   }
 

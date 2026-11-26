@@ -29,6 +29,16 @@ export interface GnssObservation {
   accuracyM: number;
 }
 
+/**
+ * Mesure de distance vers une ancre fixe (UWB, Bluetooth 6 « Channel Sounding »…).
+ * `anchorId` désigne une balise de la carte (ancre co-localisée) ; `sigmaM` = écart-type annoncé en vue directe.
+ */
+export interface RangeObservation {
+  anchorId: string;
+  distM: number;
+  sigmaM: number;
+}
+
 export interface StepEvent {
   /** Longueur de pas estimée (m). */
   lengthM: number;
@@ -222,6 +232,35 @@ export class PositioningEngine {
   }
 
   // ---------------------------------------------------------------- mise à jour
+
+  /**
+   * Intègre des mesures de distance (UWB / Channel Sounding). Vraisemblance robuste : en foule, le corps
+   * humain bloque la vue directe et la distance mesurée est alors TROP LONGUE (jamais trop courte) ;
+   * on modélise donc un mélange « vue directe » (gaussien) + « trajet indirect » (excès positif exponentiel).
+   */
+  updateRanges(t: number, obs: RangeObservation[]): void {
+    const valid = obs.filter((o) => this.venue.beaconIndex.has(o.anchorId) && o.distM > 0 && o.distM < 200);
+    if (!valid.length || !this.initialized) return;
+    this.lastObsT = t;
+    this.advanceTo(t);
+    const logL = new Float64Array(this.n);
+    const pNlos = 0.35, nlosMean = 1.2;
+    for (const o of valid) {
+      const b = this.venue.def.beacons[this.venue.beaconIndex.get(o.anchorId)!];
+      const bf = this.venue.floorIndex.get(b.floorId)!;
+      const s2 = 2 * o.sigmaM * o.sigmaM;
+      for (let i = 0; i < this.n; i++) {
+        const dz = this.f[i] === bf ? 2.2 : 5;
+        const d = Math.hypot(this.x[i] - b.pos.x, this.y[i] - b.pos.y, dz);
+        const e = o.distM - d;
+        const los = Math.exp(-(e * e) / s2) / (o.sigmaM * 2.5066);
+        const nlos = e > -o.sigmaM ? Math.exp(-Math.max(0, e) / nlosMean) / nlosMean : 0;
+        logL[i] += Math.log((1 - pNlos) * los + pNlos * nlos + 1e-6);
+      }
+    }
+    this.applyLogLik(logL, valid.length);
+    this.maybeResample();
+  }
 
   /** Intègre une fenêtre de mesures BLE. */
   updateBle(t: number, obs: BleObservation[]): void {
