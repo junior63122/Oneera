@@ -1,4 +1,4 @@
-import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { WebSocket } from 'ws';
 import { Pool, withContext, withSystem } from '../src/db';
 import { Gateway, issueToken, ServerMsg } from '../src/gateway';
@@ -16,8 +16,8 @@ class TestClient {
   constructor(readonly ws: WebSocket) {
     ws.on('message', (d) => this.msgs.push(JSON.parse(d.toString())));
   }
-  static async open(userId: string, eventId: string): Promise<TestClient> {
-    const ws = new WebSocket(`ws://127.0.0.1:${port}/rt?token=${await issueToken(secret, userId, eventId)}`);
+  static async open(userId: string, eventId: string, autoPong = true): Promise<TestClient> {
+    const ws = new WebSocket(`ws://127.0.0.1:${port}/rt?token=${await issueToken(secret, userId, eventId)}`, { autoPong });
     const c = new TestClient(ws);
     await new Promise((r, j) => { ws.once('open', r); ws.once('error', j); });
     await c.waitFor((m) => m.type === 'snapshot');
@@ -43,7 +43,7 @@ beforeAll(async () => {
   f = await seed(pool);
   const url = new URL(TEST_URL);
   url.pathname = `/${DB}`;
-  gw = new Gateway({ pool, listenUrl: url.toString(), secret, maxRate: 5, flushMs: 100 });
+  gw = new Gateway({ pool, listenUrl: url.toString(), secret, maxRate: 5, flushMs: 100, pingMs: 150, offlineGraceMs: 300 });
   port = await gw.listen(0);
   // Alice ↔ Bob amis ; Carol inconnue. Alice consent au partage amis.
   await withSystem(pool, (c) => c.query(
@@ -128,5 +128,61 @@ describe('passerelle temps réel', () => {
     expect(bob.msgs.some((m) => m.type === 'friend' && m.pos.seq === 6001)).toBe(false);
     alice.close();
     bob.close();
+  });
+
+  describe('présence', () => {
+    // Laisse expirer le délai de grâce des connexions fermées par les tests précédents.
+    beforeEach(() => new Promise((r) => setTimeout(r, 450)));
+    it("annonce « en ligne » puis « hors ligne » aux seuls amis autorisés", async () => {
+      await shareAlice();
+      const bob = await TestClient.open(f.bob, f.eventA);
+      const carol = await TestClient.open(f.carol, f.eventA);
+      const alice = await TestClient.open(f.alice, f.eventA);
+      await bob.waitFor((m) => m.type === 'presence' && m.userId === f.alice && m.online);
+      const t0 = Date.now();
+      alice.close();
+      await bob.waitFor((m) => m.type === 'presence' && m.userId === f.alice && !m.online, 2000);
+      expect(Date.now() - t0).toBeGreaterThanOrEqual(250); // délai de grâce respecté
+      await new Promise((r) => setTimeout(r, 100));
+      expect(carol.msgs.some((m) => m.type === 'presence')).toBe(false);
+      bob.close();
+      carol.close();
+    });
+
+    it('une reconnexion rapide (changement de réseau) ne fait pas clignoter « hors ligne »', async () => {
+      const bob = await TestClient.open(f.bob, f.eventA);
+      const a1 = await TestClient.open(f.alice, f.eventA);
+      await bob.waitFor((m) => m.type === 'presence' && m.userId === f.alice && m.online);
+      a1.close();
+      await new Promise((r) => setTimeout(r, 80));
+      const a2 = await TestClient.open(f.alice, f.eventA);
+      await new Promise((r) => setTimeout(r, 500));
+      expect(bob.msgs.some((m) => m.type === 'presence' && m.userId === f.alice && !m.online)).toBe(false);
+      a2.close();
+      bob.close();
+    });
+
+    it("le battement de cœur coupe une connexion morte et l'ami la voit hors ligne", async () => {
+      const bob = await TestClient.open(f.bob, f.eventA);
+      const dead = await TestClient.open(f.alice, f.eventA, false); // ne répond plus aux pings
+      await bob.waitFor((m) => m.type === 'presence' && m.userId === f.alice && m.online);
+      const closed = new Promise<void>((r) => dead.ws.on('close', () => r()));
+      await closed;
+      await bob.waitFor((m) => m.type === 'presence' && m.userId === f.alice && !m.online, 2000);
+      expect(gw.stats.deadConnections).toBeGreaterThan(0);
+      bob.close();
+    });
+
+    it("l'instantané initial indique qui est connecté", async () => {
+      const alice = await TestClient.open(f.alice, f.eventA);
+      alice.pos(7000, 2, 2);
+      await new Promise((r) => setTimeout(r, 250));
+      await gw.flush();
+      const bob = await TestClient.open(f.bob, f.eventA);
+      const snap = bob.msgs.find((m) => m.type === 'snapshot');
+      expect(snap && snap.type === 'snapshot' && snap.friends.find((p) => p.userId === f.alice)?.online).toBe(true);
+      alice.close();
+      bob.close();
+    });
   });
 });

@@ -6,7 +6,7 @@
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import {
+import { MotionClassifier,
   BleObservation, CalibrationSample, DisplayTracker, EngineOptions, geoToLocal, GnssObservation, PositioningEngine, RadioMap,
   Rng, Venue,
 } from '@oneera/positioning';
@@ -96,14 +96,23 @@ class OneeraPF implements Estimator {
   readonly tracker: DisplayTracker;
   private lastEst: Est | null = null;
   private pendingReacq = false;
-  constructor(public name: string, private venue: Venue, radio: RadioMap, private usePdr: boolean, seed: number, particles = 1500, extra: Partial<EngineOptions> = {}) {
+  /** Sans classifieur : l'état « immobile » vient de la vérité terrain (optimiste). Avec : il vient du seul flux de pas. */
+  private readonly motion: MotionClassifier | null;
+  constructor(public name: string, private venue: Venue, radio: RadioMap, private usePdr: boolean, seed: number, particles = 1500, extra: Partial<EngineOptions> = {}, classify = false) {
+    this.motion = classify ? new MotionClassifier() : null;
     this.engine = new PositioningEngine(venue, radio, { seed, particles, ...extra });
     this.tracker = new DisplayTracker(venue);
   }
   update(t: number, ble: BleObservation[], gnss: GnssObservation | null, steps: { lengthM: number; heading: number }[], baro: number, still: boolean) {
     if (this.usePdr) {
-      this.engine.setStill(still);
-      for (const s of steps) this.engine.onStep(s);
+      if (this.motion) {
+        const ok = this.motion.push(t, steps);
+        this.engine.setStill(this.motion.state !== 'walking');
+        for (const s of ok) this.engine.onStep(s);
+      } else {
+        this.engine.setStill(still);
+        for (const s of steps) this.engine.onStep(s);
+      }
     }
     if (gnss) this.engine.updateGnss(t, gnss);
     this.engine.updateBle(t, ble);
@@ -360,6 +369,7 @@ export function runBench(cfg: BenchConfig) {
           new OneeraPF('V2 · BLE sans PDR, non calibré', venue, radioPrior, false, seed, cfg.particles, cfg.engineOpts),
           new OneeraPF('V2 · BLE+PDR+baro, non calibré', venue, radioPrior, true, seed, cfg.particles, cfg.engineOpts),
           new OneeraPF('V2 · BLE+PDR+baro, calibré sur site', venue, radioCal, true, seed, cfg.particles, cfg.engineOpts),
+          new OneeraPF('V2 · calibré + classification marche/danse', venue, radioCal, true, seed, cfg.particles, cfg.engineOpts, true),
         ].filter((e) => !cfg.only || cfg.only.some((o) => e.name.includes(o)));
         if (!accs.length) {
           accs = ests.map(newAcc);

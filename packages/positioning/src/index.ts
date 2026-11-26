@@ -7,3 +7,5 @@ export * from './pathfinding';
 export * from './display';
 export * from './proximity';
 export * from './session';
+export * from './motion';
+export * from './publish';

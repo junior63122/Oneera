@@ -9,6 +9,9 @@
  * - Toute modification de partage/consentement/amitié (NOTIFY share_changed) invalide l'audience
  *   et retire la position chez ceux qui n'y ont plus droit.
  *
+ * - Présence : « en ligne » à la première connexion, « hors ligne » après un délai de grâce quand la dernière
+ *   connexion se ferme ; battement de cœur (ping/pong) pour détecter les connexions mobiles mortes.
+ *
  * Limite actuelle : diffusion intra-instance. Le passage multi-instances se fait via un bus
  * (Redis pub/sub par événement) derrière l'interface `Bus` — à implémenter avant la charge cible.
  */
@@ -37,6 +40,8 @@ export type ServerMsg =
   | { type: 'snapshot'; friends: FriendPosition[] }
   | { type: 'friend'; pos: FriendPosition }
   | { type: 'gone'; userId: string; reason: 'share_stopped' }
+  /** Présence d'un ami (connecté / hors ligne), envoyée aux seuls spectateurs autorisés. */
+  | { type: 'presence'; userId: string; online: boolean; at: number }
   | { type: 'error'; code: string };
 
 export interface FriendPosition {
@@ -52,6 +57,8 @@ export interface FriendPosition {
   quality: string;
   /** Horodatage serveur d'émission (ms) — permet de mesurer la latence et l'obsolescence. */
   sentAt: number;
+  /** Connecté en ce moment (instantané uniquement ; ensuite, messages `presence`). */
+  online?: boolean;
 }
 
 export interface GatewayOptions {
@@ -65,6 +72,10 @@ export interface GatewayOptions {
   flushMs?: number;
   /** Durée de vie du cache d'audience (ms) — filet de sécurité en plus de NOTIFY. */
   audienceTtlMs?: number;
+  /** Intervalle du battement de cœur WebSocket (ms) : une connexion qui ne répond pas à deux pings est coupée. */
+  pingMs?: number;
+  /** Délai avant d'annoncer « hors ligne » (ms) : évite le clignotement lors d'un changement de réseau (Wi-Fi ↔ 4G). */
+  offlineGraceMs?: number;
 }
 
 interface Conn {
@@ -74,6 +85,7 @@ interface Conn {
   lastSeq: number;
   tokens: number;
   lastRefill: number;
+  alive: boolean;
 }
 
 export async function issueToken(secret: Uint8Array, userId: string, eventId: string, ttl = '12h'): Promise<string> {
@@ -105,7 +117,9 @@ export class Gateway {
   private pending: Record<string, unknown>[] = [];
   private flushTimer?: NodeJS.Timeout;
   private listener?: pg.Client;
-  readonly stats = { received: 0, rejected: 0, delivered: 0, flushed: 0, flushErrors: 0 };
+  private pingTimer?: NodeJS.Timeout;
+  private readonly offlineTimers = new Map<string, NodeJS.Timeout>(); // user|event → annonce différée
+  readonly stats = { received: 0, rejected: 0, delivered: 0, flushed: 0, flushErrors: 0, presence: 0, deadConnections: 0 };
 
   constructor(private readonly opts: GatewayOptions) {
     this.server = createServer((_req, res) => {
@@ -130,6 +144,7 @@ export class Gateway {
       if (n.channel === 'share_changed' && n.payload) void this.onShareChanged(n.payload);
     });
     this.flushTimer = setInterval(() => void this.flush(), this.opts.flushMs ?? 300);
+    this.pingTimer = setInterval(() => this.heartbeat(), this.opts.pingMs ?? 15_000);
     await new Promise<void>((r) => this.server.listen(port, r));
     const addr = this.server.address();
     return typeof addr === 'object' && addr ? addr.port : port;
@@ -137,6 +152,9 @@ export class Gateway {
 
   async close(): Promise<void> {
     clearInterval(this.flushTimer);
+    clearInterval(this.pingTimer);
+    for (const t of this.offlineTimers.values()) clearTimeout(t);
+    this.offlineTimers.clear();
     await this.flush();
     for (const ws of this.wss.clients) ws.terminate();
     await new Promise<void>((r) => this.wss.close(() => r()));
@@ -159,14 +177,21 @@ export class Gateway {
       ws.close(4401, 'unauthorized');
       return;
     }
-    const conn: Conn = { ws, userId, eventId, lastSeq: -1, tokens: this.opts.maxRate ?? 2, lastRefill: Date.now() };
+    const conn: Conn = { ws, userId, eventId, lastSeq: -1, tokens: this.opts.maxRate ?? 2, lastRefill: Date.now(), alive: true };
+    const wasOnline = this.isOnline(userId, eventId);
     let set = this.conns.get(userId);
     if (!set) this.conns.set(userId, (set = new Set()));
     set.add(conn);
+    ws.on('pong', () => { conn.alive = true; });
     ws.on('close', () => {
       set!.delete(conn);
       if (!set!.size) this.conns.delete(userId);
+      if (!this.isOnline(userId, eventId)) this.scheduleOffline(userId, eventId);
     });
+    // Reconnexion pendant le délai de grâce : rien n'est annoncé.
+    const pendingOff = this.offlineTimers.get(`${userId}|${eventId}`);
+    if (pendingOff) { clearTimeout(pendingOff); this.offlineTimers.delete(`${userId}|${eventId}`); }
+    else if (!wasOnline) void this.announcePresence(userId, eventId, true);
     ws.on('message', (data) => this.onMessage(conn, data.toString()));
     // Instantané initial : lu AVEC les droits du lecteur (RLS) → uniquement les partages actifs.
     try {
@@ -180,6 +205,7 @@ export class Gateway {
         friends: rows.map((r) => ({
           userId: r.user_id, seq: Number(r.seq), t: new Date(r.measured_at).getTime(), floorId: r.floor_id, x: r.x, y: r.y,
           r68: r.r68, zoneKey: r.zone_key ?? undefined, zoneProb: r.zone_prob ?? undefined, quality: r.quality, sentAt: now,
+          online: this.isOnline(r.user_id, eventId),
         })),
       });
     } catch {
@@ -277,6 +303,52 @@ export class Gateway {
     }
     // L'audience inverse (ce que `owner` voit) peut aussi changer : on purge les entrées où il est spectateur.
     for (const [key, entry] of this.audience) if (entry.viewers.has(owner)) this.audience.delete(key);
+  }
+
+  // ------------------------------------------------------------------ présence
+
+  /** Vrai si l'utilisateur a au moins une connexion ouverte sur cet événement (limite : instance courante). */
+  isOnline(userId: string, eventId: string): boolean {
+    for (const c of this.conns.get(userId) ?? []) if (c.eventId === eventId) return true;
+    return false;
+  }
+
+  private scheduleOffline(userId: string, eventId: string): void {
+    const key = `${userId}|${eventId}`;
+    if (this.offlineTimers.has(key)) return;
+    this.offlineTimers.set(key, setTimeout(() => {
+      this.offlineTimers.delete(key);
+      if (!this.isOnline(userId, eventId)) void this.announcePresence(userId, eventId, false);
+    }, this.opts.offlineGraceMs ?? 10_000));
+  }
+
+  /** Annonce la présence aux seuls spectateurs autorisés (même audience que les positions). */
+  private async announcePresence(userId: string, eventId: string, online: boolean): Promise<void> {
+    let viewers: Set<string>;
+    try {
+      viewers = await this.audienceOf(userId, eventId);
+    } catch {
+      return;
+    }
+    const at = Date.now();
+    for (const v of viewers) for (const c of this.conns.get(v) ?? []) {
+      if (c.eventId !== eventId) continue;
+      this.send(c.ws, { type: 'presence', userId, online, at });
+      this.stats.presence++;
+    }
+  }
+
+  /** Battement de cœur : coupe les connexions mobiles mortes (réseau perdu sans fermeture propre). */
+  private heartbeat(): void {
+    for (const set of this.conns.values()) for (const c of set) {
+      if (!c.alive) {
+        this.stats.deadConnections++;
+        c.ws.terminate(); // déclenche « close » → annonce hors ligne après le délai de grâce
+        continue;
+      }
+      c.alive = false;
+      try { c.ws.ping(); } catch { /* fermée entre-temps */ }
+    }
   }
 
   // ------------------------------------------------------------------ persistance

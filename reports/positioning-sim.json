@@ -29,7 +29,7 @@
         "wallCrossPerHour": 335.33029476738056,
         "offMapPct": 0,
         "reacqPerHour": 0,
-        "msPerUpdate": 0.0025888260271265855
+        "msPerUpdate": 0.0029688757617791686
       },
       {
         "name": "Barycentre pondéré (3 balises)",
@@ -45,7 +45,7 @@
         "wallCrossPerHour": 270.12718189594545,
         "offMapPct": 0.034631689986664806,
         "reacqPerHour": 0,
-        "msPerUpdate": 0.009011079811278622
+        "msPerUpdate": 0.009443705917238206
       },
       {
         "name": "GNSS seul",
@@ -61,7 +61,7 @@
         "wallCrossPerHour": 320.28342256628014,
         "offMapPct": 0.47849451664908543,
         "reacqPerHour": 0,
-        "msPerUpdate": 0.002113075093303654
+        "msPerUpdate": 0.002331688224836287
       },
       {
         "name": "V2 · BLE sans PDR, non calibré",
@@ -77,7 +77,7 @@
         "wallCrossPerHour": 0,
         "offMapPct": 0,
         "reacqPerHour": 24.361602611305425,
-        "msPerUpdate": 6.257309856693509
+        "msPerUpdate": 8.467070132101417
       },
       {
         "name": "V2 · BLE+PDR+baro, non calibré",
@@ -93,7 +93,7 @@
         "wallCrossPerHour": 0,
         "offMapPct": 0,
         "reacqPerHour": 16.47990764882426,
-        "msPerUpdate": 7.229068532533839
+        "msPerUpdate": 9.804379000589737
       },
       {
         "name": "V2 · BLE+PDR+baro, calibré sur site",
@@ -109,7 +109,23 @@
         "wallCrossPerHour": 0,
         "offMapPct": 0,
         "reacqPerHour": 10.747765857928865,
-        "msPerUpdate": 7.192563191468448
+        "msPerUpdate": 9.685913206801738
+      },
+      {
+        "name": "V2 · calibré + classification marche/danse",
+        "epochs": 5021,
+        "coverage": 1,
+        "median": 1.677786163515289,
+        "p90": 3.5399964352515343,
+        "p95": 4.546518759451246,
+        "floorAcc": 1,
+        "zoneAcc": 0.9764987054371639,
+        "within68": 0.6719776936865166,
+        "teleportsPerHour": 0,
+        "wallCrossPerHour": 0,
+        "offMapPct": 0,
+        "reacqPerHour": 10.747765857928865,
+        "msPerUpdate": 9.624875053666004
       }
     ],
     "foule=0.2 · ios": [
@@ -127,7 +143,7 @@
         "wallCrossPerHour": 281.77383592013814,
         "offMapPct": 0,
         "reacqPerHour": 0,
-        "msPerUpdate": 0.0010318178435885417
+        "msPerUpdate": 0.001205589328223262
       },
       {
         "name": "Barycentre pondéré (3 balises)",
@@ -143,7 +159,7 @@
         "wallCrossPerHour": 229.8891352549569,
         "offMapPct": 0.041441241685144126,
         "reacqPerHour": 0,
-        "msPerUpdate": 0.007262249726757255
+        "msPerUpdate": 0.007745226985172008
       },
       {
         "name": "GNSS seul",
@@ -159,7 +175,7 @@
         "wallCrossPerHour": 355.2106430154716,
         "offMapPct": 0.40115299334811527,
         "reacqPerHour": 0,
-        "msPerUpdate": 0.0011830384864919084
+        "msPerUpdate": 0.0014187445882957823
       },
       {
         "name": "V2 · BLE sans PDR, non calibré",
@@ -175,7 +191,7 @@
         "wallCrossPerHour": 0,
         "offMapPct": 0,
         "reacqPerHour": 19.955654101992785,
-        "msPerUpdate": 6.305032181499975
+        "msPerUpdate": 8.135943610758801
       },
       {
         "name": "V2 · BLE+PDR+baro, non calibré",
@@ -191,7 +207,7 @@
         "wallCrossPerHour": 0,
         "offMapPct": 0,
         "reacqPerHour": 20.753880266072496,
-        "msPerUpdate": 7.118317255630695
+        "msPerUpdate": 9.223827959763902
       },
       {
         "name": "V2 · BLE+PDR+baro, calibré sur site",
@@ -207,7 +223,23 @@
         "wallCrossPerHour": 0,
         "offMapPct": 0,
         "reacqPerHour": 11.97339246119567,
-        "msPerUpdate": 7.2893155315984295
+        "msPerUpdate": 9.326836843647332
+      },
+      {
+        "name": "V2 · calibré + classification marche/danse",
+        "epochs": 4507,
+        "coverage": 1,
+        "median": 1.8236058622352607,
+        "p90": 4.435699255974435,
+        "p95": 5.386092623782892,
+        "floorAcc": 1,
+        "zoneAcc": 0.9702684712669182,
+        "within68": 0.6119369869092522,
+        "teleportsPerHour": 0,
+        "wallCrossPerHour": 0,
+        "offMapPct": 0,
+        "reacqPerHour": 11.17516629711596,
+        "msPerUpdate": 9.251809979663188
       }
     ],
     "foule=0.8 · android": [
@@ -225,7 +257,7 @@
         "wallCrossPerHour": 312.34805935111604,
         "offMapPct": 0,
         "reacqPerHour": 0,
-        "msPerUpdate": 0.0008422976209420418
+        "msPerUpdate": 0.0011171658736708523
       },
       {
         "name": "Barycentre pondéré (3 balises)",
@@ -241,7 +273,7 @@
         "wallCrossPerHour": 196.9150808952688,
         "offMapPct": 0.0266158102104116,
         "reacqPerHour": 0,
-        "msPerUpdate": 0.0063500428131857125
+        "msPerUpdate": 0.00704919917281667
       },
       {
         "name": "GNSS seul",
@@ -257,7 +289,7 @@
         "wallCrossPerHour": 337.2453684298282,
         "offMapPct": 0.4929792941570961,
         "reacqPerHour": 0,
-        "msPerUpdate": 0.0006575003107482396
+        "msPerUpdate": 0.0009807894520067648
       },
       {
         "name": "V2 · BLE sans PDR, non calibré",
@@ -273,7 +305,7 @@
         "wallCrossPerHour": 0,
         "offMapPct": 0,
         "reacqPerHour": 33.19641210494953,
-        "msPerUpdate": 4.512178598345758
+        "msPerUpdate": 6.228781076318658
       },
       {
         "name": "V2 · BLE+PDR+baro, non calibré",
@@ -289,7 +321,7 @@
         "wallCrossPerHour": 0,
         "offMapPct": 0,
         "reacqPerHour": 23.388381255759896,
-        "msPerUpdate": 5.4236114215100235
+        "msPerUpdate": 7.49872404219256
       },
       {
         "name": "V2 · BLE+PDR+baro, calibré sur site",
@@ -305,7 +337,23 @@
         "wallCrossPerHour": 0,
         "offMapPct": 0,
         "reacqPerHour": 22.63391734428377,
-        "msPerUpdate": 5.4254414626681005
+        "msPerUpdate": 7.485134552844143
+      },
+      {
+        "name": "V2 · calibré + classification marche/danse",
+        "epochs": 4769,
+        "coverage": 1,
+        "median": 1.8474033396477023,
+        "p90": 6.235168976287465,
+        "p95": 8.326992893511322,
+        "floorAcc": 0.9997903124344726,
+        "zoneAcc": 0.9159152862235269,
+        "within68": 0.6508702033969386,
+        "teleportsPerHour": 0,
+        "wallCrossPerHour": 0,
+        "offMapPct": 0,
+        "reacqPerHour": 23.388381255759896,
+        "msPerUpdate": 7.433111508789816
       }
     ],
     "foule=0.8 · ios": [
@@ -323,7 +371,7 @@
         "wallCrossPerHour": 278.5181406618234,
         "offMapPct": 0,
         "reacqPerHour": 0,
-        "msPerUpdate": 0.000879088296764374
+        "msPerUpdate": 0.001107717911094027
       },
       {
         "name": "Barycentre pondéré (3 balises)",
@@ -339,7 +387,7 @@
         "wallCrossPerHour": 157.62290378114182,
         "offMapPct": 0.025717868605071307,
         "reacqPerHour": 0,
-        "msPerUpdate": 0.006446434983689375
+        "msPerUpdate": 0.007512695470320111
       },
       {
         "name": "GNSS seul",
@@ -355,7 +403,7 @@
         "wallCrossPerHour": 309.12452974554026,
         "offMapPct": 0.5173329932623435,
         "reacqPerHour": 0,
-        "msPerUpdate": 0.000732103817023969
+        "msPerUpdate": 0.0010205385898500283
       },
       {
         "name": "V2 · BLE sans PDR, non calibré",
@@ -371,7 +419,7 @@
         "wallCrossPerHour": 0,
         "offMapPct": 0,
         "reacqPerHour": 22.954791812787644,
-        "msPerUpdate": 4.9947937632135675
+        "msPerUpdate": 6.722300787332081
       },
       {
         "name": "V2 · BLE+PDR+baro, non calibré",
@@ -387,7 +435,7 @@
         "wallCrossPerHour": 0,
         "offMapPct": 0,
         "reacqPerHour": 14.538034814765508,
-        "msPerUpdate": 5.866533680998456
+        "msPerUpdate": 7.938280581584907
       },
       {
         "name": "V2 · BLE+PDR+baro, calibré sur site",
@@ -403,7 +451,23 @@
         "wallCrossPerHour": 0,
         "offMapPct": 0,
         "reacqPerHour": 8.416756998022136,
-        "msPerUpdate": 5.889113612206034
+        "msPerUpdate": 7.949934537122647
+      },
+      {
+        "name": "V2 · calibré + classification marche/danse",
+        "epochs": 4702,
+        "coverage": 1,
+        "median": 1.879174109663724,
+        "p90": 5.398501641803318,
+        "p95": 6.850974090845562,
+        "floorAcc": 1,
+        "zoneAcc": 0.9385367928541046,
+        "within68": 0.6369629944704381,
+        "teleportsPerHour": 0,
+        "wallCrossPerHour": 0,
+        "offMapPct": 0,
+        "reacqPerHour": 10.7122361793009,
+        "msPerUpdate": 7.921048588925821
       }
     ]
   }

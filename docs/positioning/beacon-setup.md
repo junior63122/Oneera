@@ -19,10 +19,25 @@ Les balises posées en V1 émettaient en **Eddystone**. Sur iPhone, le service d
 | « Measured power » (RSSI à 1 m) | laisser la valeur par défaut : la calibration terrain la corrige |
 | Mot de passe de configuration | **le changer** (sinon n'importe qui à proximité peut reconfigurer la balise) et le conserver dans un gestionnaire de mots de passe, pas dans le Drive |
 
+## Plages du matériel (CP28, d'après les visuels fabricant du dossier technique)
+
+| Caractéristique | Valeur fabricant |
+|---|---|
+| Puce | Renesas DA14531, Bluetooth 5.1 |
+| Trames | iBeacon + Eddystone (UID, URL, TLM), jusqu'à 6 « slots » |
+| Intervalle d'émission | 100 à 1 500 ms |
+| Puissance d'émission | −19,5 à +2,5 dBm |
+| Alimentation | 2 piles bouton CR2477 remplaçables (ouverture par rotation), « jusqu'à 4 ans » selon réglages |
+| Consommation annoncée | 24,87 µA |
+| Portée annoncée | 120–140 m en champ libre (bien moins en foule : le corps humain absorbe le 2,4 GHz) |
+| Format | Ø 55,6 × 18 mm, pas de trou de vis |
+
+Ces valeurs sont des **annonces fabricant**, non vérifiées. La précision « 1 à 3 m » des visuels n'a jamais été mesurée par ONEERA : ne pas la reprendre commercialement avant le protocole terrain (`field-protocol.md`).
+
 ## Étapes
 
 1. **Lire l'état actuel** : installer *nRF Connect for Mobile* (Nordic, gratuit) sur un Android. Scanner : chaque balise apparaît avec son type de trame. Noter ce qui est émis (Eddystone-UID/URL/TLM, iBeacon ?).
-2. **Reconfigurer** avec l'application de configuration du fabricant (DX-SMART fournit une app dédiée ; référence exacte à prendre sur la notice ou l'étiquette — elle n'est pas dans le Drive). Appliquer les paramètres ci-dessus sur 5 balises.
+2. **Reconfigurer** avec l'application gratuite du fabricant : **« DX-IBEACON »** sur Android (Google Play) ou **« DX-SMART »** sur iPhone (App Store) — noms relevés sur les visuels fabricant du dossier technique (Drive, novembre 2026). Elle permet de lire et modifier les trames (iBeacon UUID/Major/Minor, Eddystone UID/URL/TLM), l'intervalle, la puissance et le « RSSI à 1 m », et de remettre la balise en configuration d'usine. Appliquer les paramètres ci-dessus sur 5 balises.
 3. **Vérifier sur Android** (nRF Connect) : la trame iBeacon apparaît avec le bon UUID / Major / Minor.
 4. **Vérifier sur iPhone** : avec une app de lecture iBeacon gratuite de l'App Store dans laquelle on saisit l'UUID, ou avec l'app de mesure ONEERA dès qu'elle sera installable. Les 5 balises doivent apparaître, avec un RSSI qui varie quand on s'éloigne.
 5. **Noter** pour chaque balise : Minor, niveau de pile si affiché, état physique.
@@ -35,4 +50,5 @@ Les balises posées en V1 émettaient en **Eddystone**. Sur iPhone, le service d
 ## Points d'attention
 
 - La fiche PDF indique « Do not install outdoors » pour le CP28 : en festival plein air, prévoir un boîtier ou un autre modèle IP67.
+- La fiche « Balise Oneera » du dossier technique mélange deux produits différents (voir `docs/audit/v1-findings.md`) : se fier au tableau ci-dessus pour le CP28.
 - Pose : 2,5 à 4 m de hauteur, à l'écart des surfaces métalliques et des enceintes, au moins une balise par salle fermée et par escalier.
