@@ -6,7 +6,8 @@
   "build": {
     "production": {
       "ios": {
-        "resourceClass": "default"
+        "resourceClass": "default",
+        "image": "latest"
       }
     },
     "preview": {

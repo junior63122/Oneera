@@ -6,7 +6,7 @@
  * puis chargés dans une vue web locale. Aucune donnée n'est envoyée : les positions et amis sont simulés.
  */
 import { Asset } from 'expo-asset';
-import * as FileSystem from 'expo-file-system';
+import * as FileSystem from 'expo-file-system/legacy';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect, useState } from 'react';

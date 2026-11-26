@@ -7,17 +7,12 @@
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "automatic",
     "backgroundColor": "#010922",
-    "splash": {
-      "image": "./assets/splash.png",
-      "resizeMode": "cover",
-      "backgroundColor": "#010922"
-    },
     "assetBundlePatterns": [
       "web/**/*"
     ],
     "ios": {
       "bundleIdentifier": "com.mapping.festival",
-      "buildNumber": "100",
+      "buildNumber": "101",
       "supportsTablet": false,
       "config": {
         "usesNonExemptEncryption": false
@@ -35,7 +30,16 @@
       }
     },
     "plugins": [
-      "expo-asset"
+      "expo-asset",
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/icon.png",
+          "imageWidth": 180,
+          "resizeMode": "contain",
+          "backgroundColor": "#010922"
+        }
+      ]
     ],
     "owner": "juniorjoyants-team",
     "extra": {
