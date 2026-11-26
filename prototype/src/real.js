@@ -89,7 +89,7 @@ const authForm = (signup) => `${statusBar()}<div class="topbar"><button class="r
   <form class="body" id="f" style="padding-top:4px" novalidate>
     ${signup ? '<div class="field"><label for="fn">Prénom (affiché à tes amis)</label><input class="inp" id="fn" autocomplete="given-name" maxlength="40" required></div>' : ''}
     <div class="field"><label for="em">E-mail (jamais affiché)</label><input class="inp" id="em" type="email" inputmode="email" autocomplete="email" autocapitalize="none" spellcheck="false" required></div>
-    <div class="field"><label for="pw">Mot de passe${signup ? ' (8 caractères minimum)' : ''}</label><div style="position:relative"><input class="inp" id="pw" type="password" autocomplete="${signup ? 'new-password' : 'current-password'}" minlength="${signup ? 8 : 1}" required style="padding-right:96px!important;width:100%;box-sizing:border-box"><button type="button" class="link" id="see" style="position:absolute;right:6px;top:50%;transform:translateY(-50%);min-height:30px;background:#fff;padding:0 8px">Afficher</button></div></div>
+    <div class="field"><label for="pw">Mot de passe${signup ? ' (8 caractères minimum)' : ''}</label><div style="position:relative"><input class="inp ${signup ? 'pwmask' : ''}" id="pw" type="${signup ? 'text' : 'password'}" autocomplete="${signup ? 'off' : 'current-password'}" autocapitalize="none" autocorrect="off" spellcheck="false" minlength="${signup ? 8 : 1}" required style="padding-right:96px!important;width:100%;box-sizing:border-box"><button type="button" class="link" id="see" style="position:absolute;right:6px;top:50%;transform:translateY(-50%);min-height:30px;background:#fff;padding:0 8px">Afficher</button></div></div>
     ${signup ? '<button type="button" class="row" id="cs" style="background:#F3F5FB;border-radius:14px"><div class="grow"><div class="t">Partager ma position avec mes amis</div><div class="s">Seuls tes amis la voient. Tu peux arrêter à tout moment.</div></div><span class="tog on" role="switch" aria-checked="true"></span></button>' : ''}
     <div id="err" class="small" style="color:#C62828;font-weight:700" hidden></div>
     <button class="btn" id="go" type="submit">${signup ? 'Créer mon compte' : 'Me connecter'}</button>
@@ -100,7 +100,9 @@ function wireAuth(el, signup) {
   let consent = true;
   $('[data-back]', el).onclick = V.welcome;
   $('#sw', el).onclick = signup ? V.login : V.signup;
-  $('#see', el).onclick = () => { const p = $('#pw', el); p.type = p.type === 'password' ? 'text' : 'password'; $('#see', el).textContent = p.type === 'password' ? 'Afficher' : 'Masquer'; };
+  $('#see', el).onclick = () => { const p = $('#pw', el); let hidden;
+    if (signup) { p.classList.toggle('pwmask'); hidden = p.classList.contains('pwmask'); } else { p.type = p.type === 'password' ? 'text' : 'password'; hidden = p.type === 'password'; }
+    $('#see', el).textContent = hidden ? 'Afficher' : 'Masquer'; p.focus(); };
   $('#cs', el) && ($('#cs', el).onclick = () => { consent = !consent; const t = $('#cs .tog', el); t.classList.toggle('on', consent); t.setAttribute('aria-checked', consent); });
   $('#f', el).onsubmit = async (e) => {
     e.preventDefault();

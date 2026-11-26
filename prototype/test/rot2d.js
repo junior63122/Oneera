@@ -1,0 +1,10 @@
+const { chromium, devices } = require('playwright');
+(async () => { const b = await chromium.launch(); const p = await (await b.newContext({ ...devices['iPhone 14'] })).newPage();
+  let n = 0, f = 0; const ok = (c, m) => { n++; if (!c) f++; console.log((c ? 'OK   ' : 'FAIL ') + m); };
+  await p.goto('http://127.0.0.1:8090/local.html?nouveau'); await p.waitForTimeout(700);
+  await p.evaluate(`quickSetup();ST.tourDone=true;ST.introSeen={bdf:1};V.map()`); await p.waitForTimeout(1500);
+  await p.evaluate(`MV.set3d(false)`); await p.waitForTimeout(600);
+  await p.evaluate(`MV.rotateBy(0.8)`); ok(await p.evaluate(`Math.abs(MV.rot) < 1e-6`), '2D : un geste de rotation ne tourne pas la carte');
+  await p.evaluate(`MV.set3d(true)`); await p.waitForTimeout(300); await p.evaluate(`MV.rotateBy(0.8)`); ok(await p.evaluate(`Math.abs(MV.rot) > 0.5`), '3D : la rotation reste possible');
+  await p.evaluate(`MV.set3d(false)`); await p.waitForTimeout(900); ok(await p.evaluate(`Math.abs(MV.rot) < 0.01`), 'retour en 2D : la carte se remet au nord automatiquement');
+  console.log(`${n - f}/${n}`); await b.close(); })();

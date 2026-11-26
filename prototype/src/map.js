@@ -16,9 +16,9 @@ class MapView {
   destroy() { this.alive = false; this.ro.disconnect(); }
   centerPct() { return this.unproj(this.vw / 2, this.vh / 2); }
   center(at, s) { this.s = Math.min(this.maxS, Math.max(this.minS, s)); const c = Math.cos(this.rot), n = Math.sin(this.rot), x = at[0] / 100 * this.W, y = at[1] / 100 * this.H; this.tx = this.vw / 2 - this.s * (x * c - y * n); this.ty = this.vh / 2 - this.s * (x * n + y * c); this.clamp(); this.apply(); }
-  rotateBy(d, cx = this.vw / 2, cy = this.vh / 2) { if (!this.canRot) return; this.rot = Math.atan2(Math.sin(this.rot + d), Math.cos(this.rot + d)); const c = Math.cos(d), n = Math.sin(d), dx = this.tx - cx, dy = this.ty - cy; this.tx = cx + dx * c - dy * n; this.ty = cy + dx * n + dy * c; this.clamp(); this.apply(); }
-  north(ms = 420) { const r0 = this.rot, t0 = performance.now(), step = now => { const k = Math.min(1, (now - t0) / ms), e = 1 - Math.pow(1 - k, 3), want = r0 * (1 - e); this.rotateBy(want - this.rot); if (k < 1 && this.alive) requestAnimationFrame(step); }; requestAnimationFrame(step); }
-  set3d(on) { this.tiltTo = on ? 1 : 0; }
+  rotateBy(d, cx = this.vw / 2, cy = this.vh / 2, force) { if (!this.canRot || (!this.tiltTo && !force)) return; /* en 2D la carte reste toujours orientée nord */ this.rot = Math.atan2(Math.sin(this.rot + d), Math.cos(this.rot + d)); const c = Math.cos(d), n = Math.sin(d), dx = this.tx - cx, dy = this.ty - cy; this.tx = cx + dx * c - dy * n; this.ty = cy + dx * n + dy * c; this.clamp(); this.apply(); }
+  north(ms = 420) { const r0 = this.rot, t0 = performance.now(), step = now => { const k = Math.min(1, (now - t0) / ms), e = 1 - Math.pow(1 - k, 3), want = r0 * (1 - e); this.rotateBy(want - this.rot, undefined, undefined, true); if (k < 1 && this.alive) requestAnimationFrame(step); }; requestAnimationFrame(step); }
+  set3d(on) { this.tiltTo = on ? 1 : 0; if (!on && Math.abs(this.rot) > .001) this.north(); }
   // inclinaison : plateau penché en arrière (rotateX) vu en perspective, origine fixe
   get phi() { return this.tilt * 0.82; } // ≈ 47° au maximum
   tiltO() { return [this.vw / 2, this.vh * .62]; }
@@ -116,7 +116,10 @@ class MapView {
         this.ov.append(el); this.markers.set(m.id, el);
       }
       if (el._html !== m.html) { el.innerHTML = m.html; el._html = m.html; el.className = 'mk ' + (m.cls || ''); }
-      el._click = m.onClick; if (el._at && (Math.abs(el._at[0] - m.at[0]) + Math.abs(el._at[1] - m.at[1])) > .015) el._walk = performance.now() + 380; el._at = [m.at[0], m.at[1]]; el.classList.toggle('walk', (el._walk || 0) > performance.now()); let [x, y, kk] = this.projS(m.at); const fo = (fan.off || fan)[m.id]; if (fo) { x += fo[0]; y += fo[1]; } el.style.left = x + 'px'; el.style.top = y + 'px'; el.style.zIndex = this.tilt ? Math.round(y) + (m.z || 1) * 10000 : (m.z || 1) * 1000 + Math.round(y);
+      el._click = m.onClick; if (el._at && (Math.abs(el._at[0] - m.at[0]) + Math.abs(el._at[1] - m.at[1])) > .015) el._walk = performance.now() + 380; el._at = [m.at[0], m.at[1]]; { const wk = (el._walk || 0) > performance.now(); if (wk !== el._wk) { el._wk = wk; el.classList.toggle('walk', wk); } } let [x, y, kk] = this.projS(m.at); const fo = (fan.off || fan)[m.id]; if (fo) { x += fo[0]; y += fo[1]; }
+      // Placement par transformation GPU (pas de recalcul de mise en page) et écriture seulement si la position a changé.
+      const rx = Math.round(x * 4) / 4, ry = Math.round(y * 4) / 4; if (rx !== el._x || ry !== el._y) { el._x = rx; el._y = ry; el.style.transform = `translate3d(${rx}px,${ry}px,0) translate(-50%,-100%)`; }
+      const zi = this.tilt ? Math.round(y) + (m.z || 1) * 10000 : (m.z || 1) * 1000 + Math.round(y); if (zi !== el._zi) { el._zi = zi; el.style.zIndex = zi; }
       const hid = !!(fan.hide && fan.hide.has(m.id)); el.style.display = hid ? 'none' : ''; if (el._halo) el._halo.style.display = hid ? 'none' : '';
       const bd = fan.badge && fan.badge[m.id]; let gb = el.querySelector('.grpb'); if (bd) { if (!gb) { gb = document.createElement('span'); gb.className = 'grpb'; el.append(gb); } gb.textContent = '+' + bd.n; el._click = () => MapView.onGroup && MapView.onGroup(bd.ids, this); el.setAttribute('aria-label', `Groupe de ${bd.ids.length} personnes`); } else if (gb) gb.remove();
       if (el._halo && m.halo) { const r = this.mPx(m.halo.m) * kk; Object.assign(el._halo.style, { left: x + 'px', top: y + 'px', width: 2 * r + 'px', height: 1.3 * r * Math.cos(this.phi) + 'px', background: m.halo.c + '2e', border: `1.5px ${m.halo.dash ? 'dashed' : 'solid'} ${m.halo.c}99` }); }
@@ -135,7 +138,7 @@ MapView.prototype.declutter = function () {
   const scr = this.host.closest('.scr') || this.host.parentElement; if (!scr) return; const H = this.host.getBoundingClientRect(), A = H.width * H.height;
   const ui = [...scr.children].filter(e => e !== this.host && !e.contains(this.host) && e.offsetParent !== null && getComputedStyle(e).position !== 'static').flatMap(e => { const r = e.getBoundingClientRect(); if (!r.width || r.width * r.height > A * .45) { return [...e.children].filter(c => c.offsetParent !== null).map(c => c.getBoundingClientRect()).filter(q => q.width && q.width * q.height < A * .45); } return [r]; });
   const hit = (a, b, m = 2) => a.left < b.right + m && a.right > b.left - m && a.top < b.bottom + m && a.bottom > b.top - m;
-  const items = []; this.markers.forEach(el => { if (el.style.display === 'none') return; const per = !el.classList.contains('pm'); el.querySelectorAll(':scope > .lbl, :scope .fr > .name, :scope .fr > .bub').forEach(l => items.push({ l, el, p: (per ? 3 + (el.dataset.id === 'p_me' ? 2 : 0) : el.classList.contains('key') ? 2 : 1) - (l.classList.contains('bub') ? .5 : 0), y: parseFloat(el.style.top) })); });
+  const items = []; this.markers.forEach(el => { if (el.style.display === 'none') return; const per = !el.classList.contains('pm'); el.querySelectorAll(':scope > .lbl, :scope .fr > .name, :scope .fr > .bub').forEach(l => items.push({ l, el, p: (per ? 3 + (el.dataset.id === 'p_me' ? 2 : 0) : el.classList.contains('key') ? 2 : 1) - (l.classList.contains('bub') ? .5 : 0), y: el._y || 0 })); });
   items.sort((a, b) => b.p - a.p || a.y - b.y); const kept = [];
   items.forEach(it => { it.l.classList.remove('lblHide'); const r = it.l.getBoundingClientRect(); const bad = ui.some(u => hit(r, u, 4)) || kept.some(k => hit(r, k)) || r.left < H.left + 2 || r.right > H.right - 2; if (bad && (it.p < 5 || ui.some(u => hit(r, u, 4)))) it.l.classList.add('lblHide'); else kept.push(r); });
 };

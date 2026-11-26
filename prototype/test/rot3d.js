@@ -8,7 +8,7 @@ const OUT = '/tmp/claude-0/-home-user-Oneera/e47acb2e-3cca-5354-8da8-dc5b80c2675
   await t(`quickSetup();ST.introSeen={bdf:1};ST.mapMode='day';V.map()`); await p.waitForTimeout(700);
   const clip = await t(`(()=>{const r=document.querySelector('#screen').getBoundingClientRect();return {x:r.left,y:r.top,width:r.width,height:r.height}})()`);
   // proj / unproj inverse
-  ok(await t(`(()=>{MV.rotateBy(.7);const a=[37,61],q=MV.proj(a),u=MV.unproj(q[0],q[1]);return Math.abs(u[0]-a[0])+Math.abs(u[1]-a[1])<1e-6})()`), 'rotation : proj/unproj inverses');
+  ok(await t(`(()=>{MV.set3d(true);MV.rotateBy(.7);const a=[37,61],q=MV.proj(a),u=MV.unproj(q[0],q[1]);return Math.abs(u[0]-a[0])+Math.abs(u[1]-a[1])<1e-6})()`), 'rotation : proj/unproj inverses');
   await p.waitForTimeout(100); ok(await t(`!document.querySelector('#cmp').hidden`), 'boussole visible quand la carte est tournée');
   await p.screenshot({ path: OUT + 'rot.png', clip });
   await p.click('#cmp'); await p.waitForTimeout(600); ok(await t(`Math.abs(MV.rot)<1e-3 && document.querySelector('#cmp').hidden`), 'boussole : retour au nord');

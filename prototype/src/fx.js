@@ -59,7 +59,7 @@ function fxSeaURL(kind) { // mer de nuages en volume (ombre, corps, reflets) : a
 }
 FX.draw = (mv, now) => {
   const cv = mv.fx; if (!cv) return;
-  const w = mv.vw, h = mv.vh, dpr = Math.min(2, devicePixelRatio || 1), px0 = mv.tiltTo || mv.tilt ? Math.round(w * .6) : 0, py0 = mv.tiltTo || mv.tilt ? Math.round(h * 1.1) : 0, cw = w + 2 * px0, ch = h + py0;
+  const w = mv.vw, h = mv.vh, dpr = 1 /* effets doux : la résolution native ×1 suffit et divise le coût de dessin par 4 sur écran Retina */, px0 = mv.tiltTo || mv.tilt ? Math.round(w * .6) : 0, py0 = mv.tiltTo || mv.tilt ? Math.round(h * 1.1) : 0, cw = w + 2 * px0, ch = h + py0;
   if (cv.width !== Math.round(cw * dpr) || cv.height !== Math.round(ch * dpr)) { cv.width = Math.round(cw * dpr); cv.height = Math.round(ch * dpr); cv.style.width = cw + 'px'; cv.style.height = ch + 'px'; cv.style.left = -px0 + 'px'; cv.style.top = -py0 + 'px'; }
   let ctx = cv.getContext('2d'); ctx.setTransform(dpr, 0, 0, dpr, px0 * dpr, py0 * dpr); ctx.clearRect(-px0, -py0, cw, ch);
   const top = mv.fx2; if (top && (top.width !== Math.round(w * dpr) || top.height !== Math.round(h * dpr))) { top.width = Math.round(w * dpr); top.height = Math.round(h * dpr); top.style.width = w + 'px'; top.style.height = h + 'px'; }
