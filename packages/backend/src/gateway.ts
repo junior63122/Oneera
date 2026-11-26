@@ -74,6 +74,8 @@ export interface GatewayOptions {
   audienceTtlMs?: number;
   /** Intervalle du battement de cœur WebSocket (ms) : une connexion qui ne répond pas à deux pings est coupée. */
   pingMs?: number;
+  /** Gestionnaire des requêtes HTTP de l'API (chemins /v1/…), servi sur le même port que le temps réel. */
+  http?: (req: IncomingMessage, res: import('node:http').ServerResponse) => void | Promise<void>;
   /** Délai avant d'annoncer « hors ligne » (ms) : évite le clignotement lors d'un changement de réseau (Wi-Fi ↔ 4G). */
   offlineGraceMs?: number;
 }
@@ -122,8 +124,9 @@ export class Gateway {
   readonly stats = { received: 0, rejected: 0, delivered: 0, flushed: 0, flushErrors: 0, presence: 0, deadConnections: 0 };
 
   constructor(private readonly opts: GatewayOptions) {
-    this.server = createServer((_req, res) => {
-      res.writeHead(200, { 'content-type': 'application/json' });
+    this.server = createServer((req, res) => {
+      if (this.opts.http && (req.url ?? '').startsWith('/v1/')) return void this.opts.http(req, res);
+      res.writeHead(200, { 'content-type': 'application/json', 'access-control-allow-origin': '*' });
       res.end(JSON.stringify({ ok: true, connections: this.connectionCount, ...this.stats }));
     });
     this.wss = new WebSocketServer({ server: this.server, maxPayload: 4096 });

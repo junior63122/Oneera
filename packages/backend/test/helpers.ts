@@ -37,7 +37,7 @@ export interface Fixture {
 export async function seed(pool: Pool): Promise<Fixture> {
   return withSystem(pool, async (c) => {
     const one = async (sql: string, args: unknown[] = []) => (await c.query(sql, args)).rows[0].id as string;
-    const tenant = await one("INSERT INTO tenants (slug, name) VALUES ('oneera', 'ONEERA') RETURNING id");
+    const tenant = await one("INSERT INTO tenants (slug, name) VALUES ('oneera', 'ONEERA') ON CONFLICT (slug) DO UPDATE SET name = EXCLUDED.name RETURNING id");
     const orgA = await one("INSERT INTO organizations (tenant_id, name) VALUES ($1, 'Club A') RETURNING id", [tenant]);
     const orgB = await one("INSERT INTO organizations (tenant_id, name) VALUES ($1, 'Festival B') RETURNING id", [tenant]);
     const mkEvent = async (org: string, name: string) => {

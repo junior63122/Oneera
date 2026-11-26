@@ -1,0 +1,238 @@
+/**
+ * API HTTP ONEERA (version de test réelle) : comptes, profil + avatar, amis par code, partage de position.
+ *
+ * - Mots de passe : scrypt avec sel aléatoire ; jamais stockés ni journalisés en clair.
+ * - Jetons : JWT HS256 (30 jours) pour l'API ; jeton court lié à un événement pour la passerelle temps réel.
+ * - Toutes les lectures/écritures « métier » passent par `withContext` → Row-Level Security de la base.
+ * - CORS ouvert (l'app charge son interface depuis un fichier local : origine « null »).
+ */
+import { randomBytes, scrypt as scryptCb, timingSafeEqual } from 'node:crypto';
+import type { IncomingMessage, ServerResponse } from 'node:http';
+import { promisify } from 'node:util';
+import { jwtVerify, SignJWT } from 'jose';
+import { Pool, withContext, withSystem } from './db';
+import { issueToken } from './gateway';
+
+const scrypt = promisify(scryptCb) as (pw: string, salt: Buffer, len: number, opts: object) => Promise<Buffer>;
+const POLICY = 'test-2026-11';
+const EMAIL = /^[^\s@]{1,64}@[^\s@]{1,190}\.[^\s@]{2,24}$/;
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+export async function hashPassword(pw: string): Promise<string> {
+  const salt = randomBytes(16);
+  const h = await scrypt(pw, salt, 32, { N: 16384, r: 8, p: 1 });
+  return `scrypt$16384$8$1$${salt.toString('base64')}$${h.toString('base64')}`;
+}
+export async function verifyPassword(pw: string, stored: string): Promise<boolean> {
+  const [alg, N, r, p, salt, hash] = stored.split('$');
+  if (alg !== 'scrypt') return false;
+  const expected = Buffer.from(hash, 'base64');
+  const h = await scrypt(pw, Buffer.from(salt, 'base64'), expected.length, { N: +N, r: +r, p: +p });
+  return h.length === expected.length && timingSafeEqual(h, expected);
+}
+
+class HttpError extends Error {
+  constructor(readonly status: number, readonly code: string, message?: string) { super(message ?? code); }
+}
+
+export interface ApiOptions { pool: Pool; secret: Uint8Array; publicWsUrl?: string }
+
+type User = { id: string; displayName: string; avatar: unknown };
+
+export function createApi(opts: ApiOptions) {
+  const { pool, secret } = opts;
+  const hits = new Map<string, { n: number; t: number }>(); // limitation de débit des routes d'authentification
+
+  const signApi = (userId: string) => new SignJWT({ typ: 'api' }).setProtectedHeader({ alg: 'HS256' }).setSubject(userId).setIssuedAt().setExpirationTime('30d').sign(secret);
+  async function auth(req: IncomingMessage): Promise<string> {
+    const h = req.headers.authorization ?? '';
+    if (!h.startsWith('Bearer ')) throw new HttpError(401, 'unauthorized');
+    try {
+      const { payload } = await jwtVerify(h.slice(7), secret, { algorithms: ['HS256'] });
+      if (payload.typ !== 'api' || typeof payload.sub !== 'string' || !UUID.test(payload.sub)) throw new Error();
+      // Compte supprimé entre-temps → jeton refusé.
+      const ok = (await pool.query('SELECT 1 FROM users WHERE id = $1 AND deleted_at IS NULL', [payload.sub])).rowCount;
+      if (!ok) throw new Error();
+      return payload.sub;
+    } catch {
+      throw new HttpError(401, 'unauthorized');
+    }
+  }
+  function limit(req: IncomingMessage, max = 10) {
+    const ip = (req.headers['x-forwarded-for'] as string | undefined)?.split(',')[0].trim() || req.socket.remoteAddress || '?';
+    const now = Date.now(), e = hits.get(ip);
+    if (!e || now - e.t > 60_000) { hits.set(ip, { n: 1, t: now }); return; }
+    if (++e.n > max) throw new HttpError(429, 'too_many_requests', 'Trop de tentatives, réessaie dans une minute.');
+  }
+  async function body(req: IncomingMessage): Promise<Record<string, unknown>> {
+    let size = 0; const chunks: Buffer[] = [];
+    for await (const c of req) { size += (c as Buffer).length; if (size > 64_000) throw new HttpError(413, 'too_large'); chunks.push(c as Buffer); }
+    if (!chunks.length) return {};
+    try { const v = JSON.parse(Buffer.concat(chunks).toString('utf8')); return v && typeof v === 'object' ? v : {}; } catch { throw new HttpError(400, 'invalid_json'); }
+  }
+  const me = (userId: string) => withContext(pool, { userId }, async (c) => {
+    const r = (await c.query('SELECT id, display_name, avatar FROM users WHERE id = $1', [userId])).rows[0];
+    const consent = (await c.query("SELECT 1 FROM consents WHERE user_id = $1 AND purpose = 'location_friends' AND withdrawn_at IS NULL", [userId])).rowCount;
+    const share = (await c.query('SELECT expires_at FROM location_shares WHERE owner_id = $1 AND revoked_at IS NULL AND now() < expires_at ORDER BY expires_at DESC LIMIT 1', [userId])).rows[0];
+    return { id: r.id, displayName: r.display_name, avatar: r.avatar, locationConsent: !!consent, sharingUntil: share?.expires_at ?? null };
+  });
+  const cleanName = (v: unknown) => { const s = typeof v === 'string' ? v.trim().replace(/\s+/g, ' ') : ''; if (s.length < 1 || s.length > 40) throw new HttpError(400, 'invalid_name', 'Le prénom doit faire entre 1 et 40 caractères.'); return s; };
+  const cleanAvatar = (v: unknown) => { if (v === undefined) return undefined; const s = JSON.stringify(v ?? {}); if (s.length > 4000) throw new HttpError(400, 'invalid_avatar'); return s; };
+
+  const routes: Record<string, (req: IncomingMessage, m: RegExpMatchArray) => Promise<unknown>> = {
+    'GET /v1/health': async () => ({ ok: true }),
+
+    'POST /v1/auth/signup': async (req) => {
+      limit(req);
+      const b = await body(req);
+      const email = String(b.email ?? '').trim().toLowerCase();
+      const password = String(b.password ?? '');
+      if (!EMAIL.test(email)) throw new HttpError(400, 'invalid_email', 'Adresse e-mail invalide.');
+      if (password.length < 8 || password.length > 200) throw new HttpError(400, 'weak_password', 'Le mot de passe doit faire au moins 8 caractères.');
+      const name = cleanName(b.displayName);
+      const avatar = cleanAvatar(b.avatar) ?? '{}';
+      const hash = await hashPassword(password);
+      const userId = await withSystem(pool, async (c) => {
+        if ((await c.query('SELECT 1 FROM user_credentials WHERE lower(email) = $1', [email])).rowCount) throw new HttpError(409, 'email_taken', 'Un compte existe déjà avec cette adresse.');
+        const t = (await c.query("SELECT id FROM tenants WHERE slug = 'oneera'")).rows[0].id;
+        const id = (await c.query("INSERT INTO users (tenant_id, display_name, avatar, is_guest, auth_provider, auth_subject) VALUES ($1, $2, $3::jsonb, false, 'email', $4) RETURNING id", [t, name, avatar, email])).rows[0].id as string;
+        await c.query('INSERT INTO user_credentials (user_id, email, password_hash) VALUES ($1, $2, $3)', [id, email, hash]);
+        if (b.locationConsent === true) await c.query("INSERT INTO consents (user_id, purpose, policy_version) VALUES ($1, 'location_friends', $2)", [id, POLICY]);
+        return id;
+      });
+      return { token: await signApi(userId), user: await me(userId) };
+    },
+
+    'POST /v1/auth/login': async (req) => {
+      limit(req);
+      const b = await body(req);
+      const email = String(b.email ?? '').trim().toLowerCase();
+      const row = await withSystem(pool, async (c) => (await c.query('SELECT k.user_id, k.password_hash FROM user_credentials k JOIN users u ON u.id = k.user_id WHERE lower(k.email) = $1 AND u.deleted_at IS NULL', [email])).rows[0]);
+      // Même réponse que l'adresse existe ou non (pas d'énumération des comptes).
+      if (!row || !(await verifyPassword(String(b.password ?? ''), row.password_hash))) throw new HttpError(401, 'bad_credentials', 'E-mail ou mot de passe incorrect.');
+      await withSystem(pool, (c) => c.query('UPDATE user_credentials SET last_login_at = now() WHERE user_id = $1', [row.user_id]));
+      return { token: await signApi(row.user_id), user: await me(row.user_id) };
+    },
+
+    'GET /v1/me': async (req) => me(await auth(req)),
+
+    'PATCH /v1/me': async (req) => {
+      const u = await auth(req); const b = await body(req);
+      await withContext(pool, { userId: u }, async (c) => {
+        if (b.displayName !== undefined) await c.query('UPDATE users SET display_name = $2 WHERE id = $1', [u, cleanName(b.displayName)]);
+        const av = cleanAvatar(b.avatar);
+        if (av !== undefined) await c.query('UPDATE users SET avatar = $2::jsonb WHERE id = $1', [u, av]);
+      });
+      return me(u);
+    },
+
+    'DELETE /v1/me': async (req) => {
+      const u = await auth(req);
+      await withContext(pool, { userId: u }, (c) => c.query('SELECT app.delete_my_account()'));
+      return { deleted: true };
+    },
+
+    'POST /v1/consents': async (req) => {
+      const u = await auth(req); const b = await body(req);
+      if (b.purpose !== 'location_friends') throw new HttpError(400, 'invalid_purpose');
+      await withContext(pool, { userId: u }, async (c) => {
+        if (b.granted === true) {
+          const has = (await c.query("SELECT 1 FROM consents WHERE user_id = $1 AND purpose = 'location_friends' AND withdrawn_at IS NULL", [u])).rowCount;
+          if (!has) await c.query("INSERT INTO consents (user_id, purpose, policy_version) VALUES ($1, 'location_friends', $2)", [u, POLICY]);
+        } else {
+          await c.query("UPDATE consents SET withdrawn_at = now() WHERE user_id = $1 AND purpose = 'location_friends' AND withdrawn_at IS NULL", [u]);
+        }
+      });
+      return me(u);
+    },
+
+    'POST /v1/invites': async (req) => {
+      const u = await auth(req);
+      const code = await withContext(pool, { userId: u }, async (c) => (await c.query('SELECT app.new_invite_code() AS code')).rows[0].code as string);
+      return { code, expiresInDays: 7 };
+    },
+
+    'POST /v1/invites/accept': async (req) => {
+      const u = await auth(req); const b = await body(req);
+      const code = String(b.code ?? '').trim().toUpperCase().replace(/[^A-Z0-9]/g, '');
+      if (code.length !== 6) throw new HttpError(400, 'invalid_code', 'Le code fait 6 caractères.');
+      try {
+        const inviter = await withContext(pool, { userId: u }, async (c) => (await c.query('SELECT app.accept_invite($1) AS id', [code])).rows[0].id as string);
+        const friend = await withContext(pool, { userId: u }, async (c) => (await c.query('SELECT * FROM app.my_friends() WHERE user_id = $1', [inviter])).rows[0]);
+        return { friend: friendOut(friend) };
+      } catch (e) {
+        if ((e as { code?: string }).code === '22023') throw new HttpError(400, 'invalid_code', 'Code invalide, expiré ou déjà utilisé.');
+        throw e;
+      }
+    },
+
+    'GET /v1/friends': async (req) => {
+      const u = await auth(req);
+      const rows = await withContext(pool, { userId: u }, async (c) => (await c.query('SELECT * FROM app.my_friends() ORDER BY since')).rows);
+      return { friends: rows.map(friendOut) };
+    },
+
+    'DELETE /v1/friends/(?<id>[0-9a-f-]{36})': async (req, m) => {
+      const u = await auth(req); const id = m.groups!.id;
+      await withContext(pool, { userId: u }, (c) => c.query('DELETE FROM friendships WHERE user_a = least($1::uuid, $2::uuid) AND user_b = greatest($1::uuid, $2::uuid)', [u, id]));
+      return { removed: true };
+    },
+
+    'POST /v1/share': async (req) => {
+      const u = await auth(req); const b = await body(req);
+      const hours = Math.min(24, Math.max(0.25, Number(b.hours ?? 12) || 12));
+      await withContext(pool, { userId: u }, async (c) => {
+        await c.query('UPDATE location_shares SET revoked_at = now() WHERE owner_id = $1 AND revoked_at IS NULL', [u]);
+        await c.query("INSERT INTO location_shares (owner_id, expires_at) VALUES ($1, now() + make_interval(secs => $2))", [u, Math.round(hours * 3600)]);
+      });
+      return me(u);
+    },
+
+    'DELETE /v1/share': async (req) => {
+      const u = await auth(req);
+      await withContext(pool, { userId: u }, (c) => c.query('UPDATE location_shares SET revoked_at = now() WHERE owner_id = $1 AND revoked_at IS NULL', [u]));
+      return me(u);
+    },
+
+    'GET /v1/events/(?<code>[A-Za-z0-9-]{3,40})': async (_req, m) => {
+      const ev = await withContext(pool, {}, async (c) => (await c.query('SELECT event_id, name, map_version FROM app.event_by_code($1)', [m.groups!.code])).rows[0]);
+      if (!ev) throw new HttpError(404, 'event_not_found', 'Événement introuvable.');
+      return { id: ev.event_id, name: ev.name, mapVersion: ev.map_version };
+    },
+
+    'POST /v1/realtime-token': async (req) => {
+      const u = await auth(req); const b = await body(req);
+      const eventId = String(b.eventId ?? '');
+      if (!UUID.test(eventId)) throw new HttpError(400, 'invalid_event');
+      const ok = (await pool.query('SELECT 1 FROM events WHERE id = $1', [eventId])).rowCount;
+      if (!ok) throw new HttpError(404, 'event_not_found');
+      return { token: await issueToken(secret, u, eventId, '12h'), url: opts.publicWsUrl ?? null };
+    },
+  };
+  const compiled = Object.entries(routes).map(([k, fn]) => { const [method, path] = k.split(' '); return { method, re: new RegExp(`^${path}$`), fn }; });
+
+  return async function handle(req: IncomingMessage, res: ServerResponse): Promise<void> {
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Headers', 'authorization, content-type');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PATCH, DELETE, OPTIONS');
+    res.setHeader('Cache-Control', 'no-store');
+    if (req.method === 'OPTIONS') { res.writeHead(204); res.end(); return; }
+    const path = (req.url ?? '/').split('?')[0];
+    const route = compiled.find((r) => r.method === req.method && r.re.test(path));
+    try {
+      if (!route) throw new HttpError(404, 'not_found');
+      const out = await route.fn(req, path.match(route.re)!);
+      res.writeHead(200, { 'content-type': 'application/json; charset=utf-8' });
+      res.end(JSON.stringify(out));
+    } catch (e) {
+      const he = e instanceof HttpError ? e : null;
+      if (!he) console.error('[api]', req.method, path, (e as Error).message);
+      res.writeHead(he?.status ?? 500, { 'content-type': 'application/json; charset=utf-8' });
+      res.end(JSON.stringify({ error: he?.code ?? 'server_error', message: he?.message ?? 'Erreur serveur, réessaie.' }));
+    }
+  };
+}
+
+function friendOut(r: { user_id: string; display_name: string; avatar: unknown; status: string; requested_by_me: boolean }): User & { status: string } {
+  return { id: r.user_id, displayName: r.display_name, avatar: r.avatar, status: r.status };
+}
