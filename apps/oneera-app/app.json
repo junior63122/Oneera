@@ -2,7 +2,7 @@
   "expo": {
     "name": "ONEERA",
     "slug": "oneera",
-    "version": "0.1.0",
+    "version": "2026.11.26",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "automatic",
@@ -16,8 +16,8 @@
       "web/**/*"
     ],
     "ios": {
-      "bundleIdentifier": "fr.oneera.app",
-      "buildNumber": "1",
+      "bundleIdentifier": "com.mapping.festival",
+      "buildNumber": "100",
       "supportsTablet": false,
       "config": {
         "usesNonExemptEncryption": false
