@@ -132,7 +132,7 @@ img[src*="a/ic/"]{object-fit:contain;aspect-ratio:1/1;height:auto}
 /* bottom nav (V1 style) */
 .nav{position:absolute;left:12px;right:12px;bottom:22px;display:flex;align-items:center;gap:8px;z-index:40}
 .nav .rb{width:52px;height:52px;border-radius:26px}
-.nav .bar{flex:1;height:58px;border-radius:29px;background:rgba(255,255,255,.95);backdrop-filter:blur(14px);display:flex;align-items:center;justify-content:space-around;box-shadow:0 6px 24px rgba(20,30,60,.14)}
+.nav .bar{flex:1;height:58px;border-radius:29px;background:rgba(255,255,255,.95);display:flex;align-items:center;justify-content:space-around;box-shadow:0 6px 24px rgba(20,30,60,.14)}
 .nav .bar button{display:flex;flex-direction:column;align-items:center;gap:1px;font-size:11px;font-weight:700;color:#6B7084;min-width:54px;min-height:48px;justify-content:center;position:relative}
 .nav .bar button svg{width:22px;height:22px}
 .nav .bar button.on{color:var(--pri)}
@@ -153,7 +153,7 @@ img[src*="a/ic/"]{object-fit:contain;aspect-ratio:1/1;height:auto}
 
 /* iOS system alert */
 .sysBack{position:absolute;inset:0;background:rgba(0,0,0,.32);z-index:800;display:flex;align-items:center;justify-content:center;animation:fade .15s}
-.sys{width:272px;border-radius:14px;background:rgba(242,242,246,.97);backdrop-filter:blur(20px);text-align:center;overflow:hidden;animation:pop .2s;color:#000}
+.sys{width:272px;border-radius:14px;background:rgba(242,242,246,.97);text-align:center;overflow:hidden;animation:pop .2s;color:#000}
 .sys .st{padding:18px 16px 14px;display:flex;flex-direction:column;gap:4px}
 .sys .st b{font-size:17px;font-weight:600;line-height:1.25}
 .sys .st span{font-size:13px;line-height:1.3}
@@ -163,7 +163,7 @@ img[src*="a/ic/"]{object-fit:contain;aspect-ratio:1/1;height:auto}
 .sys .mapPrev::after{content:"";position:absolute;left:50%;top:50%;width:14px;height:14px;margin:-7px;border-radius:7px;background:#0A7AFF;border:3px solid #fff;box-shadow:0 0 0 10px rgba(10,122,255,.2)}
 .toast{position:absolute;left:14px;right:14px;bottom:96px;z-index:900;background:rgba(28,31,42,.94);color:#fff;border-radius:16px;padding:12px 14px;display:flex;gap:10px;align-items:center;font-size:14px;font-weight:600;animation:pop .2s;box-shadow:0 10px 30px rgba(0,0,0,.25)}
 .toast img{width:34px;height:34px;border-radius:17px;object-fit:cover}
-.push{position:absolute;left:10px;right:10px;top:52px;z-index:900;background:rgba(245,245,248,.96);backdrop-filter:blur(20px);color:#000;border-radius:20px;padding:12px;display:flex;gap:10px;align-items:flex-start;animation:pop .25s;box-shadow:0 10px 30px rgba(0,0,0,.18);text-align:left;width:auto}
+.push{position:absolute;left:10px;right:10px;top:52px;z-index:900;background:rgba(245,245,248,.96);color:#000;border-radius:20px;padding:12px;display:flex;gap:10px;align-items:flex-start;animation:pop .25s;box-shadow:0 10px 30px rgba(0,0,0,.18);text-align:left;width:auto}
 .push .pi{width:38px;height:38px;border-radius:9px;background:#fff;flex-shrink:0;display:flex;align-items:center;justify-content:center;overflow:hidden}
 .push .pi img{width:30px}
 .push b{font-size:14px}.push span{font-size:13.5px;line-height:1.3}
@@ -183,7 +183,7 @@ img[src*="a/ic/"]{object-fit:contain;aspect-ratio:1/1;height:auto}
 .map .world img.base{display:block;user-select:none;-webkit-user-drag:none;pointer-events:none}
 .map .ov{position:absolute;inset:0;pointer-events:none}
 .map svg.ovs{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
-.mk{position:absolute;pointer-events:auto;transform:translate(-50%,-100%);display:flex;flex-direction:column;align-items:center;cursor:pointer}
+.mk{position:absolute;left:0;top:0;pointer-events:auto;transform:translate(-50%,-100%);will-change:transform;contain:layout style;display:flex;flex-direction:column;align-items:center;cursor:pointer}
 .mk .poi{width:46px;height:46px;border-radius:23px;background:#fff;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 12px rgba(20,30,60,.25);border:2px solid #fff}
 .mk .poi img{width:36px;height:36px}
 .mk .lbl{margin-top:3px;background:#fff;border-radius:999px;padding:2px 8px;font-size:12px;font-weight:750;white-space:nowrap;box-shadow:0 2px 6px rgba(20,30,60,.18);color:var(--ink)}
@@ -203,7 +203,7 @@ img[src*="a/ic/"]{object-fit:contain;aspect-ratio:1/1;height:auto}
 @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(229,72,77,.6)}100%{box-shadow:0 0 0 18px rgba(229,72,77,0)}}
 .halo{position:absolute;border-radius:50%;transform:translate(-50%,-50%);pointer-events:none}
 .mapTop{position:absolute;left:0;right:0;top:47px;z-index:20;display:flex;flex-direction:column;gap:8px;padding:4px 12px}
-.evbar{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.95);backdrop-filter:blur(12px);border-radius:18px;padding:6px 6px 6px 8px;box-shadow:0 4px 16px rgba(20,30,60,.12)}
+.evbar{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.95);border-radius:18px;padding:6px 6px 6px 8px;box-shadow:0 4px 16px rgba(20,30,60,.12)}
 .evbar img.lg{width:34px;height:34px;border-radius:10px}
 .ctrls{position:absolute;right:12px;top:186px;z-index:20;display:flex;flex-direction:column;gap:10px}
 .ctrls .stack{background:rgba(255,255,255,.95);border-radius:24px;display:flex;flex-direction:column;box-shadow:0 4px 16px rgba(20,30,60,.14);overflow:hidden}
@@ -211,7 +211,7 @@ img[src*="a/ic/"]{object-fit:contain;aspect-ratio:1/1;height:auto}
 .ctrls .stack button svg{width:21px;height:21px}
 .ctrls .rb{width:48px;height:48px;border-radius:24px}
 .livebar{position:absolute;left:12px;right:12px;bottom:92px;z-index:20;display:flex;flex-direction:column;gap:8px}
-.mini{background:rgba(255,255,255,.96);backdrop-filter:blur(12px);border-radius:18px;padding:10px 12px;display:flex;align-items:center;gap:10px;box-shadow:0 4px 16px rgba(20,30,60,.14);text-align:left;width:100%}
+.mini{background:rgba(255,255,255,.96);border-radius:18px;padding:10px 12px;display:flex;align-items:center;gap:10px;box-shadow:0 4px 16px rgba(20,30,60,.14);text-align:left;width:100%}
 .banner{position:absolute;left:12px;right:12px;z-index:25;border-radius:14px;padding:9px 12px;font-size:13px;font-weight:650;display:flex;gap:8px;align-items:center}
 
 /* avatar editor */
@@ -219,7 +219,7 @@ img[src*="a/ic/"]{object-fit:contain;aspect-ratio:1/1;height:auto}
 .cloud{position:absolute;border-radius:50%;background:radial-gradient(closest-side,rgba(255,255,255,.95),rgba(255,255,255,0));pointer-events:none}
 .pedestal{position:absolute;left:50%;width:240px;height:64px;margin-left:-120px;border-radius:50%;background:radial-gradient(ellipse at 50% 38%,#FBD3EA 0%,#F4B6DD 62%,#E792C6 100%);box-shadow:0 10px 0 #E39BC8,0 0 0 6px #fff inset}
 .avimg{position:relative;z-index:2;transition:transform .45s cubic-bezier(.2,.9,.3,1)}
-.avpanel{background:rgba(255,255,255,.86);backdrop-filter:blur(16px);border-radius:28px 28px 0 0;padding:10px 16px 26px;display:flex;flex-direction:column;gap:12px;box-shadow:0 -6px 24px rgba(20,30,60,.1);position:relative;z-index:5}
+.avpanel{background:rgba(255,255,255,.97);border-radius:28px 28px 0 0;padding:10px 16px 26px;display:flex;flex-direction:column;gap:12px;box-shadow:0 -6px 24px rgba(20,30,60,.1);position:relative;z-index:5}
 .subtabs{display:flex;justify-content:center;gap:14px}
 .subtabs button{width:50px;height:50px;border-radius:25px;background:#fff;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(20,30,60,.1)}
 .subtabs button.on{background:var(--pri);color:#fff}
@@ -398,7 +398,7 @@ img[src*="a/ic/"]{object-fit:contain;aspect-ratio:1/1;height:auto}
 #screen.kiosk .mapTop,#screen.kiosk .ctrls,#screen.kiosk .livebar,#screen.kiosk .nav,#screen.kiosk .map .ov,#screen.kiosk .map svg.ovs,#screen.kiosk .sb,#screen.kiosk #fab-panel{display:none!important}
 .kioskExit{position:absolute;left:50%;bottom:34px;transform:translateX(-50%);z-index:60;background:rgba(28,31,42,.86);color:#fff;border-radius:999px;padding:10px 18px;font-weight:800;font-size:14px;opacity:0;pointer-events:none;transition:opacity .25s}
 .kioskExit.on{opacity:1;pointer-events:auto}
-.sheet{background:rgba(255,255,255,.94);-webkit-backdrop-filter:blur(18px) saturate(1.4);backdrop-filter:blur(18px) saturate(1.4)}
+.sheet{background:rgba(255,255,255,.94);}
 
 /* v5 : les marqueurs (z-index de profondeur en 3D) restent confinés à la carte */
 .map{isolation:isolate}.map .ov{isolation:isolate}
@@ -416,7 +416,7 @@ img[src*="a/ic/"]{object-fit:contain;aspect-ratio:1/1;height:auto}
 
 /* v6 : avatars haute qualité debout sur la carte */
 .mk .fr.fullb{align-items:center}
-.mk .fr.fullb .bodyimg{height:calc(74px * var(--pk,1));width:auto;display:block;filter:drop-shadow(0 3px 4px rgba(20,20,50,.35));transform-origin:50% 100%;animation:breathe 3.4s ease-in-out infinite;position:relative;z-index:1}
+.mk .fr.fullb .bodyimg{height:calc(74px * var(--pk,1));width:auto;display:block;transform-origin:50% 100%;will-change:transform;animation:breathe 3.4s ease-in-out infinite;position:relative;z-index:1}
 .mk .fr.fullb .foot{width:calc(38px * var(--pk,1));height:calc(13px * var(--pk,1));margin-top:calc(-7px * var(--pk,1));border-radius:50%;background:radial-gradient(closest-side,color-mix(in srgb,var(--c) 45%,transparent),transparent);box-shadow:inset 0 0 0 2.5px var(--c);position:relative;z-index:0}
 .mk.me .fr.fullb .foot{box-shadow:inset 0 0 0 3px var(--c),0 0 12px 2px rgba(79,107,245,.55)}
 .mk.me .fr.fullb .bodyimg{height:calc(82px * var(--pk,1))}
@@ -426,7 +426,7 @@ img[src*="a/ic/"]{object-fit:contain;aspect-ratio:1/1;height:auto}
 @media (prefers-reduced-motion: reduce){.mk .fr.fullb .bodyimg{animation:none}}
 .avstage.pick{position:relative;display:flex;justify-content:center}
 .avstage.pick .ped{position:absolute;bottom:10px;left:50%;width:190px;height:40px;transform:translateX(-50%);border-radius:50%;background:radial-gradient(closest-side,#F4A9CF,#E98FBF 70%,transparent);z-index:1}
-.avstage.pick #big{height:290px;position:relative;z-index:2;margin-bottom:22px;filter:drop-shadow(0 10px 14px rgba(80,40,120,.25))}
+.avstage.pick #big{height:290px;position:relative;z-index:2;margin-bottom:22px;filter:none}
 .avstage.pick #big.pop{animation:pop .35s ease-out}
 @keyframes pop{0%{transform:scale(.92);opacity:.5}100%{transform:none;opacity:1}}
 .chargrid{display:grid;grid-template-columns:repeat(7,1fr);gap:8px}
@@ -443,7 +443,7 @@ img[src*="a/ic/"]{object-fit:contain;aspect-ratio:1/1;height:auto}
 .stTop .rb{width:42px;height:42px;background:rgba(255,255,255,.85)}
 .stStage{position:relative;flex:1;min-height:250px;display:flex;align-items:flex-end;justify-content:center;overflow:hidden}
 .stPed{position:absolute;bottom:14px;left:50%;width:200px;height:44px;transform:translateX(-50%);border-radius:50%;background:radial-gradient(closest-side,#F6B6D6,#E98FBF 72%,transparent);box-shadow:0 10px 30px rgba(233,143,191,.45);z-index:1}
-#big{position:relative;z-index:2;height:calc(100% - 22px);max-height:340px;margin-bottom:30px;filter:drop-shadow(0 12px 16px rgba(80,40,120,.22));animation:sway 5s ease-in-out infinite;transform-origin:50% 100%}
+#big{position:relative;z-index:2;height:calc(100% - 22px);max-height:340px;margin-bottom:30px;filter:none;animation:sway 5s ease-in-out infinite;transform-origin:50% 100%}
 #big.pop{animation:pop .35s ease-out,sway 5s ease-in-out .35s infinite}
 @keyframes sway{50%{transform:rotate(-.8deg) translateY(-2px)}}
 .stMapBtn{position:absolute;right:12px;bottom:12px;z-index:4;background:rgba(28,31,42,.8);color:#fff;border-radius:999px;padding:8px 14px;font-weight:800;font-size:13px}
@@ -451,7 +451,7 @@ img[src*="a/ic/"]{object-fit:contain;aspect-ratio:1/1;height:auto}
 .stMapBg{position:absolute;inset:0;width:100%;height:100%;object-fit:none;transform:scale(1)}
 .stMapMe{position:absolute;left:50%;top:55%;transform:translate(-50%,-100%);display:flex;flex-direction:column;align-items:center}
 .stMapMe .name{background:#4F6BF5;color:#fff;border-radius:999px;padding:3px 9px;font-size:11.5px;font-weight:800;margin-bottom:2px}
-.stMapMe img{height:84px;filter:drop-shadow(0 3px 4px rgba(20,20,50,.35))}
+.stMapMe img{height:84px;filter:none}
 .stMapMe i{width:40px;height:13px;margin-top:-7px;border-radius:50%;box-shadow:inset 0 0 0 3px #4F6BF5,0 0 12px 2px rgba(79,107,245,.55)}
 .stPanel{background:rgba(255,255,255,.96);border-radius:26px 26px 0 0;padding:14px 16px calc(16px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;gap:10px;box-shadow:0 -6px 24px rgba(40,40,90,.1)}
 .stTabs{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none}.stTabs::-webkit-scrollbar{display:none}
@@ -471,7 +471,7 @@ img[src*="a/ic/"]{object-fit:contain;aspect-ratio:1/1;height:auto}
 #screen.night .stPanel{background:rgba(30,34,48,.96);color:#ECEEF6}#screen.night .stTabs button{background:#2A2F40;color:#C9CDE0}#screen.night .stStyles button{background:#2A2F40;box-shadow:none}
 
 /* v7 : studio du nouveau créateur */
-.av2big{position:relative;z-index:2;height:calc(100% - 10px);max-height:350px;aspect-ratio:160/404;margin-bottom:6px;animation:sway 5s ease-in-out infinite;transform-origin:50% 100%;filter:drop-shadow(0 10px 14px rgba(80,40,120,.18))}
+.av2big{position:relative;z-index:2;height:calc(100% - 10px);max-height:350px;aspect-ratio:160/404;margin-bottom:6px;animation:sway 5s ease-in-out infinite;transform-origin:50% 100%;filter:none}
 .av2big.pop{animation:pop .35s ease-out,sway 5s ease-in-out .35s infinite}
 .stBody{max-height:260px;overflow-y:auto;scrollbar-width:none;display:flex;flex-direction:column;gap:8px}.stBody::-webkit-scrollbar{display:none}
 .stLbl{font-size:12px;font-weight:800;color:var(--ink3);text-transform:uppercase;letter-spacing:.05em;margin-top:2px}
@@ -501,6 +501,17 @@ img[src*="a/ic/"]{object-fit:contain;aspect-ratio:1/1;height:auto}
 .stPed{transition:opacity .3s}
 /* version réelle : pastille du mode test sur la carte */
 .realPill{position:absolute;left:50%;transform:translateX(-50%);bottom:calc(152px + env(safe-area-inset-bottom,0px));z-index:30;background:rgba(20,22,40,.86);color:#fff;border-radius:16px;padding:7px 12px;font:700 12px/1.2 var(--f);box-shadow:0 6px 16px rgba(0,0,0,.25);white-space:nowrap;max-width:92%;overflow:hidden;text-overflow:ellipsis}
+
+/* clavier ouvert : la navigation du bas se masque, les champs de saisie ne dépassent jamais */
+#screen.kbopen .nav{display:none}
+#screen.kbopen .status{display:none}
+input,textarea{font-size:16px} /* < 16 px : iOS zoome la page à la saisie */
+.inp{max-width:100%;box-sizing:border-box}
+/* mot de passe à la création : points masqués sans déclencher la surcouche « mot de passe fort » d'iOS */
+.pwmask{-webkit-text-security:disc}
+#screen input,#screen textarea{font-size:16px!important}
+.ctc{background:#F3F5FB;gap:10px}.ctcIco{width:46px;height:46px;border-radius:23px;background:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+details.phone{background:#F7F7F9;border-radius:14px;padding:12px 14px}details.phone summary{font-weight:700;font-size:14px;cursor:pointer}
 
 </style></head><body><script>
 // ===== Données de démonstration (fictives) =====
@@ -996,9 +1007,9 @@ class MapView {
   destroy() { this.alive = false; this.ro.disconnect(); }
   centerPct() { return this.unproj(this.vw / 2, this.vh / 2); }
   center(at, s) { this.s = Math.min(this.maxS, Math.max(this.minS, s)); const c = Math.cos(this.rot), n = Math.sin(this.rot), x = at[0] / 100 * this.W, y = at[1] / 100 * this.H; this.tx = this.vw / 2 - this.s * (x * c - y * n); this.ty = this.vh / 2 - this.s * (x * n + y * c); this.clamp(); this.apply(); }
-  rotateBy(d, cx = this.vw / 2, cy = this.vh / 2) { if (!this.canRot) return; this.rot = Math.atan2(Math.sin(this.rot + d), Math.cos(this.rot + d)); const c = Math.cos(d), n = Math.sin(d), dx = this.tx - cx, dy = this.ty - cy; this.tx = cx + dx * c - dy * n; this.ty = cy + dx * n + dy * c; this.clamp(); this.apply(); }
-  north(ms = 420) { const r0 = this.rot, t0 = performance.now(), step = now => { const k = Math.min(1, (now - t0) / ms), e = 1 - Math.pow(1 - k, 3), want = r0 * (1 - e); this.rotateBy(want - this.rot); if (k < 1 && this.alive) requestAnimationFrame(step); }; requestAnimationFrame(step); }
-  set3d(on) { this.tiltTo = on ? 1 : 0; }
+  rotateBy(d, cx = this.vw / 2, cy = this.vh / 2, force) { if (!this.canRot || (!this.tiltTo && !force)) return; /* en 2D la carte reste toujours orientée nord */ this.rot = Math.atan2(Math.sin(this.rot + d), Math.cos(this.rot + d)); const c = Math.cos(d), n = Math.sin(d), dx = this.tx - cx, dy = this.ty - cy; this.tx = cx + dx * c - dy * n; this.ty = cy + dx * n + dy * c; this.clamp(); this.apply(); }
+  north(ms = 420) { const r0 = this.rot, t0 = performance.now(), step = now => { const k = Math.min(1, (now - t0) / ms), e = 1 - Math.pow(1 - k, 3), want = r0 * (1 - e); this.rotateBy(want - this.rot, undefined, undefined, true); if (k < 1 && this.alive) requestAnimationFrame(step); }; requestAnimationFrame(step); }
+  set3d(on) { this.tiltTo = on ? 1 : 0; if (!on && Math.abs(this.rot) > .001) this.north(); }
   // inclinaison : plateau penché en arrière (rotateX) vu en perspective, origine fixe
   get phi() { return this.tilt * 0.82; } // ≈ 47° au maximum
   tiltO() { return [this.vw / 2, this.vh * .62]; }
@@ -1096,7 +1107,10 @@ class MapView {
         this.ov.append(el); this.markers.set(m.id, el);
       }
       if (el._html !== m.html) { el.innerHTML = m.html; el._html = m.html; el.className = 'mk ' + (m.cls || ''); }
-      el._click = m.onClick; if (el._at && (Math.abs(el._at[0] - m.at[0]) + Math.abs(el._at[1] - m.at[1])) > .015) el._walk = performance.now() + 380; el._at = [m.at[0], m.at[1]]; el.classList.toggle('walk', (el._walk || 0) > performance.now()); let [x, y, kk] = this.projS(m.at); const fo = (fan.off || fan)[m.id]; if (fo) { x += fo[0]; y += fo[1]; } el.style.left = x + 'px'; el.style.top = y + 'px'; el.style.zIndex = this.tilt ? Math.round(y) + (m.z || 1) * 10000 : (m.z || 1) * 1000 + Math.round(y);
+      el._click = m.onClick; if (el._at && (Math.abs(el._at[0] - m.at[0]) + Math.abs(el._at[1] - m.at[1])) > .015) el._walk = performance.now() + 380; el._at = [m.at[0], m.at[1]]; { const wk = (el._walk || 0) > performance.now(); if (wk !== el._wk) { el._wk = wk; el.classList.toggle('walk', wk); } } let [x, y, kk] = this.projS(m.at); const fo = (fan.off || fan)[m.id]; if (fo) { x += fo[0]; y += fo[1]; }
+      // Placement par transformation GPU (pas de recalcul de mise en page) et écriture seulement si la position a changé.
+      const rx = Math.round(x * 4) / 4, ry = Math.round(y * 4) / 4; if (rx !== el._x || ry !== el._y) { el._x = rx; el._y = ry; el.style.transform = `translate3d(${rx}px,${ry}px,0) translate(-50%,-100%)`; }
+      const zi = this.tilt ? Math.round(y) + (m.z || 1) * 10000 : (m.z || 1) * 1000 + Math.round(y); if (zi !== el._zi) { el._zi = zi; el.style.zIndex = zi; }
       const hid = !!(fan.hide && fan.hide.has(m.id)); el.style.display = hid ? 'none' : ''; if (el._halo) el._halo.style.display = hid ? 'none' : '';
       const bd = fan.badge && fan.badge[m.id]; let gb = el.querySelector('.grpb'); if (bd) { if (!gb) { gb = document.createElement('span'); gb.className = 'grpb'; el.append(gb); } gb.textContent = '+' + bd.n; el._click = () => MapView.onGroup && MapView.onGroup(bd.ids, this); el.setAttribute('aria-label', `Groupe de ${bd.ids.length} personnes`); } else if (gb) gb.remove();
       if (el._halo && m.halo) { const r = this.mPx(m.halo.m) * kk; Object.assign(el._halo.style, { left: x + 'px', top: y + 'px', width: 2 * r + 'px', height: 1.3 * r * Math.cos(this.phi) + 'px', background: m.halo.c + '2e', border: `1.5px ${m.halo.dash ? 'dashed' : 'solid'} ${m.halo.c}99` }); }
@@ -1115,7 +1129,7 @@ MapView.prototype.declutter = function () {
   const scr = this.host.closest('.scr') || this.host.parentElement; if (!scr) return; const H = this.host.getBoundingClientRect(), A = H.width * H.height;
   const ui = [...scr.children].filter(e => e !== this.host && !e.contains(this.host) && e.offsetParent !== null && getComputedStyle(e).position !== 'static').flatMap(e => { const r = e.getBoundingClientRect(); if (!r.width || r.width * r.height > A * .45) { return [...e.children].filter(c => c.offsetParent !== null).map(c => c.getBoundingClientRect()).filter(q => q.width && q.width * q.height < A * .45); } return [r]; });
   const hit = (a, b, m = 2) => a.left < b.right + m && a.right > b.left - m && a.top < b.bottom + m && a.bottom > b.top - m;
-  const items = []; this.markers.forEach(el => { if (el.style.display === 'none') return; const per = !el.classList.contains('pm'); el.querySelectorAll(':scope > .lbl, :scope .fr > .name, :scope .fr > .bub').forEach(l => items.push({ l, el, p: (per ? 3 + (el.dataset.id === 'p_me' ? 2 : 0) : el.classList.contains('key') ? 2 : 1) - (l.classList.contains('bub') ? .5 : 0), y: parseFloat(el.style.top) })); });
+  const items = []; this.markers.forEach(el => { if (el.style.display === 'none') return; const per = !el.classList.contains('pm'); el.querySelectorAll(':scope > .lbl, :scope .fr > .name, :scope .fr > .bub').forEach(l => items.push({ l, el, p: (per ? 3 + (el.dataset.id === 'p_me' ? 2 : 0) : el.classList.contains('key') ? 2 : 1) - (l.classList.contains('bub') ? .5 : 0), y: el._y || 0 })); });
   items.sort((a, b) => b.p - a.p || a.y - b.y); const kept = [];
   items.forEach(it => { it.l.classList.remove('lblHide'); const r = it.l.getBoundingClientRect(); const bad = ui.some(u => hit(r, u, 4)) || kept.some(k => hit(r, k)) || r.left < H.left + 2 || r.right > H.right - 2; if (bad && (it.p < 5 || ui.some(u => hit(r, u, 4)))) it.l.classList.add('lblHide'); else kept.push(r); });
 };
@@ -1197,7 +1211,7 @@ function fxSeaURL(kind) { // mer de nuages en volume (ombre, corps, reflets) : a
 }
 FX.draw = (mv, now) => {
   const cv = mv.fx; if (!cv) return;
-  const w = mv.vw, h = mv.vh, dpr = Math.min(2, devicePixelRatio || 1), px0 = mv.tiltTo || mv.tilt ? Math.round(w * .6) : 0, py0 = mv.tiltTo || mv.tilt ? Math.round(h * 1.1) : 0, cw = w + 2 * px0, ch = h + py0;
+  const w = mv.vw, h = mv.vh, dpr = 1 /* effets doux : la résolution native ×1 suffit et divise le coût de dessin par 4 sur écran Retina */, px0 = mv.tiltTo || mv.tilt ? Math.round(w * .6) : 0, py0 = mv.tiltTo || mv.tilt ? Math.round(h * 1.1) : 0, cw = w + 2 * px0, ch = h + py0;
   if (cv.width !== Math.round(cw * dpr) || cv.height !== Math.round(ch * dpr)) { cv.width = Math.round(cw * dpr); cv.height = Math.round(ch * dpr); cv.style.width = cw + 'px'; cv.style.height = ch + 'px'; cv.style.left = -px0 + 'px'; cv.style.top = -py0 + 'px'; }
   let ctx = cv.getContext('2d'); ctx.setTransform(dpr, 0, 0, dpr, px0 * dpr, py0 * dpr); ctx.clearRect(-px0, -py0, cw, ch);
   const top = mv.fx2; if (top && (top.width !== Math.round(w * dpr) || top.height !== Math.round(h * dpr))) { top.width = Math.round(w * dpr); top.height = Math.round(h * dpr); top.style.width = w + 'px'; top.style.height = h + 'px'; }
@@ -4179,6 +4193,7 @@ V.welcome = () => {
     catch (e) { err.textContent = e.message; err.hidden = false; }
     finally { if (document.body.contains(btn)) { btn.disabled = false; btn.innerHTML = label; } }
   };
+  const N = window.ONEERA_NATIVE; if (N && window.ReactNativeWebView) { if (!N.apple) $('#ap', el).hidden = true; if (!N.google) $('#gg', el).hidden = true; }
   $('#ap', el).onclick = () => go('apple', $('#ap', el));
   $('#gg', el).onclick = () => go('google', $('#gg', el));
   $('#demo', el).onclick = () => { realSetDemo(true); _welcomeDemo(); };
@@ -4214,7 +4229,7 @@ const authForm = (signup) => `${statusBar()}<div class="topbar"><button class="r
   <form class="body" id="f" style="padding-top:4px" novalidate>
     ${signup ? '<div class="field"><label for="fn">Prénom (affiché à tes amis)</label><input class="inp" id="fn" autocomplete="given-name" maxlength="40" required></div>' : ''}
     <div class="field"><label for="em">E-mail (jamais affiché)</label><input class="inp" id="em" type="email" inputmode="email" autocomplete="email" autocapitalize="none" spellcheck="false" required></div>
-    <div class="field"><label for="pw">Mot de passe${signup ? ' (8 caractères minimum)' : ''}</label><div style="position:relative"><input class="inp" id="pw" type="password" autocomplete="${signup ? 'new-password' : 'current-password'}" minlength="${signup ? 8 : 1}" required style="padding-right:96px!important;width:100%;box-sizing:border-box"><button type="button" class="link" id="see" style="position:absolute;right:6px;top:50%;transform:translateY(-50%);min-height:30px;background:#fff;padding:0 8px">Afficher</button></div></div>
+    <div class="field"><label for="pw">Mot de passe${signup ? ' (8 caractères minimum)' : ''}</label><div style="position:relative"><input class="inp ${signup ? 'pwmask' : ''}" id="pw" type="${signup ? 'text' : 'password'}" autocomplete="${signup ? 'off' : 'current-password'}" autocapitalize="none" autocorrect="off" spellcheck="false" minlength="${signup ? 8 : 1}" required style="padding-right:96px!important;width:100%;box-sizing:border-box"><button type="button" class="link" id="see" style="position:absolute;right:6px;top:50%;transform:translateY(-50%);min-height:30px;background:#fff;padding:0 8px">Afficher</button></div></div>
     ${signup ? '<button type="button" class="row" id="cs" style="background:#F3F5FB;border-radius:14px"><div class="grow"><div class="t">Partager ma position avec mes amis</div><div class="s">Seuls tes amis la voient. Tu peux arrêter à tout moment.</div></div><span class="tog on" role="switch" aria-checked="true"></span></button>' : ''}
     <div id="err" class="small" style="color:#C62828;font-weight:700" hidden></div>
     <button class="btn" id="go" type="submit">${signup ? 'Créer mon compte' : 'Me connecter'}</button>
@@ -4225,7 +4240,9 @@ function wireAuth(el, signup) {
   let consent = true;
   $('[data-back]', el).onclick = V.welcome;
   $('#sw', el).onclick = signup ? V.login : V.signup;
-  $('#see', el).onclick = () => { const p = $('#pw', el); p.type = p.type === 'password' ? 'text' : 'password'; $('#see', el).textContent = p.type === 'password' ? 'Afficher' : 'Masquer'; };
+  $('#see', el).onclick = () => { const p = $('#pw', el); let hidden;
+    if (signup) { p.classList.toggle('pwmask'); hidden = p.classList.contains('pwmask'); } else { p.type = p.type === 'password' ? 'text' : 'password'; hidden = p.type === 'password'; }
+    $('#see', el).textContent = hidden ? 'Afficher' : 'Masquer'; p.focus(); };
   $('#cs', el) && ($('#cs', el).onclick = () => { consent = !consent; const t = $('#cs .tog', el); t.classList.toggle('on', consent); t.setAttribute('aria-checked', consent); });
   $('#f', el).onsubmit = async (e) => {
     e.preventDefault();
@@ -4267,6 +4284,11 @@ const REAL_COLS = ['#0E9F8A', '#E0457B', '#F08C00', '#4F6BF5', '#8E44AD', '#16A0
 async function realSyncFriends() {
   if (!realOn()) return;
   const r = await api('GET', '/v1/friends');
+  const before = new Set(REAL.friends.filter(f => f.status === 'pending' && !f.requestedByMe).map(f => f.id));
+  const wasAcc = new Set(REAL.friends.filter(f => f.status === 'accepted').map(f => f.id));
+  r.friends.filter(f => f.status === 'pending' && !f.requestedByMe && !before.has(f.id) && REAL._synced).forEach(f => toast(`${esc(f.displayName)} veut t’ajouter en ami · <b>Amis</b>`));
+  r.friends.filter(f => f.status === 'accepted' && !wasAcc.has(f.id) && REAL._synced).forEach(f => toast(`${esc(f.displayName)} et toi êtes maintenant amis 🎉`));
+  REAL._synced = true;
   REAL.friends = r.friends;
   realApplyFriends();
 }
@@ -4313,6 +4335,7 @@ async function realConnect() {
       else if (m.type === 'friend') realApplyPos(m.pos);
       else if (m.type === 'presence') { REAL.online[m.userId] = m.online; if (m.online && !FRIENDS.some(f => f.id === m.userId)) realSyncFriends().catch(() => {}); realRefreshVisible(); }
       else if (m.type === 'gone') { delete REAL.pos[m.userId]; delete FR_STATE[m.userId]; realRefreshVisible(true); }
+      else if (m.type === 'refresh') realSyncFriends().then(() => REAL.onFriends && REAL.onFriends()).catch(() => {});
       if (m.type === 'snapshot' || m.type === 'friend') realRefreshVisible(); };
     ws.onclose = () => { REAL.wsOk = false; emit(); if (!realOn()) return; const d = [1, 2, 5, 10, 20][Math.min(REAL.retry++, 4)]; setTimeout(realConnect, d * 1000); };
   } catch (_) { const d = [2, 5, 10, 20][Math.min(REAL.retry++, 3)]; setTimeout(realConnect, d * 1000); }
@@ -4344,39 +4367,82 @@ listeners.add(() => {
 
 // ---------- ajouter des amis : mon code / le code d'un ami ----------
 const _addFriendsDemo = V.addFriends;
+// Amis : demandes reçues, contacts qui ont ONEERA (ajout de tous en 1 geste), mon numéro, mon code, ma liste.
 V.addFriends = (onboarding) => {
   if (!realOn()) return _addFriendsDemo(onboarding);
   const el = mount(`${statusBar()}<div class="topbar">${onboarding ? '<span style="width:44px"></span>' : `<button class="rb" data-back aria-label="Retour">${I.back}</button>`}<h1>${onboarding ? '' : 'Mes amis'}</h1><span style="width:44px"></span></div>
     <div class="body" style="padding-top:0;gap:12px">
       ${onboarding ? '<div class="tiny" style="font-weight:700;color:var(--pri)">ÉTAPE 4 SUR 4</div><h1 class="h2">Retrouve ta bande</h1>' : ''}
+      <div id="req"></div>
+      <div class="card ctc" id="ctc"><div style="display:flex;align-items:center;gap:12px"><div class="ctcIco">${I.contacts || '👥'}</div><div style="flex:1"><b style="font-size:16px">Mes contacts qui ont ONEERA</b><div class="small">Ajoute-les tous en un geste. Leurs noms et numéros ne quittent jamais ton téléphone.</div></div></div><button class="btn" id="scan">Trouver mes contacts</button><div id="cres"></div></div>
       <div class="card" style="align-items:center;text-align:center;background:linear-gradient(135deg,#4A63E8,#6E8BF7);color:#fff;gap:6px">
         <div class="small" style="color:#fff;opacity:.9;font-weight:700">Mon code ONEERA</div>
-        <div id="code" style="font-size:38px;font-weight:800;letter-spacing:6px;font-variant-numeric:tabular-nums">······</div>
-        <div class="small" style="color:#fff;opacity:.9">Donne-le à un ami : il le tape dans son app, et vous êtes amis.</div>
+        <div id="code" style="font-size:36px;font-weight:800;letter-spacing:6px;font-variant-numeric:tabular-nums">······</div>
         <div style="display:flex;gap:8px;width:100%"><button class="btn sm white" id="cp" style="flex:1">Copier</button><button class="btn sm white" id="sh" style="flex:1">Partager</button></div>
       </div>
-      <div class="field"><label for="fc">Code d’un ami</label><div style="display:flex;gap:8px"><input class="inp" id="fc" maxlength="8" autocapitalize="characters" autocomplete="off" spellcheck="false" placeholder="EX. K7P2QX" style="text-transform:uppercase;letter-spacing:3px;font-weight:800;flex:1"><button class="btn sm" id="add" style="width:auto;padding:0 18px">Ajouter</button></div></div>
-      <div id="msg" class="small" hidden></div>
+      <div class="field"><label for="fc">Code d’un ami</label><div style="display:flex;gap:8px"><input class="inp" id="fc" maxlength="8" autocapitalize="characters" autocomplete="off" autocorrect="off" spellcheck="false" placeholder="EX. K7P2QX" style="text-transform:uppercase;letter-spacing:3px;font-weight:800;flex:1;min-width:0"><button class="btn sm" id="add" style="width:auto;padding:0 18px">Ajouter</button></div></div>
+      <div id="msg" class="small" role="status" hidden></div>
+      <details class="phone" id="phd"><summary>Mon numéro (pour que mes contacts me trouvent)</summary><div style="display:flex;gap:8px;margin-top:8px"><input class="inp" id="ph" type="tel" inputmode="tel" autocomplete="tel" placeholder="06 12 34 56 78" style="flex:1;min-width:0"><button class="btn sm" id="phs" style="width:auto;padding:0 16px">OK</button></div><div class="tiny" style="margin-top:6px">Seule une empreinte chiffrée de ton numéro est enregistrée.</div></details>
       <div class="sec" style="margin:0">Mes amis</div><div class="list" id="ls"><div class="small">Chargement…</div></div>
     </div>${onboarding ? `<div style="padding:8px 18px 30px;background:#fff;border-top:1px solid var(--line)"><button class="btn" id="go">Voir la carte</button></div>` : ''}`, 'white');
-  let code = '';
-  const msg = (t, ok) => { const m = $('#msg', el); m.hidden = false; m.style.color = ok ? '#0B7A3B' : '#C62828'; m.style.fontWeight = '700'; m.textContent = t; };
-  const list = () => { const ls = $('#ls', el); if (!ls) return; const fr = REAL.friends.filter(f => f.status === 'accepted');
-    ls.innerHTML = fr.length ? fr.map(f => { const p = REAL.pos[f.id], on = REAL.online[f.id]; const st = p ? (on === false ? `Hors ligne · vu il y a ${Math.max(1, Math.round((Date.now() - p.t) / 60000))} min` : '<span style="color:#0B7A3B;font-weight:700">● Sur la carte</span>') : 'Pas encore de position partagée'; return `<div class="row"><img class="av" src="${FRIEND_AV2[f.id] ? av2URI(FRIEND_AV2[f.id], 'head') : A + 'logo.webp'}" alt=""><div class="grow"><div class="t">${esc(f.displayName)}</div><div class="s">${st}</div></div><button class="link" data-rm="${f.id}" style="min-height:30px;color:#9A3B3B">Retirer</button></div>`; }).join('') : '<div class="small">Aucun ami pour l’instant : échange vos codes.</div>'; };
+  let code = '', matches = null, contactNames = new Map();
+  const msg = (t, ok) => { const m = $('#msg', el); if (!m) return; m.hidden = false; m.style.color = ok ? '#0B7A3B' : '#C62828'; m.style.fontWeight = '700'; m.textContent = t; };
+  const head = (f) => (f.avatar && f.avatar.g) ? av2URI(f.avatar, 'head') : FRIEND_AV2[f.id] ? av2URI(FRIEND_AV2[f.id], 'head') : A + 'logo.webp';
+  const paint = () => {
+    if (!document.body.contains(el)) return;
+    const inc = REAL.friends.filter(f => f.status === 'pending' && !f.requestedByMe);
+    $('#req', el).innerHTML = inc.length ? `<div class="sec" style="margin:0 0 6px">Demandes reçues (${inc.length})</div><div class="list">${inc.map(f => `<div class="row"><img class="av" src="${head(f)}" alt=""><div class="grow"><div class="t">${esc(f.displayName)}</div><div class="s">veut t’ajouter</div></div><button class="btn sm" data-acc="${f.id}" style="width:auto;padding:0 14px">Accepter</button><button class="link" data-dec="${f.id}" style="min-height:30px;color:#6B7084">Refuser</button></div>`).join('')}</div>` : '';
+    const acc = REAL.friends.filter(f => f.status === 'accepted'), out = REAL.friends.filter(f => f.status === 'pending' && f.requestedByMe);
+    $('#ls', el).innerHTML = acc.length || out.length ? acc.map(f => { const p = REAL.pos[f.id], on = REAL.online[f.id]; const st = p ? (on === false ? `Hors ligne · vu il y a ${Math.max(1, Math.round((Date.now() - p.t) / 60000))} min` : '<span style="color:#0B7A3B;font-weight:700">● Sur la carte</span>') : 'Pas encore de position partagée'; return `<div class="row"><img class="av" src="${head(f)}" alt=""><div class="grow"><div class="t">${esc(f.displayName)}</div><div class="s">${st}</div></div><button class="link" data-rm="${f.id}" style="min-height:30px;color:#9A3B3B">Retirer</button></div>`; }).join('') + out.map(f => `<div class="row"><img class="av" src="${head(f)}" alt=""><div class="grow"><div class="t">${esc(f.displayName)}</div><div class="s">Demande envoyée</div></div><button class="link" data-dec="${f.id}" style="min-height:30px;color:#6B7084">Annuler</button></div>`).join('') : '<div class="small">Aucun ami pour l’instant : trouve tes contacts ou échange vos codes.</div>';
+    if (matches) {
+      const st = (u) => { const f = REAL.friends.find(x => x.id === u.id); return f ? (f.status === 'accepted' ? 'ami' : f.requestedByMe ? 'sent' : 'in') : 'none'; };
+      const todo = matches.filter(u => st(u) === 'none' || st(u) === 'in');
+      $('#cres', el).innerHTML = matches.length ? `<div class="small" style="margin:10px 0 6px;font-weight:700">${matches.length} de tes contacts ${matches.length > 1 ? 'ont' : 'a'} ONEERA</div>${todo.length ? `<button class="btn" id="all" style="margin-bottom:8px">Tout ajouter (${todo.length})</button>` : ''}<div class="list">${matches.map(u => { const s = st(u); return `<div class="row"><img class="av" src="${head(u)}" alt=""><div class="grow"><div class="t">${esc(u.displayName)}</div><div class="s">${esc(contactNames.get(u.matched) || '')}</div></div>${s === 'ami' ? '<span class="pill ok">Ami</span>' : s === 'sent' ? '<span class="pill gray">Envoyée</span>' : `<button class="btn sm" data-req="${u.id}" style="width:auto;padding:0 14px">${s === 'in' ? 'Accepter' : 'Ajouter'}</button>`}</div>`; }).join('')}</div>` : '<div class="small" style="margin-top:10px">Aucun de tes contacts n’a encore ONEERA. Partage ton code ci-dessous pour les inviter.</div>';
+    }
+    const g = $('#go', el); if (g) { const n = REAL.friends.filter(f => f.status === 'accepted').length; g.textContent = n ? `Voir la carte (${n} ami${n > 1 ? 's' : ''})` : 'Voir la carte'; }
+  };
+  REAL.onFriends = paint;
   api('POST', '/v1/invites').then(r => { code = r.code; $('#code', el) && ($('#code', el).textContent = code); }).catch(e => msg(e.message));
-  realSyncFriends().then(list).catch(e => { list(); msg(e.message); });
+  realSyncFriends().then(paint).catch(e => { paint(); msg(e.message); });
+  $('#scan', el).onclick = async () => {
+    const b = $('#scan', el);
+    if (!window.ReactNativeWebView) { msg('La recherche dans tes contacts fonctionne dans l’app ONEERA. Ici, échange ton code.'); return; }
+    b.disabled = true; b.textContent = 'Recherche…';
+    try {
+      const r = await nativeCall({ type: 'contacts' });
+      if (r.denied) { msg('Accès aux contacts refusé. Tu peux l’autoriser dans Réglages › ONEERA › Contacts.'); return; }
+      if (r.error) throw new Error(r.error);
+      contactNames = new Map(); const hashes = [];
+      (r.entries || []).forEach(c => c.hashes.forEach(h => { hashes.push(h); if (!contactNames.has(h)) contactNames.set(h, c.name); }));
+      const out = await api('POST', '/v1/contacts/match', { hashes: hashes.slice(0, 5000) });
+      matches = out.users; paint(); b.textContent = 'Actualiser';
+    } catch (e) { msg(e.message); b.textContent = 'Trouver mes contacts'; }
+    finally { b.disabled = false; }
+  };
+  const request = async (ids) => {
+    try { const r = await api('POST', '/v1/friends/requests', { userIds: ids }); const acc = Object.values(r.results).filter(x => x === 'accepted').length, pend = Object.values(r.results).filter(x => x === 'pending').length;
+      msg(acc && pend ? `${acc} ami${acc > 1 ? 's' : ''} ajouté${acc > 1 ? 's' : ''}, ${pend} demande${pend > 1 ? 's' : ''} envoyée${pend > 1 ? 's' : ''}` : acc ? `${acc} ami${acc > 1 ? 's' : ''} ajouté${acc > 1 ? 's' : ''} 🎉` : `${pend} demande${pend > 1 ? 's' : ''} envoyée${pend > 1 ? 's' : ''} : ils l’acceptent en un geste`, true);
+      await realSyncFriends(); paint(); realConnect(); } catch (e) { msg(e.message); } };
+  el.addEventListener('click', async (e) => {
+    const t = e.target.closest('button'); if (!t) return;
+    if (t.id === 'all') { t.disabled = true; const ids = matches.filter(u => { const f = REAL.friends.find(x => x.id === u.id); return !f || (f.status === 'pending' && !f.requestedByMe); }).map(u => u.id); await request(ids); return; }
+    if (t.dataset.req) { t.disabled = true; await request([t.dataset.req]); return; }
+    if (t.dataset.acc) { t.disabled = true; try { await api('POST', `/v1/friends/${t.dataset.acc}/accept`); await realSyncFriends(); paint(); realConnect(); msg('C’est noté : vous êtes amis 🎉', true); } catch (e2) { msg(e2.message); t.disabled = false; } return; }
+    if (t.dataset.dec) { t.disabled = true; try { await api('POST', `/v1/friends/${t.dataset.dec}/decline`); await realSyncFriends(); paint(); } catch (e2) { msg(e2.message); t.disabled = false; } return; }
+    if (t.dataset.rm) { const f = REAL.friends.find(x => x.id === t.dataset.rm); if (!f || !confirm(`Retirer ${f.displayName} de tes amis ?`)) return; try { await api('DELETE', '/v1/friends/' + f.id); delete REAL.pos[f.id]; await realSyncFriends(); paint(); } catch (e2) { msg(e2.message); } }
+  });
   $('#cp', el).onclick = async () => { if (!code) return; try { await navigator.clipboard.writeText(code); toast('Code copié'); } catch (_) { toast('Ton code : ' + code); } };
   $('#sh', el).onclick = async () => { if (!code) return; const text = `Ajoute-moi sur ONEERA avec mon code : ${code}`; try { if (navigator.share) await navigator.share({ text }); else { await navigator.clipboard.writeText(text); toast('Message copié : colle-le à ton ami'); } } catch (_) {} };
   const add = async () => { const v = $('#fc', el).value.trim().toUpperCase(); if (v.replace(/[^A-Z0-9]/g, '').length !== 6) return msg('Le code fait 6 caractères.');
+    if (v === code) return msg('C’est ton propre code : donne-le plutôt à un ami.');
     const b = $('#add', el); b.disabled = true;
-    try { const r = await api('POST', '/v1/invites/accept', { code: v }); msg(`${r.friend.displayName} est maintenant ton ami 🎉`, true); $('#fc', el).value = ''; await realSyncFriends(); list(); realConnect(); }
+    try { const r = await api('POST', '/v1/invites/accept', { code: v }); msg(`${r.friend.displayName} est maintenant ton ami 🎉`, true); $('#fc', el).value = ''; await realSyncFriends(); paint(); realConnect(); }
     catch (e) { msg(e.message); } finally { b.disabled = false; } };
   $('#add', el).onclick = add; $('#fc', el).onkeydown = e => { if (e.key === 'Enter') add(); };
-  $('#ls', el).onclick = async e => { const b = e.target.closest('[data-rm]'); if (!b) return; const f = REAL.friends.find(x => x.id === b.dataset.rm); if (!f || !confirm(`Retirer ${f.displayName} de tes amis ?`)) return;
-    try { await api('DELETE', '/v1/friends/' + f.id); delete REAL.pos[f.id]; await realSyncFriends(); list(); } catch (e2) { msg(e2.message); } };
+  $('#phs', el).onclick = async () => { const b = $('#phs', el); b.disabled = true; try { await api('POST', '/v1/me/phone', { phone: $('#ph', el).value }); msg('Numéro enregistré : tes contacts peuvent te trouver.', true); $('#phd', el).open = false; } catch (e) { msg(e.message); } finally { b.disabled = false; } };
   $('[data-back]', el) && ($('[data-back]', el).onclick = () => V.map());
   const go = $('#go', el); if (go) go.onclick = () => { markStep('friends'); realConnect(); V.map(); };
-  const iv = setInterval(() => { if (!document.body.contains(el)) return clearInterval(iv); realSyncFriends().then(list).catch(() => {}); }, 8000);
+  const iv = setInterval(() => { if (!document.body.contains(el)) { clearInterval(iv); if (REAL.onFriends === paint) REAL.onFriends = null; return; } realSyncFriends().then(paint).catch(() => {}); }, 15000);
 };
 
 // ---------- carte : mode test (je me place en touchant la carte) ----------
@@ -4469,6 +4535,32 @@ boot = function () {
   api('GET', '/v1/me').then(u => { REAL.user = u; realSave(); realApplyUser(); emit(); }).catch(() => {});
   realSyncFriends().catch(() => {}); realConnect();
 };
+
+// ===== Confort mobile : clavier qui ne masque jamais un champ, zoom involontaire bloqué =====
+(function () {
+  const vv = window.visualViewport;
+  const isPhone = () => innerWidth <= 820;
+  // Le clavier réduit la zone visible : l'écran de l'app est redimensionné à cette zone (comme une app native),
+  // la barre du bas et les boutons restent au-dessus du clavier, et le champ actif est ramené en vue.
+  function fit() {
+    if (!SCREEN || !isPhone() || !vv) return;
+    const h = Math.round(vv.height), full = Math.round(innerHeight);
+    const kb = full - h > 120; // clavier ouvert
+    SCREEN.style.height = kb ? h + 'px' : '';
+    SCREEN.classList.toggle('kbopen', kb);
+    if (kb) { window.scrollTo(0, 0); reveal(); }
+  }
+  function reveal() {
+    const a = document.activeElement; if (!a || !/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName)) return;
+    requestAnimationFrame(() => { try { a.scrollIntoView({ block: 'center', inline: 'nearest' }); } catch (_) { a.scrollIntoView(); } });
+  }
+  if (vv) { vv.addEventListener('resize', fit); vv.addEventListener('scroll', () => { if (SCREEN && SCREEN.classList.contains('kbopen')) window.scrollTo(0, 0); }); }
+  addEventListener('resize', fit);
+  document.addEventListener('focusin', (e) => { if (/^(INPUT|TEXTAREA)$/.test(e.target.tagName)) setTimeout(reveal, 280); });
+  document.addEventListener('focusout', () => setTimeout(fit, 120));
+  // Double-tape / pincement sur l'interface (hors carte) : pas de zoom de la page.
+  document.addEventListener('gesturestart', (e) => { if (!e.target.closest || !e.target.closest('#mv')) e.preventDefault(); }, { passive: false });
+})();
 
 // ===== Coque : téléphone + panneau de démonstration =====
 function boot() {

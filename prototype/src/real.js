@@ -54,6 +54,7 @@ V.welcome = () => {
     catch (e) { err.textContent = e.message; err.hidden = false; }
     finally { if (document.body.contains(btn)) { btn.disabled = false; btn.innerHTML = label; } }
   };
+  const N = window.ONEERA_NATIVE; if (N && window.ReactNativeWebView) { if (!N.apple) $('#ap', el).hidden = true; if (!N.google) $('#gg', el).hidden = true; }
   $('#ap', el).onclick = () => go('apple', $('#ap', el));
   $('#gg', el).onclick = () => go('google', $('#gg', el));
   $('#demo', el).onclick = () => { realSetDemo(true); _welcomeDemo(); };
@@ -144,6 +145,11 @@ const REAL_COLS = ['#0E9F8A', '#E0457B', '#F08C00', '#4F6BF5', '#8E44AD', '#16A0
 async function realSyncFriends() {
   if (!realOn()) return;
   const r = await api('GET', '/v1/friends');
+  const before = new Set(REAL.friends.filter(f => f.status === 'pending' && !f.requestedByMe).map(f => f.id));
+  const wasAcc = new Set(REAL.friends.filter(f => f.status === 'accepted').map(f => f.id));
+  r.friends.filter(f => f.status === 'pending' && !f.requestedByMe && !before.has(f.id) && REAL._synced).forEach(f => toast(`${esc(f.displayName)} veut t’ajouter en ami · <b>Amis</b>`));
+  r.friends.filter(f => f.status === 'accepted' && !wasAcc.has(f.id) && REAL._synced).forEach(f => toast(`${esc(f.displayName)} et toi êtes maintenant amis 🎉`));
+  REAL._synced = true;
   REAL.friends = r.friends;
   realApplyFriends();
 }
@@ -190,6 +196,7 @@ async function realConnect() {
       else if (m.type === 'friend') realApplyPos(m.pos);
       else if (m.type === 'presence') { REAL.online[m.userId] = m.online; if (m.online && !FRIENDS.some(f => f.id === m.userId)) realSyncFriends().catch(() => {}); realRefreshVisible(); }
       else if (m.type === 'gone') { delete REAL.pos[m.userId]; delete FR_STATE[m.userId]; realRefreshVisible(true); }
+      else if (m.type === 'refresh') realSyncFriends().then(() => REAL.onFriends && REAL.onFriends()).catch(() => {});
       if (m.type === 'snapshot' || m.type === 'friend') realRefreshVisible(); };
     ws.onclose = () => { REAL.wsOk = false; emit(); if (!realOn()) return; const d = [1, 2, 5, 10, 20][Math.min(REAL.retry++, 4)]; setTimeout(realConnect, d * 1000); };
   } catch (_) { const d = [2, 5, 10, 20][Math.min(REAL.retry++, 3)]; setTimeout(realConnect, d * 1000); }
@@ -221,39 +228,82 @@ listeners.add(() => {
 
 // ---------- ajouter des amis : mon code / le code d'un ami ----------
 const _addFriendsDemo = V.addFriends;
+// Amis : demandes reçues, contacts qui ont ONEERA (ajout de tous en 1 geste), mon numéro, mon code, ma liste.
 V.addFriends = (onboarding) => {
   if (!realOn()) return _addFriendsDemo(onboarding);
   const el = mount(`${statusBar()}<div class="topbar">${onboarding ? '<span style="width:44px"></span>' : `<button class="rb" data-back aria-label="Retour">${I.back}</button>`}<h1>${onboarding ? '' : 'Mes amis'}</h1><span style="width:44px"></span></div>
     <div class="body" style="padding-top:0;gap:12px">
       ${onboarding ? '<div class="tiny" style="font-weight:700;color:var(--pri)">ÉTAPE 4 SUR 4</div><h1 class="h2">Retrouve ta bande</h1>' : ''}
+      <div id="req"></div>
+      <div class="card ctc" id="ctc"><div style="display:flex;align-items:center;gap:12px"><div class="ctcIco">${I.contacts || '👥'}</div><div style="flex:1"><b style="font-size:16px">Mes contacts qui ont ONEERA</b><div class="small">Ajoute-les tous en un geste. Leurs noms et numéros ne quittent jamais ton téléphone.</div></div></div><button class="btn" id="scan">Trouver mes contacts</button><div id="cres"></div></div>
       <div class="card" style="align-items:center;text-align:center;background:linear-gradient(135deg,#4A63E8,#6E8BF7);color:#fff;gap:6px">
         <div class="small" style="color:#fff;opacity:.9;font-weight:700">Mon code ONEERA</div>
-        <div id="code" style="font-size:38px;font-weight:800;letter-spacing:6px;font-variant-numeric:tabular-nums">······</div>
-        <div class="small" style="color:#fff;opacity:.9">Donne-le à un ami : il le tape dans son app, et vous êtes amis.</div>
+        <div id="code" style="font-size:36px;font-weight:800;letter-spacing:6px;font-variant-numeric:tabular-nums">······</div>
         <div style="display:flex;gap:8px;width:100%"><button class="btn sm white" id="cp" style="flex:1">Copier</button><button class="btn sm white" id="sh" style="flex:1">Partager</button></div>
       </div>
-      <div class="field"><label for="fc">Code d’un ami</label><div style="display:flex;gap:8px"><input class="inp" id="fc" maxlength="8" autocapitalize="characters" autocomplete="off" spellcheck="false" placeholder="EX. K7P2QX" style="text-transform:uppercase;letter-spacing:3px;font-weight:800;flex:1"><button class="btn sm" id="add" style="width:auto;padding:0 18px">Ajouter</button></div></div>
-      <div id="msg" class="small" hidden></div>
+      <div class="field"><label for="fc">Code d’un ami</label><div style="display:flex;gap:8px"><input class="inp" id="fc" maxlength="8" autocapitalize="characters" autocomplete="off" autocorrect="off" spellcheck="false" placeholder="EX. K7P2QX" style="text-transform:uppercase;letter-spacing:3px;font-weight:800;flex:1;min-width:0"><button class="btn sm" id="add" style="width:auto;padding:0 18px">Ajouter</button></div></div>
+      <div id="msg" class="small" role="status" hidden></div>
+      <details class="phone" id="phd"><summary>Mon numéro (pour que mes contacts me trouvent)</summary><div style="display:flex;gap:8px;margin-top:8px"><input class="inp" id="ph" type="tel" inputmode="tel" autocomplete="tel" placeholder="06 12 34 56 78" style="flex:1;min-width:0"><button class="btn sm" id="phs" style="width:auto;padding:0 16px">OK</button></div><div class="tiny" style="margin-top:6px">Seule une empreinte chiffrée de ton numéro est enregistrée.</div></details>
       <div class="sec" style="margin:0">Mes amis</div><div class="list" id="ls"><div class="small">Chargement…</div></div>
     </div>${onboarding ? `<div style="padding:8px 18px 30px;background:#fff;border-top:1px solid var(--line)"><button class="btn" id="go">Voir la carte</button></div>` : ''}`, 'white');
-  let code = '';
-  const msg = (t, ok) => { const m = $('#msg', el); m.hidden = false; m.style.color = ok ? '#0B7A3B' : '#C62828'; m.style.fontWeight = '700'; m.textContent = t; };
-  const list = () => { const ls = $('#ls', el); if (!ls) return; const fr = REAL.friends.filter(f => f.status === 'accepted');
-    ls.innerHTML = fr.length ? fr.map(f => { const p = REAL.pos[f.id], on = REAL.online[f.id]; const st = p ? (on === false ? `Hors ligne · vu il y a ${Math.max(1, Math.round((Date.now() - p.t) / 60000))} min` : '<span style="color:#0B7A3B;font-weight:700">● Sur la carte</span>') : 'Pas encore de position partagée'; return `<div class="row"><img class="av" src="${FRIEND_AV2[f.id] ? av2URI(FRIEND_AV2[f.id], 'head') : A + 'logo.webp'}" alt=""><div class="grow"><div class="t">${esc(f.displayName)}</div><div class="s">${st}</div></div><button class="link" data-rm="${f.id}" style="min-height:30px;color:#9A3B3B">Retirer</button></div>`; }).join('') : '<div class="small">Aucun ami pour l’instant : échange vos codes.</div>'; };
+  let code = '', matches = null, contactNames = new Map();
+  const msg = (t, ok) => { const m = $('#msg', el); if (!m) return; m.hidden = false; m.style.color = ok ? '#0B7A3B' : '#C62828'; m.style.fontWeight = '700'; m.textContent = t; };
+  const head = (f) => (f.avatar && f.avatar.g) ? av2URI(f.avatar, 'head') : FRIEND_AV2[f.id] ? av2URI(FRIEND_AV2[f.id], 'head') : A + 'logo.webp';
+  const paint = () => {
+    if (!document.body.contains(el)) return;
+    const inc = REAL.friends.filter(f => f.status === 'pending' && !f.requestedByMe);
+    $('#req', el).innerHTML = inc.length ? `<div class="sec" style="margin:0 0 6px">Demandes reçues (${inc.length})</div><div class="list">${inc.map(f => `<div class="row"><img class="av" src="${head(f)}" alt=""><div class="grow"><div class="t">${esc(f.displayName)}</div><div class="s">veut t’ajouter</div></div><button class="btn sm" data-acc="${f.id}" style="width:auto;padding:0 14px">Accepter</button><button class="link" data-dec="${f.id}" style="min-height:30px;color:#6B7084">Refuser</button></div>`).join('')}</div>` : '';
+    const acc = REAL.friends.filter(f => f.status === 'accepted'), out = REAL.friends.filter(f => f.status === 'pending' && f.requestedByMe);
+    $('#ls', el).innerHTML = acc.length || out.length ? acc.map(f => { const p = REAL.pos[f.id], on = REAL.online[f.id]; const st = p ? (on === false ? `Hors ligne · vu il y a ${Math.max(1, Math.round((Date.now() - p.t) / 60000))} min` : '<span style="color:#0B7A3B;font-weight:700">● Sur la carte</span>') : 'Pas encore de position partagée'; return `<div class="row"><img class="av" src="${head(f)}" alt=""><div class="grow"><div class="t">${esc(f.displayName)}</div><div class="s">${st}</div></div><button class="link" data-rm="${f.id}" style="min-height:30px;color:#9A3B3B">Retirer</button></div>`; }).join('') + out.map(f => `<div class="row"><img class="av" src="${head(f)}" alt=""><div class="grow"><div class="t">${esc(f.displayName)}</div><div class="s">Demande envoyée</div></div><button class="link" data-dec="${f.id}" style="min-height:30px;color:#6B7084">Annuler</button></div>`).join('') : '<div class="small">Aucun ami pour l’instant : trouve tes contacts ou échange vos codes.</div>';
+    if (matches) {
+      const st = (u) => { const f = REAL.friends.find(x => x.id === u.id); return f ? (f.status === 'accepted' ? 'ami' : f.requestedByMe ? 'sent' : 'in') : 'none'; };
+      const todo = matches.filter(u => st(u) === 'none' || st(u) === 'in');
+      $('#cres', el).innerHTML = matches.length ? `<div class="small" style="margin:10px 0 6px;font-weight:700">${matches.length} de tes contacts ${matches.length > 1 ? 'ont' : 'a'} ONEERA</div>${todo.length ? `<button class="btn" id="all" style="margin-bottom:8px">Tout ajouter (${todo.length})</button>` : ''}<div class="list">${matches.map(u => { const s = st(u); return `<div class="row"><img class="av" src="${head(u)}" alt=""><div class="grow"><div class="t">${esc(u.displayName)}</div><div class="s">${esc(contactNames.get(u.matched) || '')}</div></div>${s === 'ami' ? '<span class="pill ok">Ami</span>' : s === 'sent' ? '<span class="pill gray">Envoyée</span>' : `<button class="btn sm" data-req="${u.id}" style="width:auto;padding:0 14px">${s === 'in' ? 'Accepter' : 'Ajouter'}</button>`}</div>`; }).join('')}</div>` : '<div class="small" style="margin-top:10px">Aucun de tes contacts n’a encore ONEERA. Partage ton code ci-dessous pour les inviter.</div>';
+    }
+    const g = $('#go', el); if (g) { const n = REAL.friends.filter(f => f.status === 'accepted').length; g.textContent = n ? `Voir la carte (${n} ami${n > 1 ? 's' : ''})` : 'Voir la carte'; }
+  };
+  REAL.onFriends = paint;
   api('POST', '/v1/invites').then(r => { code = r.code; $('#code', el) && ($('#code', el).textContent = code); }).catch(e => msg(e.message));
-  realSyncFriends().then(list).catch(e => { list(); msg(e.message); });
+  realSyncFriends().then(paint).catch(e => { paint(); msg(e.message); });
+  $('#scan', el).onclick = async () => {
+    const b = $('#scan', el);
+    if (!window.ReactNativeWebView) { msg('La recherche dans tes contacts fonctionne dans l’app ONEERA. Ici, échange ton code.'); return; }
+    b.disabled = true; b.textContent = 'Recherche…';
+    try {
+      const r = await nativeCall({ type: 'contacts' });
+      if (r.denied) { msg('Accès aux contacts refusé. Tu peux l’autoriser dans Réglages › ONEERA › Contacts.'); return; }
+      if (r.error) throw new Error(r.error);
+      contactNames = new Map(); const hashes = [];
+      (r.entries || []).forEach(c => c.hashes.forEach(h => { hashes.push(h); if (!contactNames.has(h)) contactNames.set(h, c.name); }));
+      const out = await api('POST', '/v1/contacts/match', { hashes: hashes.slice(0, 5000) });
+      matches = out.users; paint(); b.textContent = 'Actualiser';
+    } catch (e) { msg(e.message); b.textContent = 'Trouver mes contacts'; }
+    finally { b.disabled = false; }
+  };
+  const request = async (ids) => {
+    try { const r = await api('POST', '/v1/friends/requests', { userIds: ids }); const acc = Object.values(r.results).filter(x => x === 'accepted').length, pend = Object.values(r.results).filter(x => x === 'pending').length;
+      msg(acc && pend ? `${acc} ami${acc > 1 ? 's' : ''} ajouté${acc > 1 ? 's' : ''}, ${pend} demande${pend > 1 ? 's' : ''} envoyée${pend > 1 ? 's' : ''}` : acc ? `${acc} ami${acc > 1 ? 's' : ''} ajouté${acc > 1 ? 's' : ''} 🎉` : `${pend} demande${pend > 1 ? 's' : ''} envoyée${pend > 1 ? 's' : ''} : ils l’acceptent en un geste`, true);
+      await realSyncFriends(); paint(); realConnect(); } catch (e) { msg(e.message); } };
+  el.addEventListener('click', async (e) => {
+    const t = e.target.closest('button'); if (!t) return;
+    if (t.id === 'all') { t.disabled = true; const ids = matches.filter(u => { const f = REAL.friends.find(x => x.id === u.id); return !f || (f.status === 'pending' && !f.requestedByMe); }).map(u => u.id); await request(ids); return; }
+    if (t.dataset.req) { t.disabled = true; await request([t.dataset.req]); return; }
+    if (t.dataset.acc) { t.disabled = true; try { await api('POST', `/v1/friends/${t.dataset.acc}/accept`); await realSyncFriends(); paint(); realConnect(); msg('C’est noté : vous êtes amis 🎉', true); } catch (e2) { msg(e2.message); t.disabled = false; } return; }
+    if (t.dataset.dec) { t.disabled = true; try { await api('POST', `/v1/friends/${t.dataset.dec}/decline`); await realSyncFriends(); paint(); } catch (e2) { msg(e2.message); t.disabled = false; } return; }
+    if (t.dataset.rm) { const f = REAL.friends.find(x => x.id === t.dataset.rm); if (!f || !confirm(`Retirer ${f.displayName} de tes amis ?`)) return; try { await api('DELETE', '/v1/friends/' + f.id); delete REAL.pos[f.id]; await realSyncFriends(); paint(); } catch (e2) { msg(e2.message); } }
+  });
   $('#cp', el).onclick = async () => { if (!code) return; try { await navigator.clipboard.writeText(code); toast('Code copié'); } catch (_) { toast('Ton code : ' + code); } };
   $('#sh', el).onclick = async () => { if (!code) return; const text = `Ajoute-moi sur ONEERA avec mon code : ${code}`; try { if (navigator.share) await navigator.share({ text }); else { await navigator.clipboard.writeText(text); toast('Message copié : colle-le à ton ami'); } } catch (_) {} };
   const add = async () => { const v = $('#fc', el).value.trim().toUpperCase(); if (v.replace(/[^A-Z0-9]/g, '').length !== 6) return msg('Le code fait 6 caractères.');
+    if (v === code) return msg('C’est ton propre code : donne-le plutôt à un ami.');
     const b = $('#add', el); b.disabled = true;
-    try { const r = await api('POST', '/v1/invites/accept', { code: v }); msg(`${r.friend.displayName} est maintenant ton ami 🎉`, true); $('#fc', el).value = ''; await realSyncFriends(); list(); realConnect(); }
+    try { const r = await api('POST', '/v1/invites/accept', { code: v }); msg(`${r.friend.displayName} est maintenant ton ami 🎉`, true); $('#fc', el).value = ''; await realSyncFriends(); paint(); realConnect(); }
     catch (e) { msg(e.message); } finally { b.disabled = false; } };
   $('#add', el).onclick = add; $('#fc', el).onkeydown = e => { if (e.key === 'Enter') add(); };
-  $('#ls', el).onclick = async e => { const b = e.target.closest('[data-rm]'); if (!b) return; const f = REAL.friends.find(x => x.id === b.dataset.rm); if (!f || !confirm(`Retirer ${f.displayName} de tes amis ?`)) return;
-    try { await api('DELETE', '/v1/friends/' + f.id); delete REAL.pos[f.id]; await realSyncFriends(); list(); } catch (e2) { msg(e2.message); } };
+  $('#phs', el).onclick = async () => { const b = $('#phs', el); b.disabled = true; try { await api('POST', '/v1/me/phone', { phone: $('#ph', el).value }); msg('Numéro enregistré : tes contacts peuvent te trouver.', true); $('#phd', el).open = false; } catch (e) { msg(e.message); } finally { b.disabled = false; } };
   $('[data-back]', el) && ($('[data-back]', el).onclick = () => V.map());
   const go = $('#go', el); if (go) go.onclick = () => { markStep('friends'); realConnect(); V.map(); };
-  const iv = setInterval(() => { if (!document.body.contains(el)) return clearInterval(iv); realSyncFriends().then(list).catch(() => {}); }, 8000);
+  const iv = setInterval(() => { if (!document.body.contains(el)) { clearInterval(iv); if (REAL.onFriends === paint) REAL.onFriends = null; return; } realSyncFriends().then(paint).catch(() => {}); }, 15000);
 };
 
 // ---------- carte : mode test (je me place en touchant la carte) ----------

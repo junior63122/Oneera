@@ -7,6 +7,8 @@
  */
 import * as AppleAuthentication from 'expo-apple-authentication';
 import { Asset } from 'expo-asset';
+import * as Contacts from 'expo-contacts';
+import * as Crypto from 'expo-crypto';
 import Constants from 'expo-constants';
 import * as FileSystem from 'expo-file-system/legacy';
 import * as SplashScreen from 'expo-splash-screen';
@@ -23,9 +25,42 @@ import { WEB_FILES, WEB_VERSION } from './webManifest';
 SplashScreen.preventAutoHideAsync().catch(() => {});
 
 const ROOT = `${FileSystem.documentDirectory}web/`;
+const APPLE_SIGNIN = !!(Constants.expoConfig?.ios as { usesAppleSignIn?: boolean } | undefined)?.usesAppleSignIn;
 const GOOGLE_IOS_CLIENT_ID: string = (Constants.expoConfig?.extra as { googleIosClientId?: string } | undefined)?.googleIosClientId ?? '';
 
 /** Connexion native demandée par l'interface (pont WebView) : renvoie le jeton d'identité à vérifier par le serveur. */
+/** Même normalisation que le serveur (packages/backend/src/api.ts → normalizePhone). */
+function normalizePhone(raw: string, cc = '33'): string | null {
+  let s = String(raw ?? '').trim().replace(/[\s.\-()/]/g, '');
+  if (!s) return null;
+  if (s.startsWith('00')) s = '+' + s.slice(2);
+  if (!s.startsWith('+')) {
+    if (!/^\d+$/.test(s)) return null;
+    if (s.startsWith('0') && s.length === 10) s = '+' + cc + s.slice(1);
+    else if (s.length === 9 && cc === '33') s = '+33' + s;
+    else return null;
+  }
+  if (!/^\+\d{8,15}$/.test(s)) return null;
+  if (s.startsWith('+330')) s = '+33' + s.slice(4);
+  return s;
+}
+/** Contacts du téléphone → empreintes SHA-256 (seules les empreintes quittent l'app ; les noms restent sur le téléphone). */
+async function nativeContacts(): Promise<Record<string, unknown>> {
+  const perm = await Contacts.requestPermissionsAsync();
+  if (perm.status !== 'granted') return { denied: true };
+  const { data } = await Contacts.getContactsAsync({ fields: [Contacts.Fields.Emails, Contacts.Fields.PhoneNumbers, Contacts.Fields.Name] });
+  const entries: { name: string; hashes: string[] }[] = [];
+  for (const c of data.slice(0, 5000)) {
+    const ids = new Set<string>();
+    for (const e of c.emails ?? []) if (e.email) ids.add(e.email.trim().toLowerCase());
+    for (const p of c.phoneNumbers ?? []) { const n = normalizePhone(p.number ?? p.digits ?? ''); if (n) ids.add(n); }
+    if (!ids.size) continue;
+    const hashes = await Promise.all([...ids].map((v) => Crypto.digestStringAsync(Crypto.CryptoDigestAlgorithm.SHA256, v)));
+    entries.push({ name: c.name || [c.firstName, c.lastName].filter(Boolean).join(' ') || '', hashes });
+  }
+  return { entries, total: data.length };
+}
+
 async function nativeSignIn(provider: string): Promise<Record<string, unknown>> {
   if (provider === 'apple') {
     if (Platform.OS !== 'ios' || !(await AppleAuthentication.isAvailableAsync())) return { error: 'Connexion Apple indisponible sur cet appareil.' };
@@ -82,9 +117,10 @@ export default function App() {
     let m: { type?: string; provider?: string; id?: string };
     try { m = JSON.parse(e.nativeEvent.data); } catch { return; }
     if (m.type === 'auth' && m.provider) reply({ id: m.id, ...(await nativeSignIn(m.provider)) });
+    if (m.type === 'contacts') { try { reply({ id: m.id, ...(await nativeContacts()) }); } catch { reply({ id: m.id, error: 'Lecture des contacts impossible.' }); } }
   };
   // Disponibilité annoncée à l'interface avant son chargement.
-  const bootstrap = `window.ONEERA_NATIVE = ${JSON.stringify({ apple: Platform.OS === 'ios', google: !!GOOGLE_IOS_CLIENT_ID, platform: Platform.OS })}; true;`;
+  const bootstrap = `window.ONEERA_NATIVE = ${JSON.stringify({ apple: Platform.OS === 'ios' && APPLE_SIGNIN, google: !!GOOGLE_IOS_CLIENT_ID, contacts: true, platform: Platform.OS })}; true;`;
 
   useEffect(() => {
     installWeb().then(setRoot).catch((e) => setError(String(e?.message ?? e)));

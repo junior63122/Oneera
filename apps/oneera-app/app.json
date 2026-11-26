@@ -41,7 +41,13 @@
           "backgroundColor": "#010922"
         }
       ],
-      "expo-apple-authentication"
+      "expo-apple-authentication",
+      [
+        "expo-contacts",
+        {
+          "contactsPermission": "ONEERA compare des empreintes de tes contacts (jamais leurs noms ni numéros) pour te montrer ceux qui utilisent déjà ONEERA."
+        }
+      ]
     ],
     "owner": "juniorjoyants-team",
     "extra": {

@@ -506,3 +506,5 @@ input,textarea{font-size:16px} /* < 16 px : iOS zoome la page à la saisie */
 /* mot de passe à la création : points masqués sans déclencher la surcouche « mot de passe fort » d'iOS */
 .pwmask{-webkit-text-security:disc}
 #screen input,#screen textarea{font-size:16px!important}
+.ctc{background:#F3F5FB;gap:10px}.ctcIco{width:46px;height:46px;border-radius:23px;background:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+details.phone{background:#F7F7F9;border-radius:14px;padding:12px 14px}details.phone summary{font-weight:700;font-size:14px;cursor:pointer}

@@ -1,0 +1,33 @@
+// 3 téléphones : A trouve ses contacts qui ont ONEERA (B par e-mail, C par téléphone), « Tout ajouter », B et C acceptent
+const { chromium, devices } = require('playwright'); const crypto = require('crypto');
+const API = process.env.API || 'http://127.0.0.1:8787', O = '/tmp/claude-0/-home-user-Oneera/e47acb2e-3cca-5354-8da8-dc5b80c26757/scratchpad/e2e/';
+const H = v => crypto.createHash('sha256').update(v).digest('hex');
+(async () => {
+  const b = await chromium.launch(); let n = 0, f = 0; const ok = (c, m) => { n++; if (!c) f++; console.log((c ? 'OK   ' : 'FAIL ') + m); };
+  const r = Math.random().toString(36).slice(2, 7);
+  const phone = async (tag, contacts) => { const c = await b.newContext({ ...devices['iPhone 14'] }); const p = await c.newPage(); p.errs = []; p.on('pageerror', e => p.errs.push(e.message)); p.tag = tag;
+    if (contacts) await p.addInitScript((entries) => { window.ONEERA_NATIVE = { apple: false, google: false, contacts: true }; window.ReactNativeWebView = { postMessage: (s) => { const m = JSON.parse(s); setTimeout(() => window.__oneeraNative({ id: m.id, entries, total: entries.length + 3 }), 80); } }; }, contacts);
+    await p.goto(`http://127.0.0.1:8090/local.html?nouveau&api=${encodeURIComponent(API)}`); await p.waitForTimeout(600); return p; };
+  const signup = async (p, name, email) => { await p.click('#su'); await p.fill('#fn', name); await p.fill('#em', email); await p.fill('#pw', 'motdepasse-test'); await p.click('#go'); await p.waitForSelector('.studio', { timeout: 30000 }); await p.click('#go'); await p.waitForSelector('#later'); await p.click('#later'); await p.waitForSelector('#scan', { timeout: 10000 }); };
+  const B = await phone('B'), C = await phone('C');
+  await signup(B, 'Bastien', `bastien-${r}@test.oneera`); await signup(C, 'Chloé', `chloe-${r}@test.oneera`);
+  await C.click('#phd summary'); await C.fill('#ph', '06 98 76 54 3' + (r.charCodeAt(0) % 10)); await C.click('#phs'); await C.waitForTimeout(800);
+  ok(/Numéro enregistré/.test(await C.textContent('#msg')), 'C : numéro enregistré (empreinte seulement)');
+  const cPhone = '+3369876543' + (r.charCodeAt(0) % 10);
+  const A = await phone('A', [{ name: 'Bastien (perso)', hashes: [H(`bastien-${r}@test.oneera`)] }, { name: 'Chloé Martin', hashes: [H(cPhone)] }, { name: 'Inconnu', hashes: [H('personne@nulle.part')] }]);
+  await signup(A, 'Alex', `alex-${r}@test.oneera`);
+  await A.click('#scan'); await A.waitForSelector('#all', { timeout: 15000 });
+  ok(/2 de tes contacts ont ONEERA/.test(await A.textContent('#cres')), 'A : « 2 de tes contacts ont ONEERA » (e-mail + téléphone, inconnu ignoré)');
+  ok(/Chloé Martin/.test(await A.textContent('#cres')), 'A : le nom du contact (resté sur le téléphone) est affiché');
+  await A.screenshot({ path: O + 'contacts_A.png' });
+  await A.click('#all'); await A.waitForFunction(() => /demandes? envoyée/.test(document.querySelector('#msg')?.textContent || ''), null, { timeout: 10000 });
+  ok(true, 'A : « Tout ajouter (2) » en un geste → 2 demandes envoyées');
+  await B.waitForSelector('[data-acc]', { timeout: 20000 }).then(() => ok(true, 'B : la demande d’Alex arrive en direct')).catch(() => ok(false, 'B : demande reçue'));
+  await B.click('[data-acc]'); await B.waitForTimeout(800);
+  await C.waitForSelector('[data-acc]', { timeout: 20000 }); await C.click('[data-acc]'); await C.waitForTimeout(800);
+  await A.waitForFunction(() => REAL.friends.filter(f => f.status === 'accepted').length === 2, null, { timeout: 20000 }).then(() => ok(true, 'A : Bastien et Chloé sont amis (acceptation reçue en direct)')).catch(() => ok(false, 'A : 2 amis'));
+  ok(/2 amis/.test(await A.textContent('#go')), 'A : bouton « Voir la carte (2 amis) »');
+  await A.screenshot({ path: O + 'contacts_A2.png' }); await B.screenshot({ path: O + 'contacts_B.png' });
+  ok([A, B, C].every(p => p.errs.length === 0), 'erreurs JS : ' + ([A, B, C].flatMap(p => p.errs).join(' | ') || 'aucune'));
+  console.log(`${n - f}/${n}`); await b.close();
+})();
