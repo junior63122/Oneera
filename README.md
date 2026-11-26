@@ -41,6 +41,6 @@ Moteur V2 complet, calibré sur site, comparé à l'approche « balise la plus p
 | Foule dense, iOS | **V2** | **1,8 m** | **6,9 m** | **94 %** | **0** | **0** |
 | Foule dense, Android | **V2** | **1,7 m** | 8,9 m | 92 % | **0** | **0** |
 
-Depuis le 26/11/2026, le banc compare aussi une variante **sans aucune donnée vérité** : l'état « immobile / marche / danse » est déduit du seul flux de pas (D-019). Elle améliore le P95 Android (foule dense 8,9 → 8,3 m) et reste équivalente sur iOS ; la cible Android foule dense (zone ≥ 93 %, P95 ≤ 8 m) n'est toujours pas atteinte (92 %, 8,3 m).
+Depuis le 26/11/2026, le banc compare aussi une variante **sans aucune donnée vérité** : l'état « immobile / marche / danse » est déduit du seul flux de pas (D-019). Avec le modèle de foule plus réaliste (atténuation aléatoire et variable, relancé le 26/11), elle est équivalente à la variante « vérité » (Android foule dense : P90 6,4 m, P95 9,6 m, zone 92 %) ; la cible Android foule dense (zone ≥ 93 %, P95 ≤ 8 m) n'est **pas** atteinte avec des balises BLE seules. Les bancs `friends`, `mesh` et `crowdflow` (`reports/friends-sim.md`, `mesh-sim.md`, `app-sim.md`) comparent les technologies candidates en foule très dense et sans réseau.
 
 L'apprentissage en ligne de l'atténuation due à la foule a fait passer la bonne zone en foule dense de 88–89 % à 92–94 %. Android en foule dense (92 %, P95 8,9 m) reste sous les cibles (93 %, 8 m) : prochains leviers = densité de balises, classification danse/marche. Chiffres complets et limites dans `reports/positioning-sim.md`.

@@ -1,0 +1,338 @@
+[
+ {
+  "density": "dense (club plein)",
+  "tech": {
+   "name": "BLE balises (actuel)",
+   "direct": "none",
+   "note": "tous téléphones"
+  },
+  "m": {
+   "absMed": 1.7842118138451488,
+   "absP95": 5.179464484392708,
+   "relMed": 2.8738061280660347,
+   "relP90": 7.178281881665198,
+   "found3": 0.5269789983844911,
+   "found5": 0.7825525040387722,
+   "direct": 0,
+   "n": 3095
+  }
+ },
+ {
+  "density": "dense (club plein)",
+  "tech": {
+   "name": "BLE, 2× plus de balises",
+   "dense2x": true,
+   "direct": "none",
+   "note": "tous téléphones"
+  },
+  "m": {
+   "absMed": 1.5652172149692831,
+   "absP95": 4.832210713474168,
+   "relMed": 2.107695682638554,
+   "relP90": 5.466113265270494,
+   "found3": 0.6930533117932148,
+   "found5": 0.8798061389337641,
+   "direct": 0,
+   "n": 3095
+  }
+ },
+ {
+  "density": "dense (club plein)",
+  "tech": {
+   "name": "BLE + UWB ancres (DL-TDoA)",
+   "uwbAnchors": true,
+   "direct": "none",
+   "note": "téléphones haut de gamme récents"
+  },
+  "m": {
+   "absMed": 0.42403547690400584,
+   "absP95": 2.15385708924605,
+   "relMed": 0.615195089272529,
+   "relP90": 1.930741435313184,
+   "found3": 0.9411954765751211,
+   "found5": 0.9867528271405492,
+   "direct": 0,
+   "n": 3095
+  }
+ },
+ {
+  "density": "dense (club plein)",
+  "tech": {
+   "name": "BLE + recherche de précision UWB entre amis",
+   "direct": "uwb-peer",
+   "note": "deux téléphones UWB, app ouverte"
+  },
+  "m": {
+   "absMed": 1.7842118138451488,
+   "absP95": 5.179464484392708,
+   "relMed": 2.087883251164113,
+   "relP90": 6.231985176381019,
+   "found3": 0.6762520193861066,
+   "found5": 0.8497576736672051,
+   "direct": 0.4206785137318255,
+   "n": 3095
+  }
+ },
+ {
+  "density": "dense (club plein)",
+  "tech": {
+   "name": "BLE + Channel Sounding entre amis",
+   "direct": "cs-peer",
+   "note": "deux téléphones BT 6, app ouverte"
+  },
+  "m": {
+   "absMed": 1.7842118138451488,
+   "absP95": 5.179464484392708,
+   "relMed": 2.4422170031259185,
+   "relP90": 6.643317995754126,
+   "found3": 0.6042003231017771,
+   "found5": 0.8219709208400646,
+   "direct": 0.4,
+   "n": 3095
+  }
+ },
+ {
+  "density": "dense (club plein)",
+  "tech": {
+   "name": "BLE 2× + UWB ancres + UWB entre amis",
+   "dense2x": true,
+   "uwbAnchors": true,
+   "direct": "uwb-peer",
+   "note": "cible « premium »"
+  },
+  "m": {
+   "absMed": 0.36503114144238746,
+   "absP95": 1.6423523906583797,
+   "relMed": 0.5527294214199489,
+   "relP90": 1.6693823179744156,
+   "found3": 0.9709208400646203,
+   "found5": 0.9948303715670436,
+   "direct": 0.4206785137318255,
+   "n": 3095
+  }
+ },
+ {
+  "density": "très dense (devant de scène)",
+  "tech": {
+   "name": "BLE balises (actuel)",
+   "direct": "none",
+   "note": "tous téléphones"
+  },
+  "m": {
+   "absMed": 2.904907241837346,
+   "absP95": 10.313942747632211,
+   "relMed": 4.023744662569596,
+   "relP90": 10.416209149377652,
+   "found3": 0.34327062228654126,
+   "found5": 0.6095513748191027,
+   "direct": 0,
+   "n": 3455
+  }
+ },
+ {
+  "density": "très dense (devant de scène)",
+  "tech": {
+   "name": "BLE, 2× plus de balises",
+   "dense2x": true,
+   "direct": "none",
+   "note": "tous téléphones"
+  },
+  "m": {
+   "absMed": 2.035921373802297,
+   "absP95": 10.068095025227834,
+   "relMed": 3.0678309143095577,
+   "relP90": 7.834423470903071,
+   "found3": 0.4882778581765557,
+   "found5": 0.7374819102749638,
+   "direct": 0,
+   "n": 3455
+  }
+ },
+ {
+  "density": "très dense (devant de scène)",
+  "tech": {
+   "name": "BLE + UWB ancres (DL-TDoA)",
+   "uwbAnchors": true,
+   "direct": "none",
+   "note": "téléphones haut de gamme récents"
+  },
+  "m": {
+   "absMed": 0.6242399013384491,
+   "absP95": 3.0083805646928323,
+   "relMed": 0.9673257977913388,
+   "relP90": 3.2074473228694,
+   "found3": 0.8885672937771346,
+   "found5": 0.9557163531114327,
+   "direct": 0,
+   "n": 3455
+  }
+ },
+ {
+  "density": "très dense (devant de scène)",
+  "tech": {
+   "name": "BLE + recherche de précision UWB entre amis",
+   "direct": "uwb-peer",
+   "note": "deux téléphones UWB, app ouverte"
+  },
+  "m": {
+   "absMed": 2.904907241837346,
+   "absP95": 10.313942747632211,
+   "relMed": 3.3248971658994346,
+   "relP90": 9.421560868375312,
+   "found3": 0.45672937771345873,
+   "found5": 0.6882778581765557,
+   "direct": 0.4558610709117221,
+   "n": 3455
+  }
+ },
+ {
+  "density": "très dense (devant de scène)",
+  "tech": {
+   "name": "BLE + Channel Sounding entre amis",
+   "direct": "cs-peer",
+   "note": "deux téléphones BT 6, app ouverte"
+  },
+  "m": {
+   "absMed": 2.904907241837346,
+   "absP95": 10.313942747632211,
+   "relMed": 3.6940761943685354,
+   "relP90": 9.78549265910976,
+   "found3": 0.39971056439942115,
+   "found5": 0.6535455861070911,
+   "direct": 0.4141823444283647,
+   "n": 3455
+  }
+ },
+ {
+  "density": "très dense (devant de scène)",
+  "tech": {
+   "name": "BLE 2× + UWB ancres + UWB entre amis",
+   "dense2x": true,
+   "uwbAnchors": true,
+   "direct": "uwb-peer",
+   "note": "cible « premium »"
+  },
+  "m": {
+   "absMed": 0.5589904135024336,
+   "absP95": 3.7561616880461215,
+   "relMed": 0.9441040049327241,
+   "relP90": 3.439801775789147,
+   "found3": 0.8758321273516643,
+   "found5": 0.957452966714906,
+   "direct": 0.4558610709117221,
+   "n": 3455
+  }
+ },
+ {
+  "density": "compact (4–6 pers./m²)",
+  "tech": {
+   "name": "BLE balises (actuel)",
+   "direct": "none",
+   "note": "tous téléphones"
+  },
+  "m": {
+   "absMed": 3.421781719335287,
+   "absP95": 10.861062467030889,
+   "relMed": 6.9243839219973715,
+   "relP90": 13.580787719080735,
+   "found3": 0.1861373250894891,
+   "found5": 0.35177351122681416,
+   "direct": 0,
+   "n": 3073
+  }
+ },
+ {
+  "density": "compact (4–6 pers./m²)",
+  "tech": {
+   "name": "BLE, 2× plus de balises",
+   "dense2x": true,
+   "direct": "none",
+   "note": "tous téléphones"
+  },
+  "m": {
+   "absMed": 2.421602382011733,
+   "absP95": 11.088689019890667,
+   "relMed": 5.412701123244733,
+   "relP90": 10.707249669099426,
+   "found3": 0.2824601366742597,
+   "found5": 0.4685974617637488,
+   "direct": 0,
+   "n": 3073
+  }
+ },
+ {
+  "density": "compact (4–6 pers./m²)",
+  "tech": {
+   "name": "BLE + UWB ancres (DL-TDoA)",
+   "uwbAnchors": true,
+   "direct": "none",
+   "note": "téléphones haut de gamme récents"
+  },
+  "m": {
+   "absMed": 0.9189994876338199,
+   "absP95": 5.1526705244732405,
+   "relMed": 1.586096593908227,
+   "relP90": 5.357025064596645,
+   "found3": 0.7543117474780345,
+   "found5": 0.8831760494630654,
+   "direct": 0,
+   "n": 3073
+  }
+ },
+ {
+  "density": "compact (4–6 pers./m²)",
+  "tech": {
+   "name": "BLE + recherche de précision UWB entre amis",
+   "direct": "uwb-peer",
+   "note": "deux téléphones UWB, app ouverte"
+  },
+  "m": {
+   "absMed": 3.421781719335287,
+   "absP95": 10.861062467030889,
+   "relMed": 5.397136772786894,
+   "relP90": 12.117052451533532,
+   "found3": 0.3023104458184185,
+   "found5": 0.47347868532378784,
+   "direct": 0.44679466319557437,
+   "n": 3073
+  }
+ },
+ {
+  "density": "compact (4–6 pers./m²)",
+  "tech": {
+   "name": "BLE + Channel Sounding entre amis",
+   "direct": "cs-peer",
+   "note": "deux téléphones BT 6, app ouverte"
+  },
+  "m": {
+   "absMed": 3.421781719335287,
+   "absP95": 10.861062467030889,
+   "relMed": 5.8630539930670285,
+   "relP90": 12.246091385214779,
+   "found3": 0.25805401887406443,
+   "found5": 0.43638138626749107,
+   "direct": 0.3979824275951839,
+   "n": 3073
+  }
+ },
+ {
+  "density": "compact (4–6 pers./m²)",
+  "tech": {
+   "name": "BLE 2× + UWB ancres + UWB entre amis",
+   "dense2x": true,
+   "uwbAnchors": true,
+   "direct": "uwb-peer",
+   "note": "cible « premium »"
+  },
+  "m": {
+   "absMed": 0.787861876781288,
+   "absP95": 4.872030151898172,
+   "relMed": 1.469007006345245,
+   "relP90": 4.94215442684307,
+   "found3": 0.7650504393101204,
+   "found5": 0.9017246989912138,
+   "direct": 0.44679466319557437,
+   "n": 3073
+  }
+ }
+]
