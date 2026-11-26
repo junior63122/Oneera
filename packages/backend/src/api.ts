@@ -12,6 +12,10 @@ import { promisify } from 'node:util';
 import { createRemoteJWKSet, JWTVerifyGetKey, jwtVerify, SignJWT } from 'jose';
 import { Pool, withContext, withSystem } from './db';
 import { issueToken } from './gateway';
+import { isOffensive } from './moderation';
+
+/** Stickers du chat : identifiants autorisés (l'app dessine l'avatar de l'expéditeur avec la légende). */
+export const STICKERS = ['arrive', 'bar', 'ouestu', 'danse', 'top', 'dodo', 'love', 'merci', 'scene', 'retard'] as const;
 
 const scrypt = promisify(scryptCb) as (pw: string, salt: Buffer, len: number, opts: object) => Promise<Buffer>;
 const POLICY = 'test-2026-11';
@@ -139,7 +143,7 @@ export function createApi(opts: ApiOptions) {
   // Prénom : texte simple uniquement (aucun caractère de balisage ni caractère invisible / de contrôle).
   const cleanName = (v: unknown) => { const s = typeof v === 'string' ? v.normalize('NFC').replace(/[<>"&`\\\u0000-\u001f\u007f\u200b-\u200f\u202a-\u202e\u2066-\u2069]/g, '').trim().replace(/\s+/g, ' ') : ''; if ([...s].length < 1 || [...s].length > 40) throw new HttpError(400, 'invalid_name', 'Le prénom doit faire entre 1 et 40 caractères.'); return s; };
   // Avatar : objet de réglages simples uniquement (identifiants courts, nombres, booléens, listes courtes).
-  const TOKEN = /^[A-Za-z0-9_-]{0,24}$/;
+  const TOKEN = /^[A-Za-z0-9_-]{0,24}$/, HEXC = /^#[0-9a-fA-F]{6}$/;
   const cleanAvatar = (v: unknown) => {
     if (v === undefined) return undefined;
     if (v === null || typeof v !== 'object' || Array.isArray(v)) throw new HttpError(400, 'invalid_avatar', 'Avatar invalide.');
@@ -148,9 +152,16 @@ export function createApi(opts: ApiOptions) {
     if (entries.length > 40) throw new HttpError(400, 'invalid_avatar', 'Avatar invalide.');
     for (const [k, x] of entries) {
       if (!TOKEN.test(k) || !k) continue;
-      if (typeof x === 'number' && Number.isFinite(x) && Math.abs(x) < 1000) out[k] = x;
+      if (k === 'text') { if (typeof x !== 'string') continue; // texte sur le haut de l'avatar : court, propre, sans insulte
+        const t = x.normalize('NFC').replace(/[<>"&`\\\u0000-\u001f\u007f\u200b-\u200f\u202a-\u202e\u2066-\u2069]/g, '').trim().replace(/\s+/g, ' ');
+        if ([...t].length > 14) throw new HttpError(400, 'invalid_text', 'Texte trop long (14 caractères maximum).');
+        if (isOffensive(t)) throw new HttpError(400, 'offensive_text', 'Ce texte n’est pas autorisé : il sera visible par d’autres personnes.');
+        if (t) out[k] = t;
+      }
+      else if (typeof x === 'number' && Number.isFinite(x) && Math.abs(x) < 1000) out[k] = x;
       else if (typeof x === 'boolean') out[k] = x;
       else if (typeof x === 'string' && TOKEN.test(x)) out[k] = x;
+      else if (typeof x === 'string' && HEXC.test(x)) out[k] = x.toUpperCase(); // couleur libre (#RRGGBB)
       else if (Array.isArray(x) && x.length <= 12 && x.every((y) => typeof y === 'string' && TOKEN.test(y))) out[k] = x;
     }
     return JSON.stringify(out);
@@ -306,11 +317,12 @@ export function createApi(opts: ApiOptions) {
     'POST /v1/messages': async (req) => {
       const u = await auth(req); limitUser(u, 40, 'msg'); const b = await body(req);
       const to = String(b.to ?? ''); if (!UUID.test(to)) throw new HttpError(400, 'invalid_recipient');
-      const kind = b.kind === 'loc' || b.kind === 'meet' ? b.kind : 'text';
+      const kind = b.kind === 'loc' || b.kind === 'meet' || b.kind === 'sticker' ? b.kind : 'text';
+      if (kind === 'sticker' && !(STICKERS as readonly string[]).includes(String(b.body))) throw new HttpError(400, 'invalid_sticker');
       const text = typeof b.body === 'string' ? b.body.normalize('NFC').replace(/[\u0000-\u0008\u000b-\u001f\u007f\u202a-\u202e\u2066-\u2069]/g, '').trim() : '';
       if (!text || [...text].length > 1000) throw new HttpError(400, 'invalid_message', 'Message vide ou trop long (1000 caractères maximum).');
       let loc: object | null = null;
-      if (kind !== 'text') {
+      if (kind === 'loc' || kind === 'meet') {
         const l = (b.loc ?? {}) as Record<string, unknown>; const x = Number(l.x), y = Number(l.y);
         if (!(x >= 0 && x <= 100 && y >= 0 && y <= 100)) throw new HttpError(400, 'invalid_location');
         const floor = typeof l.floor === 'string' && TOKEN.test(l.floor) ? l.floor : '';

@@ -521,8 +521,8 @@ details.phone{background:#F7F7F9;border-radius:14px;padding:12px 14px}details.ph
 .st2 .stG{flex:1;display:flex;justify-content:center;gap:0;margin:0 auto;max-width:190px;background:rgba(0,0,0,.22);border-radius:20px;padding:3px}
 .st2 .stG button{flex:1;color:rgba(255,255,255,.8);font-weight:800;font-size:13.5px;padding:7px 0;border-radius:17px}
 .st2 .stG button.on{background:#fff;color:#2C2678}
-.st2 .stSave{position:absolute;right:12px;bottom:12px;z-index:5;background:#FFD84D;color:#1D1A4A;font-weight:850;font-size:15px;padding:11px 18px;border-radius:24px;box-shadow:0 6px 18px rgba(0,0,0,.25)}
-.st2 .stMapBtn{left:12px;right:auto;bottom:12px;background:rgba(255,255,255,.16);color:#fff}
+.st2 .stSave{position:absolute;right:14px;bottom:32px;z-index:5;background:#FFD84D;color:#1D1A4A;font-weight:850;font-size:15px;padding:11px 18px;border-radius:24px;box-shadow:0 6px 18px rgba(0,0,0,.25)}
+.st2 .stMapBtn{left:14px;right:auto;bottom:34px;background:rgba(255,255,255,.16);color:#fff}
 .st2 .stPanel{flex:0 0 auto;height:48%;max-height:none;background:#fff;border-radius:24px 24px 0 0;margin-top:-18px;position:relative;z-index:6;padding:6px 0 0;display:flex;flex-direction:column;gap:0;box-shadow:0 -8px 30px rgba(0,0,0,.25)}
 .st2 .stTabs{display:flex;gap:0;padding:4px 6px 0;border-bottom:1px solid #EEF0F6;overflow-x:auto}
 .st2 .stTabs button{flex:1 0 auto;min-width:52px;display:flex;flex-direction:column;align-items:center;gap:2px;padding:8px 6px 7px;background:none;border-radius:0;color:#9196AA;border-bottom:3px solid transparent;font-size:10.5px;font-weight:800}
@@ -549,3 +549,38 @@ details.phone{background:#F7F7F9;border-radius:14px;padding:12px 14px}details.ph
 #screen .pill.ok,#screen .pill.warn,#screen .pill.gray{white-space:nowrap}
 .locmsg + .tiny,.bub + .tiny{margin-top:-4px}
 #screen.realmode #fab-panel{display:none!important}
+/* Studio : couleur libre, texte, onglet Fête, machine à sous */
+.st2 .stFree{position:relative;display:inline-flex;align-items:center;justify-content:center;flex:0 0 auto;width:34px;height:34px;border-radius:50%;cursor:pointer;box-shadow:inset 0 0 0 2px #fff,0 0 0 1px #DADCE6}
+.st2 .stFree i{width:28px;height:28px;border-radius:50%;display:block}
+.st2 .stFree.on{box-shadow:inset 0 0 0 2px #fff,0 0 0 3px #5B4FD6}
+.st2 .stFree input{position:absolute;inset:0;opacity:0;width:100%;height:100%;cursor:pointer;border:0;padding:0}
+.st2 .stHint{font-weight:600;text-transform:none;letter-spacing:0;color:#9196AA;margin-left:4px}
+.st2 .stTxt{display:flex;gap:8px;align-items:center}
+.st2 .stTxt .inp{flex:1;min-width:0;font-weight:800;letter-spacing:.04em}
+.av2big.spin{animation:stSpin .12s linear infinite}
+@keyframes stSpin{0%{transform:translateY(0)}50%{transform:translateY(-6px)}100%{transform:translateY(0)}}
+@media (prefers-reduced-motion: reduce){.av2big.spin{animation:none}}
+/* Avatar vivant sur la carte */
+.mk .fr.lv-dance .bodyimg{animation:lvDance .52s ease-in-out infinite alternate}
+@keyframes lvDance{0%{transform:translateY(0) rotate(-6deg)}50%{transform:translateY(-5px) rotate(0)}100%{transform:translateY(0) rotate(6deg)}}
+.mk .fr.lv-yawn .bodyimg{animation:lvSway 3.2s ease-in-out infinite}
+@keyframes lvSway{0%,100%{transform:rotate(-2deg)}50%{transform:rotate(2deg) scaleY(.98)}}
+.mk .fr.lv-sleep .bodyimg{animation:none;transform:rotate(-4deg);filter:saturate(.75) brightness(.92)}
+.mk .fr .lvZ{position:absolute;top:-6px;right:-14px;z-index:3;font:900 15px/1 Figtree,sans-serif;color:#9B8CFF;text-shadow:0 1px 2px rgba(0,0,0,.35);pointer-events:none;animation:lvZ 2.4s ease-in-out infinite}
+.mk .fr .lvZ b{font-size:12px;margin-left:1px}.mk .fr .lvZ i{font-style:normal;font-size:9px;margin-left:1px}
+@keyframes lvZ{0%{transform:translateY(4px);opacity:0}30%{opacity:1}100%{transform:translateY(-10px);opacity:0}}
+.mk .fr .lvNotes{position:absolute;top:-4px;left:-14px;z-index:3;font:900 15px/1 sans-serif;color:#FF4FD8;text-shadow:0 1px 2px rgba(0,0,0,.35);pointer-events:none;animation:lvZ 1.6s ease-in-out infinite}
+.mk .fr .lvNotes b{color:#22F5FF;font-size:12px;margin-left:2px}
+.mk .fr.lv-near .foot{box-shadow:0 0 0 3px #FFD84D,0 0 16px 4px rgba(255,216,77,.75)!important;animation:lvPulse 1.6s ease-in-out infinite}
+@keyframes lvPulse{50%{box-shadow:0 0 0 4px #FFD84D,0 0 24px 8px rgba(255,216,77,.5)}}
+@media (prefers-reduced-motion: reduce){.mk .fr.lv-dance .bodyimg,.mk .fr.lv-yawn .bodyimg,.mk .fr .lvZ,.mk .fr .lvNotes,.mk .fr.lv-near .foot{animation:none}}
+/* Stickers */
+.stk{display:flex;flex-direction:column;align-items:center;width:132px;background:#fff;border-radius:20px;padding:6px 6px 8px;box-shadow:0 4px 14px rgba(20,30,60,.10)}
+.stk.me{align-self:flex-end;background:#EEF0FF}.stk.them{align-self:flex-start}
+.stk img{width:116px;height:auto;display:block}
+.stk b{font:900 13px/1.15 Figtree,sans-serif;color:#1C1F2A;text-align:center;margin-top:2px}
+.stkGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.stkGrid button{background:none;border:0;padding:0;display:flex;justify-content:center}
+.stkGrid .stk{width:100%;box-shadow:none;background:#F3F5FB}
+.stkGrid .stk img{width:100%}
+#screen.night .stk{background:#1E2230}#screen.night .stk b{color:#ECEEF6}

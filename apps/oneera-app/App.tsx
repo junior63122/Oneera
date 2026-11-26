@@ -6,6 +6,8 @@
  * puis chargés dans une vue web locale. Aucune donnée n'est envoyée : les positions et amis sont simulés.
  */
 import * as AppleAuthentication from 'expo-apple-authentication';
+import * as Battery from 'expo-battery';
+import { Accelerometer } from 'expo-sensors';
 import { Asset } from 'expo-asset';
 import * as Contacts from 'expo-contacts';
 import * as Crypto from 'expo-crypto';
@@ -14,7 +16,7 @@ import * as FileSystem from 'expo-file-system/legacy';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, Platform, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, AppState, Platform, StyleSheet, Text, View } from 'react-native';
 import { WebView as RNWebView, type WebViewMessageEvent } from 'react-native-webview';
 
 // Les types du composant fusionnent les options iOS et Android (incompatibles entre elles) : typage explicite.
@@ -108,10 +110,46 @@ async function installWeb(): Promise<string> {
   return ROOT;
 }
 
+/**
+ * Avatar vivant : l'interface reçoit toutes les 2 s l'« énergie » du mouvement (écart-type de l'accélération, en g)
+ * et le niveau de batterie. Rien n'est enregistré ; capteurs coupés quand l'app passe en arrière-plan.
+ */
+function useLiveSensors(send: (m: unknown) => void, ready: boolean) {
+  useEffect(() => {
+    if (!ready) return;
+    let buf: number[] = [], last = Date.now(), sub: { remove: () => void } | null = null, alive = true;
+    const start = () => {
+      if (sub) return;
+      Accelerometer.setUpdateInterval(50);
+      sub = Accelerometer.addListener(({ x, y, z }) => {
+        buf.push(Math.sqrt(x * x + y * y + z * z));
+        const now = Date.now();
+        if (now - last < 2000) return;
+        last = now;
+        if (buf.length > 10) { const mu = buf.reduce((a, b) => a + b, 0) / buf.length; const sd = Math.sqrt(buf.reduce((a, b) => a + (b - mu) ** 2, 0) / buf.length); send({ type: 'motion', energy: Math.round(sd * 1000) / 1000 }); }
+        buf = [];
+      });
+    };
+    const stop = () => { sub?.remove(); sub = null; buf = []; };
+    const battery = async () => {
+      try {
+        const [level, state] = await Promise.all([Battery.getBatteryLevelAsync(), Battery.getBatteryStateAsync()]);
+        if (alive && level >= 0) send({ type: 'battery', level, charging: state === Battery.BatteryState.CHARGING || state === Battery.BatteryState.FULL });
+      } catch { /* batterie indisponible (simulateur) */ }
+    };
+    Accelerometer.isAvailableAsync().then((ok) => { if (ok && alive && AppState.currentState === 'active') start(); }).catch(() => {});
+    battery();
+    const subs = [Battery.addBatteryLevelListener(() => void battery()), Battery.addBatteryStateListener(() => void battery())];
+    const app = AppState.addEventListener('change', (st) => { if (st === 'active') { Accelerometer.isAvailableAsync().then((ok) => ok && start()).catch(() => {}); void battery(); } else stop(); });
+    return () => { alive = false; stop(); subs.forEach((s) => s.remove()); app.remove(); };
+  }, [ready]);
+}
+
 export default function App() {
   const [root, setRoot] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const web = useRef<WebViewHandle>(null);
+  const [loaded, setLoaded] = useState(false);
   const reply = (msg: unknown) => web.current?.injectJavaScript(`window.__oneeraNative && window.__oneeraNative(${JSON.stringify(msg)}); true;`);
   const onMessage = async (e: WebViewMessageEvent) => {
     let m: { type?: string; provider?: string; id?: string };
@@ -121,6 +159,8 @@ export default function App() {
   };
   // Disponibilité annoncée à l'interface avant son chargement.
   const bootstrap = `window.ONEERA_NATIVE = ${JSON.stringify({ apple: Platform.OS === 'ios' && APPLE_SIGNIN, google: !!GOOGLE_IOS_CLIENT_ID, contacts: true, platform: Platform.OS })}; true;`;
+
+  useLiveSensors(reply, loaded);
 
   useEffect(() => {
     installWeb().then(setRoot).catch((e) => setError(String(e?.message ?? e)));
@@ -161,7 +201,7 @@ export default function App() {
         allowsBackForwardNavigationGestures={false}
         mediaPlaybackRequiresUserAction={false}
         style={styles.web}
-        onLoadEnd={() => SplashScreen.hideAsync().catch(() => {})}
+        onLoadEnd={() => { SplashScreen.hideAsync().catch(() => {}); setLoaded(true); }}
         onContentProcessDidTerminate={() => setRoot(`${root}`)}
         {...(Platform.OS === 'android' ? { mixedContentMode: 'always' as const } : {})}
       />

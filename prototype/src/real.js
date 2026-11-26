@@ -4,7 +4,7 @@
 const REAL = {
   api: (() => { try { const q = new URLSearchParams(location.search).get('api'); if (q) return q.replace(/\/$/, ''); } catch (_) {} return 'https://oneera-api.onrender.com'; })(),
   token: null, user: null, email: '', friends: [], eventId: null, ws: null, wsOk: false, retry: 0,
-  pos: {}, online: {}, lastSent: null, sharingSent: null, testMap: true, demo: false,
+  pos: {}, online: {}, live: {}, lastSent: null, sharingSent: null, testMap: true, demo: false,
 };
 const REAL_KEY = 'oneera.real.v1';
 const realSave = () => { try { localStorage.setItem(REAL_KEY, JSON.stringify({ token: REAL.token, user: REAL.user, email: REAL.email, testMap: REAL.testMap })); } catch (_) {} };
@@ -137,7 +137,7 @@ V.login = () => { const el = mount(authForm(false), 'white'); wireAuth(el, false
 
 // Prénoms et avatars venus du serveur : rendus inoffensifs avant tout affichage (l'interface historique insère parfois du HTML).
 const safeName = (v) => String(v ?? '').replace(/[<>&"'`]/g, (c) => ({ '<': '‹', '>': '›', '&': '＆', '"': '＂', "'": '’', '`': 'ˋ' })[c]).slice(0, 60);
-const safeAvatar = (a) => { if (!a || typeof a !== 'object' || Array.isArray(a)) return null; const o = {}; for (const [k, x] of Object.entries(a)) { if (!/^[A-Za-z0-9_-]{1,24}$/.test(k)) continue; if (typeof x === 'number' && isFinite(x)) o[k] = x; else if (typeof x === 'boolean') o[k] = x; else if (typeof x === 'string' && /^[A-Za-z0-9_-]{0,24}$/.test(x)) o[k] = x; else if (Array.isArray(x) && x.every(y => typeof y === 'string' && /^[A-Za-z0-9_-]{0,24}$/.test(y))) o[k] = x.slice(0, 12); } return o.g ? o : null; };
+const safeAvatar = (a) => { if (!a || typeof a !== 'object' || Array.isArray(a)) return null; const o = {}; for (const [k, x] of Object.entries(a)) { if (!/^[A-Za-z0-9_-]{1,24}$/.test(k)) continue; if (typeof x === 'number' && isFinite(x)) o[k] = x; else if (typeof x === 'boolean') o[k] = x; else if (k === 'text' && typeof x === 'string') { const t = x.replace(/[<>"&`\\\u0000-\u001f]/g, '').slice(0, 14); if (t && !isOffensiveText(t)) o[k] = t; } else if (typeof x === 'string' && /^[A-Za-z0-9_-]{0,24}$/.test(x)) o[k] = x; else if (typeof x === 'string' && /^#[0-9a-fA-F]{6}$/.test(x)) o[k] = x; else if (Array.isArray(x) && x.every(y => typeof y === 'string' && /^[A-Za-z0-9_-]{0,24}$/.test(y))) o[k] = x.slice(0, 12); } return o.g ? o : null; };
 function realApplyUser() {
   const u = REAL.user; if (!u) return;
   ST.me.first = safeName(u.displayName); ST.me.pseudo = safeName(u.displayName);
@@ -147,10 +147,10 @@ function realApplyUser() {
 
 // ---------- avatar : enregistré sur le serveur ----------
 const _avatarPick = V.avatarPick;
-V.avatarPick = (onDone, step) => _avatarPick(() => {
-  if (realOn() && ST.me.av2) api('PATCH', '/v1/me', { avatar: ST.me.av2 }).then(u => { REAL.user = u; realSave(); }).catch(() => toast('Avatar enregistré sur ce téléphone ; envoi au serveur à la prochaine connexion.'));
+V.avatarPick = (onDone, step, init) => _avatarPick(() => {
+  if (realOn() && ST.me.av2) api('PATCH', '/v1/me', { avatar: ST.me.av2 }).then(u => { REAL.user = u; realSave(); }).catch((e) => toast(/autoris|long/.test(e.message) ? esc(e.message) : 'Avatar enregistré sur ce téléphone ; envoi au serveur à la prochaine connexion.'));
   onDone ? onDone() : V.perms();
-}, step);
+}, step, init);
 
 // ---------- amis réels ----------
 const REAL_COLS = ['#0E9F8A', '#E0457B', '#F08C00', '#4F6BF5', '#8E44AD', '#16A085', '#D35400', '#2C3E50'];
@@ -219,6 +219,7 @@ async function realConnect() {
 function realApplyPos(p) {
   if (!p || !p.userId) return;
   REAL.pos[p.userId] = { at: [p.x, p.y], t: p.t || Date.now(), floor: p.floorId };
+  if (p.act || p.bat !== undefined) { const prev = REAL.live[p.userId] || {}; REAL.live[p.userId] = { act: p.act || prev.act, bat: p.bat ?? prev.bat, t: Date.now() }; if (prev.act !== p.act || prev.bat !== p.bat) typeof liveChanged === 'function' && liveChanged(); }
   if (p.online !== undefined) REAL.online[p.userId] = p.online; else REAL.online[p.userId] = true;
   if (!FRIENDS.some(f => f.id === p.userId)) realSyncFriends().catch(() => {});
 }
@@ -228,10 +229,11 @@ tickers.add(dt => {
   _realAcc += dt; if (_realAcc < .25) return; _realAcc = 0;
   if (!realOn() || !REAL.wsOk || !ST.perms.loc || (ST.sharing && ST.sharing.mode === 'off')) return;
   const now = Date.now(), p = ST.me.pos, L = REAL.lastSent;
-  const moved = !L || L.floor !== VENUE.id || Math.hypot(p[0] - L.at[0], p[1] - L.at[1]) > .6;
+  const moved = !L || L.floor !== VENUE.id || Math.hypot(p[0] - L.at[0], p[1] - L.at[1]) > .6 || (typeof LIVE !== 'undefined' && (L.act !== liveAct() || L.bat !== liveBat()));
   if (L && now - L.t < 1000) return;
   if (!moved && L && now - L.t < 10000) return;
-  try { REAL.ws.send(JSON.stringify({ type: 'pos', seq: now, t: now, floorId: VENUE.id, x: +p[0].toFixed(2), y: +p[1].toFixed(2), r68: 3, quality: 'precise' })); REAL.lastSent = { at: [...p], t: now, floor: VENUE.id }; } catch (_) {}
+  try { const lv = typeof LIVE !== 'undefined' && LIVE.share ? { act: liveAct(), ...(liveBat() !== null ? { bat: liveBat() } : {}) } : {};
+    REAL.ws.send(JSON.stringify({ type: 'pos', seq: now, t: now, floorId: VENUE.id, x: +p[0].toFixed(2), y: +p[1].toFixed(2), r68: 3, quality: 'precise', ...lv })); REAL.lastSent = { at: [...p], t: now, floor: VENUE.id, act: lv.act, bat: lv.bat ?? null }; } catch (_) {}
 });
 // Partage : les réglages « Partager ma position » pilotent le serveur.
 listeners.add(() => {
@@ -386,7 +388,7 @@ V.deleteAccount = () => {
 function realLogout(silent) {
   try { REAL.ws && REAL.ws.close(); } catch (_) {}
   Object.assign(REAL, { token: null, user: null, friends: [], pos: {}, online: {}, wsOk: false, sharingSent: null });
-  realSave(); try { localStorage.removeItem(SESSION_KEY); } catch (_) {}
+  REAL.live = {}; realSave(); try { localStorage.removeItem(SESSION_KEY); } catch (_) {}
   FRIENDS.splice(0); ST.friends = []; ST.account = null;
   if (!silent) toast('Déconnecté');
   V.welcome();

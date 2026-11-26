@@ -1,0 +1,15 @@
+const { chromium, devices } = require('playwright');
+const D = process.argv[2] || '/tmp/live';
+(async () => { const b = await chromium.launch(); const p = await (await b.newContext({ ...devices['iPhone 14'], deviceScaleFactor: 1 })).newPage(); const errs = []; p.on('pageerror', e => errs.push(e.message));
+  await p.goto('http://127.0.0.1:8090/local.html?nouveau'); await p.waitForTimeout(800);
+  await p.evaluate(() => { quickSetup(); ST.tourDone = true; ST.introSeen = { bdf: 1 }; V.map(); }); await p.waitForTimeout(2500);
+  await p.screenshot({ path: D + '_1carte.png' });
+  await p.evaluate(() => { LIVE.sim.act = 'dance'; liveChanged(); }); await p.waitForTimeout(1200); await p.screenshot({ path: D + '_2moi-danse.png' });
+  await p.evaluate(() => { LIVE.sim = { bat: 6 }; liveChanged(); }); await p.waitForTimeout(1200); await p.screenshot({ path: D + '_3moi-dort.png' });
+  await p.evaluate(() => { LIVE.sim = {}; V.meSheet(); }); await p.waitForTimeout(800); await p.screenshot({ path: D + '_4fiche-moi.png' });
+  await p.evaluate(() => V.liveSettings()); await p.waitForTimeout(600); await p.screenshot({ path: D + '_5reglages.png' });
+  await p.evaluate(() => { closeSheet(true); V.avatarEditor(null); }); await p.waitForTimeout(800); await p.click('[aria-label="Fête"]'); await p.waitForTimeout(1200); await p.screenshot({ path: D + '_6studio-fete.png' });
+  await p.evaluate(() => document.querySelector('#bd').scrollTop = 520); await p.waitForTimeout(500); await p.screenshot({ path: D + '_7studio-fete2.png' });
+  await p.click('#rd'); await p.waitForTimeout(250); await p.screenshot({ path: D + '_8machine.png' }); await p.waitForTimeout(1600);
+  await p.evaluate(() => stickerTray(() => {})); await p.waitForTimeout(900); await p.screenshot({ path: D + '_9stickers.png' });
+  console.log('erreurs', errs); await b.close(); })();

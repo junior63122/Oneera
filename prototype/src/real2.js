@@ -86,11 +86,13 @@ V.friendSheet = (id) => {
     ${!pos ? `<div class="card" style="background:#F3F5FB"><div class="small">${esc(f.displayName)} ne partage pas sa position sur ce lieu en ce moment. Tu peux lui écrire ou lui envoyer la tienne.</div></div>` : ''}
     ${pos ? `<div class="grid2"><button class="btn" id="join">${I.route.replace('<svg', '<svg width="18"')} Rejoindre</button><button class="btn dark" id="find">${I.locate.replace('<svg', '<svg width="18"')} Boussole</button></div>` : ''}
     <div class="grid2"><button class="btn white" id="msg">${I.chat.replace('<svg', '<svg width="18"')} Écrire</button><button class="btn white" id="here">📍 Viens ici !</button></div>
+    ${FRIEND_AV2[id] ? copyLookBtn() : ''}
     <button class="link" id="rm" style="justify-content:flex-start;gap:8px;color:#C0392B">${I.trash.replace('<svg', '<svg width="18"')} Retirer de mes amis</button>`);
   $('#join', sb) && ($('#join', sb).onclick = () => { closeSheet(true); V.goTo(rPos(id), f.displayName); });
   $('#find', sb) && ($('#find', sb).onclick = () => V.findFriend(id));
   $('#msg', sb).onclick = () => V.chat(id);
   $('#here', sb).onclick = async () => { const b = $('#here', sb); b.disabled = true; try { await realSendLoc(id, 'meet'); closeSheet(); toast(`<img src="${fHead(id)}" alt="">${esc(f.displayName)} a reçu ta position avec l’itinéraire`); } catch (e) { toast(esc(e.message)); b.disabled = false; } };
+  $('#cpl', sb) && ($('#cpl', sb).onclick = () => V.copyLook(FRIEND_AV2[id], f.displayName));
   $('#rm', sb).onclick = () => { const s2 = openSheet(`<h2 class="h2">Retirer ${esc(f.displayName)} ?</h2><div class="small">Vous ne verrez plus vos positions et ne pourrez plus vous écrire. Tu pourras le rajouter plus tard.</div><button class="btn red" id="ok">Retirer de mes amis</button><button class="btn white" id="no">Annuler</button>`);
     $('#no', s2).onclick = () => closeSheet(); $('#ok', s2).onclick = async () => { $('#ok', s2).disabled = true; try { await api('DELETE', `/v1/friends/${id}`); delete REAL.pos[id]; delete FR_STATE[id]; closeSheet(true); toast(`${esc(f.displayName)} retiré de tes amis`); await realSyncFriends(); } catch (e) { toast(esc(e.message)); $('#ok', s2).disabled = false; } }; };
   if (MV && pos) MV.flyTo([pos[0], pos[1] + 7], Math.max(MV.s, .6));
@@ -134,7 +136,7 @@ async function realSend(id, body, kind = 'text', loc = null) {
   const c = REAL.convos[id] = REAL.convos[id] || { msgs: [], loaded: false };
   const tmp = { id: 'tmp' + Date.now() + Math.random(), mine: true, kind, body, loc, at: new Date().toISOString(), pending: true };
   c.msgs.push(tmp); REAL.onChat && REAL.onChat(id);
-  try { const r = await api('POST', '/v1/messages', { to: id, body, kind, loc }); tmp.pending = false; if (c.msgs.some(m => m.id === r.id)) c.msgs.splice(c.msgs.indexOf(tmp), 1); else tmp.id = r.id; tmp.at = r.at; }
+  try { const r = await api('POST', '/v1/messages', { to: id, body, kind, loc }); tmp.pending = false; if (c.msgs.some(m => m !== tmp && m.id === r.id)) c.msgs.splice(c.msgs.indexOf(tmp), 1); else tmp.id = r.id; tmp.at = r.at; }
   catch (e) { tmp.pending = false; tmp.failed = e.message; REAL.onChat && REAL.onChat(id); throw e; }
   REAL.onChat && REAL.onChat(id); realSyncConvos().catch(() => {});
 }
@@ -146,9 +148,9 @@ function realOnMessage(msg) {
   const c = REAL.convos[other]; const m = { id: msg.id, mine, kind: msg.kind, body: msg.body, loc: msg.loc, at: msg.at };
   if (c && !c.msgs.some(x => x.id === msg.id)) { if (mine) { const t = c.msgs.find(x => x.pending && x.body === msg.body); if (t) { t.id = msg.id; t.pending = false; } else c.msgs.push(m); } else c.msgs.push(m); }
   if (!mine) {
-    ST.bubbles[other] = { t: msg.body.length > 60 ? msg.body.slice(0, 57) + '…' : msg.body, at: ST.clock, v: VENUE.id };
+    { const bt = msg.kind === 'sticker' ? stickerCap(msg.body) : msg.body; ST.bubbles[other] = { t: bt.length > 60 ? bt.slice(0, 57) + '…' : bt, at: ST.clock, v: VENUE.id }; }
     if (REAL.chatOpen === other) api('POST', `/v1/messages/${other}/read`, {}).catch(() => {});
-    else { realFeed({ k: 'msg', id: other, n: (rFriend(other) || {}).displayName || 'Un ami', body: msg.kind === 'text' ? msg.body : msg.kind === 'meet' ? '🙋 Rejoins-moi ici' : '📍 Position partagée' }); ST.unread.by[other] = (ST.unread.by[other] || 0) + 1; const f = rFriend(other); showPush({ title: esc(f ? f.displayName : 'Nouveau message'), text: esc(msg.body.length > 140 ? msg.body.slice(0, 137) + '…' : msg.body), icon: fHead(other), onTap: () => V.chat(other) }); }
+    else { realFeed({ k: 'msg', id: other, n: (rFriend(other) || {}).displayName || 'Un ami', body: msg.kind === 'text' ? msg.body : msg.kind === 'sticker' ? '🎨 ' + stickerCap(msg.body) : msg.kind === 'meet' ? '🙋 Rejoins-moi ici' : '📍 Position partagée' }); ST.unread.by[other] = (ST.unread.by[other] || 0) + 1; const f = rFriend(other); showPush({ title: esc(f ? f.displayName : 'Nouveau message'), text: esc(msg.kind === 'sticker' ? '🎨 ' + stickerCap(msg.body) : msg.body.length > 140 ? msg.body.slice(0, 137) + '…' : msg.body), icon: fHead(other), onTap: () => V.chat(other) }); }
     emit();
   }
   REAL.onChat && REAL.onChat(other); realBadges();
@@ -160,7 +162,7 @@ V.chatList = () => {
   if (!realOn()) return _chatListDemo();
   const el = mount(`${statusBar()}<div class="topbar"><h1 class="left" style="font-size:28px;font-weight:800">Discussions</h1><button class="rb" id="new" aria-label="Nouvelle discussion">${I.plus}</button></div><div class="body" id="cl" style="padding-bottom:110px"></div>${navBar('chat')}`);
   wireNav(el); el.dataset.real = 'chats';
-  const prev = (l) => l.kind === 'text' ? esc(l.body) : '📍 ' + (l.kind === 'meet' ? 'Rejoins-moi ici' : 'Position partagée');
+  const prev = (l) => l.kind === 'text' ? esc(l.body) : l.kind === 'sticker' ? '🎨 ' + esc(stickerCap(l.body)) : '📍 ' + (l.kind === 'meet' ? 'Rejoins-moi ici' : 'Position partagée');
   const draw = () => {
     const cl = $('#cl', el), conv = (REAL.convList || []).filter(c => rFriend(c.friendId)), withC = new Set(conv.map(c => c.friendId));
     const others = rAccepted().filter(f => !withC.has(f.id));
@@ -184,11 +186,12 @@ V.chat = (id) => {
   const el = mount(`${statusBar()}<div class="topbar chathead" style="background:#fff;border-bottom:1px solid var(--line)"><button class="rb ghost" id="bk" aria-label="Retour">${I.back}</button><img class="av sm" src="${fHead(id)}" alt=""><button id="who" style="flex:1;min-width:0;text-align:left;background:none;border:0;padding:0;color:inherit"><b style="display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(f.displayName)}</b><div class="tiny" id="st">${rStatus(id).t}</div></button></div>
     <div class="msgs" id="ms"></div>
     <div class="chips quick" style="padding:6px 12px;background:#F7F7F9;flex-wrap:nowrap;overflow-x:auto" id="qr"><button class="chip" data-k="loc">📍 Ma position</button><button class="chip" data-k="meet">🙋 Rejoins-moi ici</button>${['On se retrouve où ?', 'J’arrive', 'Je suis au bar'].map(q => `<button class="chip" data-q="${q}">${q}</button>`).join('')}</div>
-    <div class="composer"><input class="inp" id="tx" placeholder="Message" autocomplete="off" enterkeyhint="send" maxlength="1000" aria-label="Message"><button class="rb" id="snd" aria-label="Envoyer" style="background:var(--pri);color:#fff">${I.send}</button></div>`);
+    <div class="composer"><button class="rb ghost" id="stkb" aria-label="Stickers" style="font-size:22px">😀</button><input class="inp" id="tx" placeholder="Message" autocomplete="off" enterkeyhint="send" maxlength="1000" aria-label="Message"><button class="rb" id="snd" aria-label="Envoyer" style="background:var(--pri);color:#fff">${I.send}</button></div>`);
   el.dataset.real = 'chat';
   const ms = $('#ms', el);
   const bubble = (m) => {
     const st = m.failed ? `<div class="tiny" style="color:#C0392B;text-align:right">Non envoyé · <button class="link" data-retry="${m.id}" style="display:inline;min-height:0;padding:0;font-size:inherit">Réessayer</button></div>` : m.pending ? '<div class="tiny" style="text-align:right;opacity:.6">Envoi…</div>' : '';
+    if (m.kind === 'sticker') return stickerHTML(m.mine ? myAv2() : FRIEND_AV2[id], m.body, m.mine) + st;
     if (m.kind !== 'text' && m.loc) { const L = m.loc, same = !L.floor || L.floor === VENUE.id;
       return `<div class="locmsg" style="align-self:${m.mine ? 'flex-end' : 'flex-start'}"><div class="lm" style="background-position:${L.x}% ${L.y}%"><span style="position:absolute;left:50%;top:50%;width:16px;height:16px;margin:-8px;border-radius:8px;background:${m.mine ? 'var(--pri)' : '#FF6B4A'};border:3px solid #fff;box-shadow:0 0 0 6px rgba(79,107,245,.25)"></span></div><div style="padding:8px 12px"><b style="font-size:14px">${m.kind === 'meet' ? '🙋 Rejoins-moi ici' : '📍 Position partagée'}</b><div class="small">${esc(L.label || '')} · ${fmtTime(m.at)}</div>${!m.mine && same ? `<button class="btn sm" data-go="${L.x},${L.y}" style="margin-top:8px">Y aller</button>` : ''}</div></div>${st}`; }
     return `<div class="bub ${m.mine ? 'me' : 'them'}" title="${fmtTime(m.at)}">${esc(m.body)}</div>${st}`;
@@ -198,6 +201,7 @@ V.chat = (id) => {
     if (stick || atBottom) ms.scrollTop = ms.scrollHeight; };
   const send = async (body, kind, loc) => { try { await (kind ? realSendLoc(id, kind) : realSend(id, body)); } catch (e) { toast(esc(e.message)); } };
   $('#snd', el).onclick = () => { const v = $('#tx', el).value.trim(); if (!v) return $('#tx', el).focus(); $('#tx', el).value = ''; send(v); $('#tx', el).focus(); };
+  $('#stkb', el).onclick = () => stickerTray(k => realSend(id, k, 'sticker').catch(e => toast(esc(e.message))));
   $('#tx', el).onkeydown = e => { if (e.key === 'Enter') { e.preventDefault(); $('#snd', el).click(); } };
   $('#qr', el).onclick = e => { const q = e.target.closest('[data-q]'), k = e.target.closest('[data-k]'); if (q) send(q.dataset.q); if (k) send(null, k.dataset.k); };
   ms.onclick = e => { const g = e.target.closest('[data-go]'); if (g) { const [x, y] = g.dataset.go.split(',').map(Number); V.goTo([x, y], f.displayName); return; }

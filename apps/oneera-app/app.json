@@ -12,7 +12,7 @@
     ],
     "ios": {
       "bundleIdentifier": "com.mapping.festival",
-      "buildNumber": "103",
+      "buildNumber": "104",
       "supportsTablet": false,
       "config": {
         "usesNonExemptEncryption": false
@@ -46,6 +46,12 @@
         "expo-contacts",
         {
           "contactsPermission": "ONEERA compare des empreintes de tes contacts (jamais leurs noms ni numéros) pour te montrer ceux qui utilisent déjà ONEERA."
+        }
+      ],
+      [
+        "expo-sensors",
+        {
+          "motionPermission": "ONEERA détecte quand tu danses pour animer ton avatar sur la carte. Rien n’est enregistré."
         }
       ]
     ],

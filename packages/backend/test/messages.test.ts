@@ -73,3 +73,48 @@ describe('messagerie entre amis', () => {
     expect(last).toBe(429);
   });
 });
+
+describe('avatar vivant et personnalisation (serveur)', () => {
+  it('modération du texte sur le haut : insultes refusées, mots proches acceptés', async () => {
+    const { isOffensive } = await import('../src/moderation');
+    for (const bad of ['putain', 'P U T A I N', 'pu7ain', 'connard', 'CONNNARD', 'ta gueule', 'fdp', 'nique ta mère', 'fuck', 'n1gga', 'Hitler', 'sale con', 'pd']) expect(isOffensive(bad), bad).toBe(true);
+    for (const ok of ['TEAM LÉA', 'Bacon', 'contact', 'unique', 'technique', 'dispute', 'computer', 'en retard', 'Mongolie', 'Negroni', 'conte', 'piédestal', 'Bal des Fous', '❤️ Paris']) expect(isOffensive(ok), ok).toBe(false);
+  });
+
+  it('avatar : couleurs libres et texte acceptés, texte insultant / trop long refusé, balises retirées', async () => {
+    const a = await signup('av@m.fr', 'Av');
+    const r = await call('PATCH', '/v1/me', { avatar: { g: 'f', topC: '#ff00aa', paint: 'glitter', patches: ['bolt', 'heart'], text: 'TEAM LÉA <b>', mood: 'laugh' } }, a.tok);
+    expect(r.status).toBe(200);
+    expect(r.json.avatar).toMatchObject({ topC: '#FF00AA', paint: 'glitter', patches: ['bolt', 'heart'], text: 'TEAM LÉA b', mood: 'laugh' });
+    expect((await call('PATCH', '/v1/me', { avatar: { text: 'putain' } }, a.tok)).json.error).toBe('offensive_text');
+    expect((await call('PATCH', '/v1/me', { avatar: { text: 'x'.repeat(15) } }, a.tok)).json.error).toBe('invalid_text');
+    expect((await call('PATCH', '/v1/me', { avatar: { topC: 'red;background:url(x)' } }, a.tok)).json.avatar.topC).toBeUndefined();
+  });
+
+  it('stickers : identifiants autorisés seulement ; activité et batterie relayées aux amis', async () => {
+    const a = await signup('st1@m.fr', 'S1'), b = await signup('st2@m.fr', 'S2');
+    await befriend(a, b, a.id);
+    expect((await call('POST', '/v1/messages', { to: b.id, kind: 'sticker', body: 'arrive' }, a.tok)).status).toBe(200);
+    expect((await call('POST', '/v1/messages', { to: b.id, kind: 'sticker', body: '<script>' }, a.tok)).status).toBe(400);
+    const th = (await call('GET', `/v1/messages/${a.id}`, undefined, b.tok)).json.messages;
+    expect(th[0]).toMatchObject({ kind: 'sticker', body: 'arrive', loc: null });
+    // activité « danse » + batterie : relayées en direct
+    await call('POST', '/v1/consents', { purpose: 'location_friends', granted: true }, a.tok); await call('POST', '/v1/share', { hours: 2 }, a.tok);
+    const ev = await call('GET', '/v1/events/BDF-DEMO');
+    const tokA = (await call('POST', '/v1/realtime-token', { eventId: ev.json.id }, a.tok)).json.token, tokB = (await call('POST', '/v1/realtime-token', { eventId: ev.json.id }, b.tok)).json.token;
+    const port = new URL(base).port; const open = (t: string) => new Promise<{ ws: WebSocket; msgs: ServerMsg[] }>((res) => { const ws = new WebSocket(`ws://127.0.0.1:${port}/rt?token=${t}`); const msgs: ServerMsg[] = []; ws.on('message', (d) => msgs.push(JSON.parse(d.toString()))); ws.once('open', () => res({ ws, msgs })); });
+    const B = await open(tokB), A = await open(tokA); await new Promise((r) => setTimeout(r, 200));
+    A.ws.send(JSON.stringify({ type: 'pos', seq: 1, t: Date.now(), floorId: 'bdf', x: 40, y: 50, r68: 3, quality: 'precise', act: 'dance', bat: 42 }));
+    expect(await wait(() => B.msgs.some((m) => m.type === 'friend'))).toBe(true);
+    const f = B.msgs.find((m) => m.type === 'friend') as Extract<ServerMsg, { type: 'friend' }>;
+    expect(f.pos.act).toBe('dance'); expect(f.pos.bat).toBe(42);
+    A.ws.send(JSON.stringify({ type: 'pos', seq: 2, t: Date.now(), floorId: 'bdf', x: 40, y: 50, r68: 3, quality: 'precise', act: 'moonwalk' }));
+    expect(await wait(() => A.msgs.some((m) => m.type === 'error'))).toBe(true);
+    // un nouvel arrivant reçoit l'état vivant dans l'instantané
+    await new Promise((r) => setTimeout(r, 700)); // écriture groupée en base (300 ms)
+    const B2 = await open(tokB); expect(await wait(() => B2.msgs.some((m) => m.type === 'snapshot'))).toBe(true);
+    const snap = B2.msgs.find((m) => m.type === 'snapshot') as Extract<ServerMsg, { type: 'snapshot' }>;
+    expect(snap.friends.find((x) => x.userId === a.id)?.act).toBe('dance');
+    A.ws.close(); B.ws.close(); B2.ws.close();
+  });
+});

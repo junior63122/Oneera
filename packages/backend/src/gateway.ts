@@ -33,6 +33,10 @@ export interface PositionMsg {
   zoneKey?: string;
   zoneProb?: number;
   quality: 'precise' | 'zone' | 'coarse';
+  /** Activité estimée par le téléphone (avatar vivant) : danse, marche, immobile. */
+  act?: 'dance' | 'walk' | 'still';
+  /** Batterie du téléphone en % (facultatif) : l'avatar s'endort quand elle est presque vide. */
+  bat?: number;
 }
 
 /** Messages serveur → client. */
@@ -64,6 +68,8 @@ export interface FriendPosition {
   sentAt: number;
   /** Connecté en ce moment (instantané uniquement ; ensuite, messages `presence`). */
   online?: boolean;
+  act?: 'dance' | 'walk' | 'still';
+  bat?: number;
 }
 
 export interface GatewayOptions {
@@ -113,6 +119,8 @@ export function validatePosition(m: unknown): PositionMsg | null {
   if (!['precise', 'zone', 'coarse'].includes(p.quality as string)) return null;
   if (p.zoneKey !== undefined && (typeof p.zoneKey !== 'string' || p.zoneKey.length > 64)) return null;
   if (p.zoneProb !== undefined && !num(p.zoneProb, 0, 1)) return null;
+  if (p.act !== undefined && !['dance', 'walk', 'still'].includes(p.act as string)) return null;
+  if (p.bat !== undefined && (!num(p.bat, 0, 100) || !Number.isInteger(p.bat))) return null;
   return p as unknown as PositionMsg;
 }
 
@@ -120,6 +128,8 @@ export class Gateway {
   readonly server: Server;
   private readonly wss: WebSocketServer;
   private readonly conns = new Map<string, Set<Conn>>(); // userId → connexions
+  /** Dernier état « vivant » connu (activité, batterie) par utilisateur, en mémoire seulement (jamais stocké). */
+  private readonly live = new Map<string, { act?: 'dance' | 'walk' | 'still'; bat?: number; at: number }>();
   private readonly audience = new Map<string, { viewers: Set<string>; at: number }>(); // owner|event → viewers
   private pending: Record<string, unknown>[] = [];
   private flushTimer?: NodeJS.Timeout;
@@ -216,6 +226,7 @@ export class Gateway {
           userId: r.user_id, seq: Number(r.seq), t: new Date(r.measured_at).getTime(), floorId: r.floor_id, x: r.x, y: r.y,
           r68: r.r68, zoneKey: r.zone_key ?? undefined, zoneProb: r.zone_prob ?? undefined, quality: r.quality, sentAt: now,
           online: this.isOnline(r.user_id, eventId),
+          ...this.liveOf(r.user_id),
         })),
       });
     } catch {
@@ -280,7 +291,9 @@ export class Gateway {
     const pos: FriendPosition = {
       userId: conn.userId, seq: msg.seq, t: msg.t, floorId: msg.floorId, x: msg.x, y: msg.y, r68: msg.r68,
       zoneKey: msg.zoneKey, zoneProb: msg.zoneProb, quality: msg.quality, sentAt: Date.now(),
+      ...(msg.act ? { act: msg.act } : {}), ...(msg.bat !== undefined ? { bat: msg.bat } : {}),
     };
+    if (msg.act || msg.bat !== undefined) this.live.set(conn.userId, { act: msg.act, bat: msg.bat, at: Date.now() });
     for (const v of viewers) {
       const set = this.conns.get(v);
       if (!set) continue;
@@ -290,6 +303,13 @@ export class Gateway {
         this.stats.delivered++;
       }
     }
+  }
+
+  /** État vivant récent (< 2 min) d'un utilisateur, pour l'instantané initial. */
+  private liveOf(userId: string): { act?: 'dance' | 'walk' | 'still'; bat?: number } {
+    const l = this.live.get(userId);
+    if (!l || Date.now() - l.at > 120_000) return {};
+    return { ...(l.act ? { act: l.act } : {}), ...(l.bat !== undefined ? { bat: l.bat } : {}) };
   }
 
   /** Nouveau message entre amis : livré en direct au destinataire et aux autres appareils de l'expéditeur. */

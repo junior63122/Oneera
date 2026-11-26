@@ -13,8 +13,8 @@ personMarker = function (id, name, head, at, o = {}) {
   m.html = m.html.replace(/class="bodyimg" src="[^"]*"/, `class="bodyimg av2" src="${av2URI(cfg)}"`); return m;
 };
 // ---------- Le studio ----------
-V.avatarPick = (onDone, step = true) => {
-  const L = JSON.parse(JSON.stringify(myAv2())), undo = []; let tab = 'hair';
+V.avatarPick = (onDone, step = true, init = null) => {
+  const L = JSON.parse(JSON.stringify(init || myAv2())), undo = []; let tab = init ? 'top' : 'hair';
   const ic = (d) => `<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d}</svg>`;
   const TABS = [
     ['body', 'Corps', ic('<circle cx="12" cy="5" r="2.6"/><path d="M8 21v-6l-2-1 1.5-5.5h9L18 14l-2 1v6"/>')],
@@ -24,6 +24,7 @@ V.avatarPick = (onDone, step = true) => {
     ['bottom', 'Bas', ic('<path d="M7 3h10l1 18h-4.2L12 10l-1.8 11H6z"/>')],
     ['shoes', 'Pieds', ic('<path d="M3 15.5V9h4l1.5 2.5c2 .5 6 1 9 2.3 1.6.7 2.5 1.6 2.5 2.7v.5H3z"/><path d="M3 18.5h18"/>')],
     ['acc', 'Style', ic('<circle cx="7" cy="13" r="3.4"/><circle cx="17" cy="13" r="3.4"/><path d="M10.4 13h3.2M3.6 12 2.5 9.5M20.4 12l1.1-2.5"/>')],
+    ['fun', 'Fête', ic('<path d="M12 2.5l1.8 4.6 4.7.4-3.6 3.1 1.1 4.7L12 12.8l-4 2.5 1.1-4.7-3.6-3.1 4.7-.4z"/><path d="M5 20l2-3M19 20l-2-3M12 21.5v-3"/>')],
   ];
   const el = mount(`<div class="studio st2">
     <div class="stStage">
@@ -41,7 +42,8 @@ V.avatarPick = (onDone, step = true) => {
     </div></div>`, 'sky');
   const big = $('#big', el), bd = $('#bd', el);
   const tiles = (key, list, view, extra = {}) => `<div class="stTiles">${list.map(([k, n]) => { const on = Array.isArray(L[key]) ? L[key].includes(k) : L[key] === k; return `<button data-k="${key}" data-v="${k}" class="${on ? 'on' : ''}" aria-pressed="${on}" aria-label="${n}" title="${n}"><span class="th">${avatar2SVG({ ...L, ...extra, [key]: Array.isArray(L[key]) ? (L[key].includes(k) ? L[key] : [...L[key], k]) : k }, { view, style: 'width:100%;height:100%' })}</span><b>${n}</b></button>`; }).join('')}</div>`;
-  const colors = (key, pal, label) => `<div class="stLbl">${label}</div><div class="stSw small stRow">${pal.map((h, i) => `<button data-c="${key}" data-i="${i}" class="${L[key] === i ? 'on' : ''}" aria-label="Couleur ${i + 1}"><i style="background:${h}"></i></button>`).join('')}</div>`;
+  const colors = (key, pal, label) => { const free = typeof L[key] === 'string' && /^#[0-9a-fA-F]{6}$/.test(L[key]);
+    return `<div class="stLbl">${label}</div><div class="stSw small stRow">${pal.map((h, i) => `<button data-c="${key}" data-i="${i}" class="${L[key] === i ? 'on' : ''}" aria-label="Couleur ${i + 1}"><i style="background:${h}"></i></button>`).join('')}<label class="stFree ${free ? 'on' : ''}" aria-label="Couleur libre"><i style="background:${free ? L[key] : 'conic-gradient(#FF4F4F,#FFD43B,#4CFF7A,#22D3FF,#6A5CFF,#FF4FD8,#FF4F4F)'}"></i><input type="color" data-cc="${key}" value="${free ? L[key] : '#FF4FD8'}"></label></div>`; };
   const draw = () => {
     $$('#gd button', el).forEach(b => b.classList.toggle('on', b.dataset.g === L.g)); $$('#tb button', el).forEach(b => b.classList.toggle('on', b.dataset.t === tab));
     const G = L.g, one = L.outfit && L.outfit !== 'none';
@@ -52,12 +54,19 @@ V.avatarPick = (onDone, step = true) => {
       top: () => `<div class="stLbl">Tenue une pièce</div>${tiles('outfit', AV2.outfit[G], undefined)}${one ? colors('outfitC', AV2.cloth, 'Couleur de la tenue') : `<div class="stLbl">Haut</div>${tiles('top', AV2.top[G], 'torso')}${colors('topC', AV2.cloth, 'Couleur du haut')}`}`,
       bottom: () => one ? `<div class="tiny" style="padding:12px 0">Tu portes une tenue une pièce. Choisis « Haut + bas » dans l’onglet Haut pour changer le bas.</div>` : `${tiles('bottom', AV2.bottom[G], 'legs')}${colors('bottomC', AV2.cloth, 'Couleur')}`,
       shoes: () => `${tiles('shoes', AV2.shoes, 'feet', { bottom: 'shorts', outfit: 'none' })}${colors('shoesC', AV2.cloth, 'Couleur')}`,
+      fun: () => { const chest = !['bandeau', 'slip', 'midi', 'suit', 'jacket', 'openshirt', 'overalls'].includes(one ? L.outfit : L.top);
+        return `<div class="stLbl">Humeur</div>${tiles('mood', AV2.mood, 'head')}
+        <div class="stLbl">Maquillage festival</div>${tiles('paint', AV2.paint, 'head')}${L.paint && L.paint !== 'none' ? colors('paintC', AV2.neon, 'Couleur du maquillage') : ''}
+        <div class="stLbl">Texte sur ton haut <span class="stHint">${chest ? '14 caractères max.' : 'visible sur tee-shirt, sweat, polo, débardeur ou crop top'}</span></div>
+        <div class="stTxt"><input class="inp" id="tx" maxlength="14" placeholder="TEAM LÉA, ton surnom…" value="${esc(L.text || '')}" autocomplete="off" autocapitalize="characters" enterkeyhint="done"><button class="btn sm" id="txok" style="width:auto;padding:0 16px">OK</button></div><div class="small" id="txm" style="min-height:18px"></div>
+        <div class="stLbl">Patchs <span class="stHint">3 maximum</span></div>${tiles('patches', AV2.patches, 'torso', { top: chest ? (one ? 'tee' : L.top) : 'tee', outfit: chest ? L.outfit : 'none' })}
+        <div class="stLbl">Lumières <span class="stHint">bâton lumineux et lunettes LED dans « Style »</span></div>${colors('glowC', AV2.neon, 'Couleur néon')}`; },
       acc: () => `<div class="stLbl">Lunettes</div>${tiles('glasses', AV2.glasses, 'head')}<div class="stLbl">Couvre-chef</div>${tiles('hat', AV2.hat, 'hair')}${L.hat !== 'none' ? colors('hatC', AV2.cloth, 'Couleur') : ''}<div class="stLbl">Bijoux (plusieurs possibles)</div>${tiles('jewel', AV2.jewel, 'torso', { pose: 'relax' })}`
     })[tab]();
     big.innerHTML = avatar2SVG(L, { pedestal: false, style: 'width:100%;height:100%' }); cam(); $('#un', el).disabled = !undo.length; $('#mpi', el).src = av2URI(L);
   };
   // caméra du studio : zoom sur le visage pour cheveux / visage / accessoires, sur le buste pour le haut, sur les pieds pour les chaussures
-  const CAM = { face: [22, -52, 156, 200], hair: [16, -60, 168, 214], acc: [16, -60, 168, 214], top: [0, -30, 200, 300], bottom: [4, 120, 192, 292], shoes: [52, 318, 96, 92] }, FULL = [14, -26, 172, 450]; // cadrages pour la tête agrandie (×1,2 autour du menton)
+  const CAM = { fun: [0, -56, 200, 290], face: [22, -52, 156, 200], hair: [16, -60, 168, 214], acc: [16, -60, 168, 214], top: [0, -30, 200, 300], bottom: [4, 120, 192, 292], shoes: [52, 318, 96, 92] }, FULL = [14, -26, 172, 450]; // cadrages pour la tête agrandie (×1,2 autour du menton)
   let camV = FULL.slice(), camT = 0;
   // Vue en pied : cadrage calculé sur la vraie taille de la scène, pour que la tête passe sous la barre du haut (Femme / Homme)
   const fullCam = () => { const st = el.querySelector('.stStage'), tp = el.querySelector('.stTop'); if (!st || !tp) return FULL;
@@ -73,11 +82,27 @@ V.avatarPick = (onDone, step = true) => {
   $('#gd', el).onclick = e => { const b = e.target.closest('[data-g]'); if (!b || b.dataset.g === L.g) return; push(); const G = b.dataset.g; Object.assign(L, { g: G, hair: AV2.hair[G][G === 'f' ? 1 : 1][0], top: G === 'f' ? 'crop' : 'tee', bottom: G === 'f' ? 'cargo' : 'chinos', outfit: 'none', build: 'moyenne', beard: 'none' }); pop(); draw(); };
   $('#tb', el).onclick = e => { const b = e.target.closest('[data-t]'); if (b) { tab = b.dataset.t; draw(); bd.scrollTop = 0; } };
   bd.onclick = e => { const k = e.target.closest('[data-k]'), c = e.target.closest('[data-c]'), h = e.target.closest('[data-h]');
-    if (k) { push(); const key = k.dataset.k, v = k.dataset.v; if (key === 'jewel') L.jewel = (L.jewel || []).includes(v) ? L.jewel.filter(x => x !== v) : [...(L.jewel || []), v]; else L[key] = v; pop(); draw(); }
+    if (k) { push(); const key = k.dataset.k, v = k.dataset.v;
+      if (key === 'jewel' || key === 'patches') { const cur = Array.isArray(L[key]) ? L[key] : []; if (cur.includes(v)) L[key] = cur.filter(x => x !== v); else if (key === 'patches' && cur.length >= 3) { toast('3 patchs maximum : retire-en un d’abord'); undo.pop(); return; } else L[key] = [...cur, v]; }
+      else L[key] = v; pop(); draw(); }
     if (c) { push(); L[c.dataset.c] = +c.dataset.i; pop(); draw(); } if (h) { push(); L.height = h.dataset.h; pop(); draw(); } };
+  bd.addEventListener('input', e => { const cc = e.target.closest('[data-cc]'); if (!cc) return; if (!bd._colPushed) { push(); bd._colPushed = true; } L[cc.dataset.cc] = cc.value.toUpperCase(); big.innerHTML = avatar2SVG(L, { pedestal: false, style: 'width:100%;height:100%' }); const sv = big.querySelector('svg'); sv && sv.setAttribute('viewBox', camV.join(' ')); const i = cc.previousElementSibling; if (i) i.style.background = cc.value; });
+  bd.addEventListener('change', e => { if (e.target.closest('[data-cc]')) { bd._colPushed = false; pop(); draw(); } });
+  const setText = () => { const inp = $('#tx', el), m = $('#txm', el); if (!inp) return; const v = inp.value.normalize('NFC').replace(/[<>"&`\\]/g, '').trim().replace(/\s+/g, ' ').slice(0, 14);
+    if (v && isOffensiveText(v)) { m.style.color = '#C0392B'; m.textContent = 'Ce texte n’est pas autorisé : tes amis le verront.'; return; }
+    push(); L.text = v; m.style.color = '#1E8E5A'; m.textContent = v ? 'Texte ajouté ✓' : 'Texte retiré';
+    const noChest = ['bandeau', 'slip', 'midi', 'suit', 'jacket', 'openshirt', 'overalls'];
+    if (v && (L.outfit && L.outfit !== 'none' ? noChest.includes(L.outfit) : noChest.includes(L.top))) { L.outfit = 'none'; L.top = L.g === 'f' ? 'tee' : 'tee'; m.textContent = 'Texte ajouté ✓ · haut changé en tee-shirt pour l’afficher'; } pop(); const keep = m.textContent; draw(); const m2 = $('#txm', el); if (m2) { m2.style.color = '#1E8E5A'; m2.textContent = keep; } };
+  bd.addEventListener('click', e => { if (e.target.closest('#txok')) setText(); });
+  bd.addEventListener('keydown', e => { if (e.target.id === 'tx' && e.key === 'Enter') { e.preventDefault(); setText(); e.target.blur(); } });
   $('#un', el).onclick = () => { const p = undo.pop(); if (p) { Object.keys(L).forEach(k => delete L[k]); Object.assign(L, JSON.parse(p)); draw(); } };
-  $('#rd', el).onclick = () => { push(); const G = L.g, r = a => a[Math.floor(Math.random() * a.length)]; const one = Math.random() < (G === 'f' ? .25 : .1);
-    Object.assign(L, { build: r(AV2.build[G])[0], skin: Math.floor(Math.random() * AV2.skin.length), hair: r(AV2.hair[G])[0], hairC: Math.floor(Math.random() * 10), eyes: r(AV2.eyes)[0], mouth: r(AV2.mouth)[0], outfit: one ? r(AV2.outfit[G].slice(1))[0] : 'none', outfitC: Math.floor(Math.random() * AV2.cloth.length), top: r(AV2.top[G])[0], topC: Math.floor(Math.random() * AV2.cloth.length), bottom: r(AV2.bottom[G])[0], bottomC: Math.floor(Math.random() * AV2.cloth.length), shoes: r(AV2.shoes)[0], shoesC: Math.floor(Math.random() * AV2.cloth.length), pose: r(AV2.pose)[0], beard: G === 'm' ? r(AV2.beard)[0] : 'none', glasses: Math.random() < .25 ? r(AV2.glasses.slice(1))[0] : 'none', hat: 'none' }); pop(); draw(); };
+  let spinning = false;
+  const shuffle = () => { const G = L.g, r = a => a[Math.floor(Math.random() * a.length)]; const one = Math.random() < (G === 'f' ? .25 : .1);
+    Object.assign(L, { mood: Math.random() < .5 ? r(AV2.mood)[0] : 'none', paint: Math.random() < .3 ? r(AV2.paint.slice(1))[0] : 'none', paintC: Math.floor(Math.random() * AV2.neon.length), patches: Math.random() < .25 ? [r(AV2.patches)[0]] : [], build: r(AV2.build[G])[0], skin: Math.floor(Math.random() * AV2.skin.length), hair: r(AV2.hair[G])[0], hairC: Math.floor(Math.random() * 10), eyes: r(AV2.eyes)[0], mouth: r(AV2.mouth)[0], outfit: one ? r(AV2.outfit[G].slice(1))[0] : 'none', outfitC: Math.floor(Math.random() * AV2.cloth.length), top: r(AV2.top[G])[0], topC: Math.floor(Math.random() * AV2.cloth.length), bottom: r(AV2.bottom[G])[0], bottomC: Math.floor(Math.random() * AV2.cloth.length), shoes: r(AV2.shoes)[0], shoesC: Math.floor(Math.random() * AV2.cloth.length), pose: r(AV2.pose)[0], beard: G === 'm' ? r(AV2.beard)[0] : 'none', glasses: Math.random() < .25 ? r(AV2.glasses.slice(1))[0] : 'none', hat: 'none' }); };
+  $('#rd', el).onclick = () => { if (spinning) return; spinning = true; push(); big.classList.add('spin'); let n = 0; const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const tick = () => { shuffle(); big.innerHTML = avatar2SVG(L, { pedestal: false, style: 'width:100%;height:100%' }); const sv = big.querySelector('svg'); sv && sv.setAttribute('viewBox', camV.join(' '));
+      if (++n < (reduce ? 1 : 10)) setTimeout(tick, 60 + n * 14); else { big.classList.remove('spin'); spinning = false; pop(); draw(); try { navigator.vibrate && navigator.vibrate(20); } catch (_) {} } };
+    tick(); };
   $('#pv', el).onclick = () => { const mp = $('#mp', el); mp.hidden = !mp.hidden; $('#pv', el).textContent = mp.hidden ? 'Voir sur la carte' : 'Voir en grand'; };
   const done = () => { ST.me.av2 = JSON.parse(JSON.stringify(L)); emit(); if (step) markStep('avatar'); onDone ? onDone() : V.perms(); };
   $('#go', el).onclick = done;
@@ -86,9 +111,14 @@ V.avatarPick = (onDone, step = true) => {
   draw();
 };
 V.avatarQuick = () => V.avatarPick(null, true);
+const LOOK_KEYS = ['outfit', 'outfitC', 'top', 'topC', 'bottom', 'bottomC', 'shoes', 'shoesC', 'glasses', 'hat', 'hatC', 'jewel', 'paint', 'paintC', 'patches', 'glowC'];
+V.copyLook = (cfg, name) => { if (!cfg) return; closeSheet(true); const mine = JSON.parse(JSON.stringify(myAv2())); LOOK_KEYS.forEach(k => { if (cfg[k] !== undefined) mine[k] = JSON.parse(JSON.stringify(cfg[k])); else delete mine[k]; });
+  V.avatarPick(() => { V.settings(); toast(`Look de ${esc(name)} copié ✨`); }, false, mine); setTimeout(() => toast(`Le look de ${esc(name)} est appliqué : ajuste-le puis enregistre`), 300); };
+const copyLookBtn = () => `<button class="link" id="cpl" style="justify-content:flex-start;gap:8px">✨ Copier son look</button>`;
 V.avatarEditor = (onDone) => V.avatarPick(onDone || (() => V.settings()), false);
 // profils et réglages : nouveau rendu
 const _settings8 = V.settings;
 V.settings = () => { _settings8(); const im = $('.scr .body .card img'); if (im) { im.src = av2URI(myAv2()); im.style.height = '120px'; } const b = $('#av'); if (b) b.onclick = () => V.avatarPick(() => V.settings(), false); };
 const _friendSheet8 = V.friendSheet;
-V.friendSheet = (id) => { _friendSheet8(id); const im = $('.sheet .sbody img'); if (im && FRIEND_AV2[id]) im.src = av2URI(FRIEND_AV2[id]); };
+V.friendSheet = (id) => { _friendSheet8(id); const sb = $('.sheet .sbody'); const im = $('.sheet .sbody img'); if (im && FRIEND_AV2[id]) im.src = av2URI(FRIEND_AV2[id]);
+  if (sb && FRIEND_AV2[id] && !$('#cpl', sb)) { const more = $('#more', sb); (more || sb.lastElementChild).insertAdjacentHTML('beforebegin', copyLookBtn()); const f = FRIENDS.find(x => x.id === id); $('#cpl', sb).onclick = () => V.copyLook(FRIEND_AV2[id], f ? f.n : 'ton ami'); } };
