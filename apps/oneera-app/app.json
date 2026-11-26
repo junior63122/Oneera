@@ -7,20 +7,41 @@
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "automatic",
     "backgroundColor": "#010922",
-    "splash": { "image": "./assets/splash.png", "resizeMode": "cover", "backgroundColor": "#010922" },
-    "assetBundlePatterns": ["web/**/*"],
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "cover",
+      "backgroundColor": "#010922"
+    },
+    "assetBundlePatterns": [
+      "web/**/*"
+    ],
     "ios": {
       "bundleIdentifier": "fr.oneera.app",
       "buildNumber": "1",
       "supportsTablet": false,
-      "config": { "usesNonExemptEncryption": false },
-      "infoPlist": { "ITSAppUsesNonExemptEncryption": false }
+      "config": {
+        "usesNonExemptEncryption": false
+      },
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "package": "fr.oneera.app",
       "versionCode": 1,
-      "adaptiveIcon": { "foregroundImage": "./assets/icon.png", "backgroundColor": "#010922" }
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/icon.png",
+        "backgroundColor": "#010922"
+      }
     },
-    "plugins": ["expo-asset"]
+    "plugins": [
+      "expo-asset"
+    ],
+    "owner": "juniorjoyants-team",
+    "extra": {
+      "eas": {
+        "projectId": "6ea45fea-0cab-42c0-8bf0-216ffca69288"
+      }
+    }
   }
 }
