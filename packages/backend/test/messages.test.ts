@@ -11,7 +11,7 @@ let pool: Pool, gw: Gateway, base: string;
 beforeAll(async () => {
   pool = await freshDb(DB);
   const url = new URL(TEST_URL); url.pathname = `/${DB}`;
-  gw = new Gateway({ pool, listenUrl: url.toString(), secret, http: createApi({ pool, secret }) });
+  gw = new Gateway({ pool, listenUrl: url.toString(), secret, http: createApi({ pool, secret, authPerMinute: 1000 }) });
   base = `http://127.0.0.1:${await gw.listen(0)}`;
 });
 afterAll(async () => { await gw?.close(); await pool?.end(); });
@@ -116,5 +116,22 @@ describe('avatar vivant et personnalisation (serveur)', () => {
     const snap = B2.msgs.find((m) => m.type === 'snapshot') as Extract<ServerMsg, { type: 'snapshot' }>;
     expect(snap.friends.find((x) => x.userId === a.id)?.act).toBe('dance');
     A.ws.close(); B.ws.close(); B2.ws.close();
+  });
+});
+
+describe('export des données personnelles', () => {
+  it('renvoie profil, amitiés, messages ; rien d’autrui ; limité', async () => {
+    const a = await signup('ex1@m.fr', 'Ex'), b = await signup('ex2@m.fr', 'Ey'), c = await signup('ex3@m.fr', 'Ez');
+    await befriend(a, b, a.id); await befriend(c, b, c.id);
+    await call('POST', '/v1/messages', { to: b.id, body: 'coucou' }, a.tok);
+    await call('POST', '/v1/messages', { to: b.id, body: 'secret entre c et b' }, c.tok);
+    const r = await call('GET', '/v1/me/export', undefined, a.tok);
+    expect(r.status).toBe(200); expect(r.json.format).toBe('oneera-export-1');
+    expect(r.json.profile.display_name).toBe('Ex'); expect(r.json.friendships).toHaveLength(1);
+    expect(r.json.messages.map((m: any) => m.body)).toEqual(['coucou']);
+    expect(JSON.stringify(r.json)).not.toContain('secret entre c et b');
+    expect((await call('GET', '/v1/me/export')).status).toBe(401);
+    let last = 0; for (let i = 0; i < 4; i++) last = (await call('GET', '/v1/me/export', undefined, a.tok)).status;
+    expect(last).toBe(429);
   });
 });

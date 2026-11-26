@@ -382,9 +382,22 @@ const _deleteAccountReal = V.deleteAccount;
 V.deleteAccount = () => {
   _deleteAccountReal();
   if (!realOn()) return;
+  const exp = $('.sheet #exp'); if (exp) exp.onclick = () => realExport(exp);
   const del = $('.sheet #del'); if (!del) return;
   del.onclick = async () => { del.disabled = true; try { await api('DELETE', '/v1/me'); closeSheet(true); realLogout(true); toast('Compte supprimé : tes données ont été effacées du serveur.'); } catch (e) { toast(e.message); del.disabled = false; } };
 };
+// Export réel des données (RGPD) : partage du fichier via le téléphone, ou copie dans le presse-papiers.
+async function realExport(btn) {
+  const label = btn.innerHTML; btn.disabled = true; btn.textContent = 'Préparation…';
+  try {
+    const d = await api('GET', '/v1/me/export'); const text = JSON.stringify(d, null, 2);
+    const n = `${(d.friendships || []).length} amitiés, ${(d.messages || []).length} messages, ${(d.positions || []).length} positions`;
+    if (window.ReactNativeWebView && window.ONEERA_NATIVE) { const r = await nativeCall({ type: 'share', title: 'Mes données ONEERA', text }); toast(r && r.shared === false ? 'Partage annulé' : `Données exportées (${n})`); }
+    else if (navigator.share) { await navigator.share({ title: 'Mes données ONEERA', text }); toast(`Données exportées (${n})`); }
+    else { await navigator.clipboard.writeText(text); toast(`Données copiées dans le presse-papiers (${n})`); }
+  } catch (e) { if (!/abort/i.test(e.name || '')) toast(esc(e.message || 'Export impossible')); }
+  finally { if (document.body.contains(btn)) { btn.disabled = false; btn.innerHTML = label; } }
+}
 function realLogout(silent) {
   try { REAL.ws && REAL.ws.close(); } catch (_) {}
   Object.assign(REAL, { token: null, user: null, friends: [], pos: {}, online: {}, wsOk: false, sharingSent: null });

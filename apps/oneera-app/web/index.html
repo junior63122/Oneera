@@ -588,6 +588,15 @@ details.phone{background:#F7F7F9;border-radius:14px;padding:12px 14px}details.ph
 .stkGrid .stk{width:100%;box-shadow:none;background:#F3F5FB}
 .stkGrid .stk img{width:100%}
 #screen.night .stk{background:#1E2230}#screen.night .stk b{color:#ECEEF6}
+/* Barre du bas : jamais coupée sur petit écran (iPhone SE) */
+.nav .rb,.nav .me{flex-shrink:0}
+.nav .bar{min-width:0}
+.nav .bar button{min-width:0;flex:1 1 0;padding:0 2px}
+@media (max-width:380px){.nav{left:8px;right:8px;gap:6px}.nav .rb,.nav .me,.nav .me img{width:48px;height:48px}.nav .bar button{font-size:10.5px}}
+/* Studio : onglets lisibles sur petit écran */
+.st2 .stTabs button span{white-space:nowrap}
+@media (max-width:380px){.st2 .stTabs{padding:4px 2px 0}.st2 .stTabs button{min-width:44px;padding:8px 1px 7px;font-size:9.6px;letter-spacing:-.15px}.st2 .stTabs button svg{width:20px;height:20px}}
+@media (max-width:340px){.st2 .stTabs button{min-width:38px;font-size:8.8px;letter-spacing:-.25px}.st2 .stTabs button svg{width:18px;height:18px}}
 
 </style></head><body><script>
 // ===== Données de démonstration (fictives) =====
@@ -3642,7 +3651,7 @@ mapMarkers = function (mv) {
   out.forEach(m => {
     if (m.id === 'p_me') m.onClick = V.meSheet;
     const id = m.id && m.id.startsWith('p_') ? m.id.slice(2) : null, b = id && ST.bubbles[id === 'me' ? 'me' : id];
-    if (ST.showBub && bubFresh(b) && typeof m.html === 'string' && /^<div class="fr( fullb)?">/.test(m.html)) m.html = m.html.replace(/^(<div class="fr(?: fullb)?">)/, `$1<div class="bub">${esc(b.t)}</div>`);
+    if (ST.showBub && bubFresh(b) && typeof m.html === 'string' && /^<div class="fr[^"]*">/.test(m.html)) m.html = m.html.replace(/^(<div class="fr[^"]*">)/, `$1<div class="bub">${esc(b.t)}</div>`);
   });
   return out;
 };
@@ -4726,9 +4735,22 @@ const _deleteAccountReal = V.deleteAccount;
 V.deleteAccount = () => {
   _deleteAccountReal();
   if (!realOn()) return;
+  const exp = $('.sheet #exp'); if (exp) exp.onclick = () => realExport(exp);
   const del = $('.sheet #del'); if (!del) return;
   del.onclick = async () => { del.disabled = true; try { await api('DELETE', '/v1/me'); closeSheet(true); realLogout(true); toast('Compte supprimé : tes données ont été effacées du serveur.'); } catch (e) { toast(e.message); del.disabled = false; } };
 };
+// Export réel des données (RGPD) : partage du fichier via le téléphone, ou copie dans le presse-papiers.
+async function realExport(btn) {
+  const label = btn.innerHTML; btn.disabled = true; btn.textContent = 'Préparation…';
+  try {
+    const d = await api('GET', '/v1/me/export'); const text = JSON.stringify(d, null, 2);
+    const n = `${(d.friendships || []).length} amitiés, ${(d.messages || []).length} messages, ${(d.positions || []).length} positions`;
+    if (window.ReactNativeWebView && window.ONEERA_NATIVE) { const r = await nativeCall({ type: 'share', title: 'Mes données ONEERA', text }); toast(r && r.shared === false ? 'Partage annulé' : `Données exportées (${n})`); }
+    else if (navigator.share) { await navigator.share({ title: 'Mes données ONEERA', text }); toast(`Données exportées (${n})`); }
+    else { await navigator.clipboard.writeText(text); toast(`Données copiées dans le presse-papiers (${n})`); }
+  } catch (e) { if (!/abort/i.test(e.name || '')) toast(esc(e.message || 'Export impossible')); }
+  finally { if (document.body.contains(btn)) { btn.disabled = false; btn.innerHTML = label; } }
+}
 function realLogout(silent) {
   try { REAL.ws && REAL.ws.close(); } catch (_) {}
   Object.assign(REAL, { token: null, user: null, friends: [], pos: {}, online: {}, wsOk: false, sharingSent: null });
@@ -5021,9 +5043,9 @@ tickers.add(dt => {
   if (Date.now() - _trkSave > 20e3) { _trkSave = Date.now(); try { localStorage.setItem(TRACK_KEY(), JSON.stringify(T)); } catch (_) {} }
 });
 function realTrackStats() {
-  const T = realTrack().filter(p => p.v === VENUE.id); if (T.length < 3) return null;
+  const T = realTrack().filter(p => p.v === VENUE.id && Number.isFinite(p.t) && Number.isFinite(p.x) && Number.isFinite(p.y)).sort((a, b) => a.t - b.t); if (T.length < 3) return null;
   let distM = 0, onSite = 0, still = 0; const zt = {};
-  for (let i = 1; i < T.length; i++) { const a = T[i - 1], b = T[i], dtm = (b.t - a.t) / 1000; if (dtm > 600) continue; // pause > 10 min : app fermée
+  for (let i = 1; i < T.length; i++) { const a = T[i - 1], b = T[i], dtm = (b.t - a.t) / 1000; if (dtm <= 0 || dtm > 600) continue; // pause > 10 min : app fermée
     const d = Math.hypot(b.x - a.x, b.y - a.y) * PCT_TO_M; onSite += dtm; if (d < 2) still += dtm; else if (d / dtm < 4) distM += d; // > 4 m/s : saut (changement de plan), ignoré
     const z = zoneOf([a.x, a.y]); zt[z] = (zt[z] || 0) + dtm; }
   const zones = Object.entries(zt).sort((a, b) => b[1] - a[1]);
@@ -5093,6 +5115,10 @@ V.meSheet = () => {
 const _reportDemo = V.report;
 V.report = (...a) => { _reportDemo(...a); if (!realOn()) return; const sb = $('.sheet .sbody'); if (!sb || $('#tstw', sb)) return;
   const h = sb.querySelector('h2'); h && h.insertAdjacentHTML('afterend', `<div id="tstw" class="card" style="background:#FFF4E5;padding:10px 12px"><div class="small" style="color:#8A4B00"><b>Version de test :</b> l’alerte n’est pas encore transmise à une équipe du lieu. En cas d’urgence, appelle directement le 112.</div></div>`); };
+
+// Réglages d'un compte réel : « Modifier le profil » = prénom et avatar (pas de photo ni de pseudo séparés)
+const _settingsReal2 = V.settings;
+V.settings = () => { _settingsReal2(); if (!realOn()) return; const r = $('.scr [data-g5="edit"] .s'); if (r) r.textContent = 'Prénom et avatar'; };
 
 // ===== Avatar vivant : il danse quand tu danses, bâille en fin de nuit, s'endort quand la batterie lâche, brille près de tes amis, passe en néon la nuit =====
 const LIVE = (() => { let o = {}; try { o = JSON.parse(localStorage.getItem('oneera.live') || '{}'); } catch (_) {} return {

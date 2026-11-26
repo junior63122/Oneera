@@ -261,9 +261,9 @@ tickers.add(dt => {
   if (Date.now() - _trkSave > 20e3) { _trkSave = Date.now(); try { localStorage.setItem(TRACK_KEY(), JSON.stringify(T)); } catch (_) {} }
 });
 function realTrackStats() {
-  const T = realTrack().filter(p => p.v === VENUE.id); if (T.length < 3) return null;
+  const T = realTrack().filter(p => p.v === VENUE.id && Number.isFinite(p.t) && Number.isFinite(p.x) && Number.isFinite(p.y)).sort((a, b) => a.t - b.t); if (T.length < 3) return null;
   let distM = 0, onSite = 0, still = 0; const zt = {};
-  for (let i = 1; i < T.length; i++) { const a = T[i - 1], b = T[i], dtm = (b.t - a.t) / 1000; if (dtm > 600) continue; // pause > 10 min : app fermée
+  for (let i = 1; i < T.length; i++) { const a = T[i - 1], b = T[i], dtm = (b.t - a.t) / 1000; if (dtm <= 0 || dtm > 600) continue; // pause > 10 min : app fermée
     const d = Math.hypot(b.x - a.x, b.y - a.y) * PCT_TO_M; onSite += dtm; if (d < 2) still += dtm; else if (d / dtm < 4) distM += d; // > 4 m/s : saut (changement de plan), ignoré
     const z = zoneOf([a.x, a.y]); zt[z] = (zt[z] || 0) + dtm; }
   const zones = Object.entries(zt).sort((a, b) => b[1] - a[1]);
@@ -333,3 +333,7 @@ V.meSheet = () => {
 const _reportDemo = V.report;
 V.report = (...a) => { _reportDemo(...a); if (!realOn()) return; const sb = $('.sheet .sbody'); if (!sb || $('#tstw', sb)) return;
   const h = sb.querySelector('h2'); h && h.insertAdjacentHTML('afterend', `<div id="tstw" class="card" style="background:#FFF4E5;padding:10px 12px"><div class="small" style="color:#8A4B00"><b>Version de test :</b> l’alerte n’est pas encore transmise à une équipe du lieu. En cas d’urgence, appelle directement le 112.</div></div>`); };
+
+// Réglages d'un compte réel : « Modifier le profil » = prénom et avatar (pas de photo ni de pseudo séparés)
+const _settingsReal2 = V.settings;
+V.settings = () => { _settingsReal2(); if (!realOn()) return; const r = $('.scr [data-g5="edit"] .s'); if (r) r.textContent = 'Prénom et avatar'; };

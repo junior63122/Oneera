@@ -584,3 +584,12 @@ details.phone{background:#F7F7F9;border-radius:14px;padding:12px 14px}details.ph
 .stkGrid .stk{width:100%;box-shadow:none;background:#F3F5FB}
 .stkGrid .stk img{width:100%}
 #screen.night .stk{background:#1E2230}#screen.night .stk b{color:#ECEEF6}
+/* Barre du bas : jamais coupée sur petit écran (iPhone SE) */
+.nav .rb,.nav .me{flex-shrink:0}
+.nav .bar{min-width:0}
+.nav .bar button{min-width:0;flex:1 1 0;padding:0 2px}
+@media (max-width:380px){.nav{left:8px;right:8px;gap:6px}.nav .rb,.nav .me,.nav .me img{width:48px;height:48px}.nav .bar button{font-size:10.5px}}
+/* Studio : onglets lisibles sur petit écran */
+.st2 .stTabs button span{white-space:nowrap}
+@media (max-width:380px){.st2 .stTabs{padding:4px 2px 0}.st2 .stTabs button{min-width:44px;padding:8px 1px 7px;font-size:9.6px;letter-spacing:-.15px}.st2 .stTabs button svg{width:20px;height:20px}}
+@media (max-width:340px){.st2 .stTabs button{min-width:38px;font-size:8.8px;letter-spacing:-.25px}.st2 .stTabs button svg{width:18px;height:18px}}

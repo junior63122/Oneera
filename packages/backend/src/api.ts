@@ -65,6 +65,8 @@ export interface ApiOptions {
   googleAudiences?: string[];
   /** Clés publiques (tests) ; par défaut celles d'Apple et de Google, téléchargées et mises en cache. */
   jwks?: { apple?: JWTVerifyGetKey; google?: JWTVerifyGetKey };
+  /** Tentatives d'inscription / connexion par adresse IP et par minute (10 par défaut ; les tests l'augmentent). */
+  authPerMinute?: number;
 }
 
 type User = { id: string; displayName: string; avatar: unknown };
@@ -88,7 +90,7 @@ export function createApi(opts: ApiOptions) {
       throw new HttpError(401, 'unauthorized');
     }
   }
-  function limit(req: IncomingMessage, max = 10) {
+  function limit(req: IncomingMessage, max = opts.authPerMinute ?? 10) {
     const ip = (req.headers['x-forwarded-for'] as string | undefined)?.split(',')[0].trim() || req.socket.remoteAddress || '?';
     const now = Date.now(), e = hits.get(ip);
     if (!e || now - e.t > 60_000) { hits.set(ip, { n: 1, t: now }); return; }
@@ -255,6 +257,15 @@ export function createApi(opts: ApiOptions) {
       return { declined: true };
     },
 
+    // Droit d'accès / portabilité (RGPD) : toutes les données personnelles du compte, en JSON.
+    'GET /v1/me/export': async (req) => {
+      const u = await auth(req); limitUser(u, 3, 'export');
+      return withContext(pool, { userId: u }, async (c) => {
+        const d = (await c.query('SELECT app.export_my_data() AS d')).rows[0].d;
+        const messages = (await c.query('SELECT app.export_my_messages() AS m')).rows[0].m;
+        return { exportedAt: new Date().toISOString(), format: 'oneera-export-1', ...d, messages };
+      });
+    },
     'DELETE /v1/me': async (req) => {
       const u = await auth(req);
       await withContext(pool, { userId: u }, (c) => c.query('SELECT app.delete_my_account()'));

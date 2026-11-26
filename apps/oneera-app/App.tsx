@@ -16,7 +16,7 @@ import * as FileSystem from 'expo-file-system/legacy';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, AppState, Platform, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, AppState, Platform, Share, StyleSheet, Text, View } from 'react-native';
 import { WebView as RNWebView, type WebViewMessageEvent } from 'react-native-webview';
 
 // Les types du composant fusionnent les options iOS et Android (incompatibles entre elles) : typage explicite.
@@ -155,6 +155,7 @@ export default function App() {
     let m: { type?: string; provider?: string; id?: string };
     try { m = JSON.parse(e.nativeEvent.data); } catch { return; }
     if (m.type === 'auth' && m.provider) reply({ id: m.id, ...(await nativeSignIn(m.provider)) });
+    if (m.type === 'share') { const t = m as { title?: string; text?: string; id?: string }; try { const r = await Share.share({ title: t.title, message: String(t.text ?? '').slice(0, 5_000_000) }); reply({ id: t.id, shared: r.action === Share.sharedAction }); } catch { reply({ id: t.id, shared: false }); } }
     if (m.type === 'contacts') { try { reply({ id: m.id, ...(await nativeContacts()) }); } catch { reply({ id: m.id, error: 'Lecture des contacts impossible.' }); } }
   };
   // Disponibilité annoncée à l'interface avant son chargement.
