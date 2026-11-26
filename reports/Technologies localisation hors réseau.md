@@ -229,6 +229,26 @@ Un serveur local qui stocke des positions entre dans ce périmètre : purge apr�
 
 Le produit s'appelle **ONEERA, jamais « Teufy »**. Une version du document de stack V1 porte le titre « projet TEUFY », et le projet est enregistré chez l'ancien prestataire sous le nom « teufymapping » : ce sont des erreurs de l'ancien prestataire, Teufy est un produit distinct.
 
+## Option économique testée : balises doublées avec le stock existant + 6 ancres UWB sur le dancefloor seulement
+
+Ajout du 26/11/2026, après la question du coût. Mêmes bancs, même simulation (pas une mesure terrain).
+
+| Retrouvable < 3 m | Club plein | Devant de scène | Compact |
+|---|---|---|---|
+| BLE actuel | 53 % | 34 % | 19 % |
+| UWB dans tout le lieu | 94 % | 89 % | 75 % |
+| **Économique (6 ancres sur le dancefloor)** | **96 %** | **88 %** | **76 %** |
+
+Pour retrouver ses amis, là où on les perd (le dancefloor), l'option économique fait **aussi bien** que l'UWB partout.
+
+Pour les données organisateur, en foule compacte, elle se place entre les deux : carte de chaleur 30 % d'erreur (BLE 51 %, UWB partout 19 %), flux 83 % / 83 %. Mais elle montre un **défaut à corriger** : 27 sauts et 25 traversées de mur par heure, plus que le BLE seul. Ils viennent de la bascule brutale quand un visiteur sort de la couverture UWB. Le moteur devra adoucir cette transition (incertitude élargie progressivement) avant toute démonstration.
+
+Coût matériel indicatif (estimations, aucun devis) :
+- Balises : 0 €, le stock de ~43 CP28 suffit.
+- Ancres UWB fabriquées sur module Qorvo (31–59 $ prix public) : ~60–100 € pièce, soit ~400–600 € pour 6.
+- Mini-serveur sur place : ~100 €.
+- Total : **moins de 1 000 € de matériel neuf par club**, réutilisable d'un événement à l'autre.
+
 ## Feuille de route et protocole de mesure : prouver avant de vendre
 
 ### Feuille de route proposée

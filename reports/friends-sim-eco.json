@@ -1,0 +1,65 @@
+[
+ {
+  "density": "dense (club plein)",
+  "tech": {
+   "name": "Économique : BLE 2× (stock existant) + 6 ancres UWB sur le dancefloor",
+   "dense2x": true,
+   "uwbAnchors": true,
+   "uwbDanceOnly": true,
+   "direct": "none",
+   "note": "téléphones UWB sur le dancefloor ; BLE ailleurs"
+  },
+  "m": {
+   "absMed": 0.5073132168232648,
+   "absP95": 1.9152629414939124,
+   "relMed": 0.7457746887069218,
+   "relP90": 1.9376160986420037,
+   "found3": 0.9609046849757674,
+   "found5": 0.9922455573505654,
+   "direct": 0,
+   "n": 3095
+  }
+ },
+ {
+  "density": "très dense (devant de scène)",
+  "tech": {
+   "name": "Économique : BLE 2× (stock existant) + 6 ancres UWB sur le dancefloor",
+   "dense2x": true,
+   "uwbAnchors": true,
+   "uwbDanceOnly": true,
+   "direct": "none",
+   "note": "téléphones UWB sur le dancefloor ; BLE ailleurs"
+  },
+  "m": {
+   "absMed": 0.76753821687586,
+   "absP95": 3.355304553203297,
+   "relMed": 1.184167229600657,
+   "relP90": 3.28975414742688,
+   "found3": 0.8790159189580319,
+   "found5": 0.9678726483357453,
+   "direct": 0,
+   "n": 3455
+  }
+ },
+ {
+  "density": "compact (4–6 pers./m²)",
+  "tech": {
+   "name": "Économique : BLE 2× (stock existant) + 6 ancres UWB sur le dancefloor",
+   "dense2x": true,
+   "uwbAnchors": true,
+   "uwbDanceOnly": true,
+   "direct": "none",
+   "note": "téléphones UWB sur le dancefloor ; BLE ailleurs"
+  },
+  "m": {
+   "absMed": 1.0989019346203541,
+   "absP95": 3.845420023817443,
+   "relMed": 1.756818425238694,
+   "relP90": 4.804405282635244,
+   "found3": 0.7617962902700943,
+   "found5": 0.9085584119752684,
+   "direct": 0,
+   "n": 3073
+  }
+ }
+]
