@@ -4161,16 +4161,53 @@ V.welcome = () => {
       <div style="position:absolute;left:16px;right:16px;bottom:16px;color:#fff"><div style="font-size:13px;font-weight:700;opacity:.9">Version de test</div><div style="font-size:28px;font-weight:800">ONEERA</div><div style="font-size:13.5px;opacity:.92">Retrouve tes amis sur la carte, en direct.</div></div>
     </div>
     <div class="body" style="gap:10px;padding-top:16px">
-      <h1 class="h2">Crée ton compte en 30 secondes</h1>
-      <p class="lead" style="font-size:14px">Ton prénom, ton e-mail, un mot de passe : tes amis te retrouvent avec ton code ONEERA.</p>
-      <button class="btn" id="su">Créer mon compte</button>
-      <button class="btn white" id="li">J’ai déjà un compte</button>
+      <h1 class="h2">Entre en un geste</h1>
+      <p class="lead" style="font-size:14px">Pas de mot de passe à retenir : ton compte Apple ou Google suffit. Tes amis te retrouvent avec ton code ONEERA.</p>
+      <button class="btn dark" id="ap"><svg width="17" height="20" viewBox="0 0 17 20" fill="#fff" aria-hidden="true"><path d="M14 10.6c0-2.6 2.1-3.8 2.2-3.9-1.2-1.8-3.1-2-3.7-2-1.6-.2-3.1.9-3.9.9-.8 0-2-.9-3.4-.9C3.5 4.8 1.9 5.8 1 7.4c-1.9 3.2-.5 8 1.3 10.6.9 1.3 1.9 2.7 3.3 2.6 1.3-.1 1.8-.8 3.4-.8s2 .8 3.4.8c1.4 0 2.3-1.3 3.2-2.6 1-1.5 1.4-2.9 1.4-3-.1 0-2.8-1.1-3-4.4zM11.5 3c.7-.9 1.2-2 1.1-3.2-1 0-2.3.7-3 1.6-.7.8-1.2 2-1.1 3.1 1.1.1 2.3-.6 3-1.5z"/></svg> Continuer avec Apple</button>
+      <button class="btn white" id="gg"><svg width="18" height="18" viewBox="0 0 48 48" aria-hidden="true"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.7 29.2 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.4-.4-3.5z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 35.1 26.7 36 24 36c-5.2 0-9.6-3.3-11.3-8l-6.5 5C9.5 39.6 16.2 44 24 44z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.2 4.2-4.1 5.6l6.2 5.2C37 39.2 44 34 44 24c0-1.3-.1-2.4-.4-3.5z"/></svg> Continuer avec Google</button>
+      <div class="grid2"><button class="btn white" id="su" style="font-size:14px">Avec mon e-mail</button><button class="btn white" id="li" style="font-size:14px">J’ai un compte e-mail</button></div>
+      <div id="werr" class="small" style="color:#C62828;font-weight:700;text-align:center" hidden></div>
       <button class="link" id="demo">Découvrir en mode démo (données simulées)</button>
       <p class="tiny" style="text-align:center;margin:0">En continuant, tu acceptes les <button class="tiny" data-legal style="text-decoration:underline">Conditions d’utilisation</button> et la <button class="tiny" data-legal style="text-decoration:underline">Politique de confidentialité</button>.</p>
     </div>`);
   $('#su', el).onclick = V.signup; $('#li', el).onclick = V.login;
+  const go = async (provider, btn) => {
+    const err = $('#werr', el); err.hidden = true;
+    if (!window.ReactNativeWebView) { err.textContent = `La connexion ${provider === 'apple' ? 'Apple' : 'Google'} fonctionne dans l’app ONEERA (TestFlight). Ici, utilise ton e-mail.`; err.hidden = false; return; }
+    const label = btn.innerHTML; btn.disabled = true; btn.innerHTML = 'Connexion…';
+    try { await realSocial(provider); }
+    catch (e) { err.textContent = e.message; err.hidden = false; }
+    finally { if (document.body.contains(btn)) { btn.disabled = false; btn.innerHTML = label; } }
+  };
+  $('#ap', el).onclick = () => go('apple', $('#ap', el));
+  $('#gg', el).onclick = () => go('google', $('#gg', el));
   $('#demo', el).onclick = () => { realSetDemo(true); _welcomeDemo(); };
   $$('[data-legal]', el).forEach(u => u.onclick = V.legal);
+};
+
+// ---------- connexion Apple / Google : l'app native fournit un jeton d'identité, le serveur le vérifie ----------
+const NATIVE_WAIT = new Map(); let _nativeId = 0;
+window.__oneeraNative = (m) => { const w = NATIVE_WAIT.get(m && m.id); if (w) { NATIVE_WAIT.delete(m.id); w(m); } };
+const nativeCall = (msg) => new Promise((res, rej) => { const id = 'n' + (++_nativeId); NATIVE_WAIT.set(id, res); try { window.ReactNativeWebView.postMessage(JSON.stringify({ ...msg, id })); } catch (e) { NATIVE_WAIT.delete(id); rej(e); } setTimeout(() => { if (NATIVE_WAIT.delete(id)) rej(new Error('La connexion n’a pas répondu. Réessaie.')); }, 120000); });
+async function realSocial(provider) {
+  const r = await nativeCall({ type: 'auth', provider });
+  if (r.cancelled) return;
+  if (r.error) throw new Error(r.error);
+  const out = provider === 'apple' ? await api('POST', '/v1/auth/apple', { identityToken: r.identityToken, fullName: r.fullName }) : await api('POST', '/v1/auth/google', { idToken: r.idToken, name: r.name });
+  REAL.token = out.token; REAL.user = out.user; REAL.email = provider === 'apple' ? 'Compte Apple' : 'Compte Google'; realSetDemo(false); realSave();
+  realApplyUser(); ST.account = provider; markStep('account');
+  if (out.isNew) V.avatarPick(() => V.perms(), true);
+  else { await realSyncFriends().catch(() => {}); realConnect(); ST.introSeen = Object.assign({}, ST.introSeen, { [VENUE.id]: 1 }); V.map(); toast(`Content de te revoir, ${esc(REAL.user.displayName)} !`); }
+}
+
+// Consentement au partage : donné quand on autorise sa position (étape « Place-toi sur la carte ») ou quand on active le partage.
+async function realGrantSharing(hours = 12) { await api('POST', '/v1/consents', { purpose: 'location_friends', granted: true }); await api('POST', '/v1/share', { hours }); }
+const _permsReal = V.perms;
+V.perms = () => {
+  _permsReal();
+  if (!realOn()) return;
+  const all = $('.scr #all'); if (!all) return; const orig = all.onclick;
+  all.onclick = async (e) => { realGrantSharing().catch(() => {}); return orig && orig.call(all, e); };
 };
 
 const authForm = (signup) => `${statusBar()}<div class="topbar"><button class="rb" data-back aria-label="Retour">${I.back}</button><h1>${signup ? 'Créer mon compte' : 'Connexion'}</h1><span style="width:44px"></span></div>
@@ -4302,7 +4339,7 @@ listeners.add(() => {
   if (!realOn() || !ST.sharing) return;
   const m = ST.sharing.mode || 'event'; if (m === REAL.sharingSent) return; REAL.sharingSent = m;
   if (m === 'off') api('DELETE', '/v1/share').catch(() => {});
-  else api('POST', '/v1/share', { hours: { '15m': .25, '1h': 1, '3h': 3 }[m] || 12 }).catch(() => {});
+  else realGrantSharing({ '15m': .25, '1h': 1, '3h': 3 }[m] || 12).catch(() => {});
 });
 
 // ---------- ajouter des amis : mon code / le code d'un ami ----------

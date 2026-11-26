@@ -5,18 +5,53 @@
  * au premier lancement (et à chaque nouvelle version), les fichiers sont copiés dans le dossier de l'app,
  * puis chargés dans une vue web locale. Aucune donnée n'est envoyée : les positions et amis sont simulés.
  */
+import * as AppleAuthentication from 'expo-apple-authentication';
 import { Asset } from 'expo-asset';
+import Constants from 'expo-constants';
 import * as FileSystem from 'expo-file-system/legacy';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, Platform, StyleSheet, Text, View } from 'react-native';
-import { WebView } from 'react-native-webview';
+import { WebView as RNWebView, type WebViewMessageEvent } from 'react-native-webview';
+
+// Les types du composant fusionnent les options iOS et Android (incompatibles entre elles) : typage explicite.
+type WebViewHandle = { injectJavaScript: (js: string) => void };
+const WebView = RNWebView as unknown as React.ComponentType<Record<string, unknown> & { ref?: React.Ref<WebViewHandle> }>;
 import { WEB_FILES, WEB_VERSION } from './webManifest';
 
 SplashScreen.preventAutoHideAsync().catch(() => {});
 
 const ROOT = `${FileSystem.documentDirectory}web/`;
+const GOOGLE_IOS_CLIENT_ID: string = (Constants.expoConfig?.extra as { googleIosClientId?: string } | undefined)?.googleIosClientId ?? '';
+
+/** Connexion native demandée par l'interface (pont WebView) : renvoie le jeton d'identité à vérifier par le serveur. */
+async function nativeSignIn(provider: string): Promise<Record<string, unknown>> {
+  if (provider === 'apple') {
+    if (Platform.OS !== 'ios' || !(await AppleAuthentication.isAvailableAsync())) return { error: 'Connexion Apple indisponible sur cet appareil.' };
+    try {
+      const c = await AppleAuthentication.signInAsync({ requestedScopes: [AppleAuthentication.AppleAuthenticationScope.FULL_NAME, AppleAuthentication.AppleAuthenticationScope.EMAIL] });
+      return { identityToken: c.identityToken, fullName: c.fullName?.givenName ?? null };
+    } catch (e) {
+      return (e as { code?: string }).code === 'ERR_REQUEST_CANCELED' ? { cancelled: true } : { error: 'Connexion Apple impossible. Réessaie.' };
+    }
+  }
+  if (provider === 'google') {
+    if (!GOOGLE_IOS_CLIENT_ID) return { error: 'Connexion Google pas encore activée dans cette version.' };
+    try {
+      // Chargé seulement si configuré (module natif absent sinon).
+      const { GoogleSignin } = require('@react-native-google-signin/google-signin');
+      GoogleSignin.configure({ iosClientId: GOOGLE_IOS_CLIENT_ID });
+      if (Platform.OS === 'android') await GoogleSignin.hasPlayServices();
+      const r = await GoogleSignin.signIn();
+      if (r.type !== 'success') return { cancelled: true };
+      return { idToken: r.data.idToken, name: r.data.user.givenName ?? null };
+    } catch {
+      return { error: 'Connexion Google impossible. Réessaie.' };
+    }
+  }
+  return { error: 'Fournisseur inconnu.' };
+}
 
 async function installWeb(): Promise<string> {
   const marker = `${ROOT}.version`;
@@ -41,6 +76,15 @@ async function installWeb(): Promise<string> {
 export default function App() {
   const [root, setRoot] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const web = useRef<WebViewHandle>(null);
+  const reply = (msg: unknown) => web.current?.injectJavaScript(`window.__oneeraNative && window.__oneeraNative(${JSON.stringify(msg)}); true;`);
+  const onMessage = async (e: WebViewMessageEvent) => {
+    let m: { type?: string; provider?: string; id?: string };
+    try { m = JSON.parse(e.nativeEvent.data); } catch { return; }
+    if (m.type === 'auth' && m.provider) reply({ id: m.id, ...(await nativeSignIn(m.provider)) });
+  };
+  // Disponibilité annoncée à l'interface avant son chargement.
+  const bootstrap = `window.ONEERA_NATIVE = ${JSON.stringify({ apple: Platform.OS === 'ios', google: !!GOOGLE_IOS_CLIENT_ID, platform: Platform.OS })}; true;`;
 
   useEffect(() => {
     installWeb().then(setRoot).catch((e) => setError(String(e?.message ?? e)));
@@ -61,6 +105,9 @@ export default function App() {
     <View style={styles.root}>
       <StatusBar style="light" />
       <WebView
+        ref={web}
+        onMessage={onMessage}
+        injectedJavaScriptBeforeContentLoaded={bootstrap}
         source={{ uri: `${root}index.html` }}
         allowingReadAccessToURL={root}
         originWhitelist={['*']}
@@ -79,7 +126,7 @@ export default function App() {
         mediaPlaybackRequiresUserAction={false}
         style={styles.web}
         onLoadEnd={() => SplashScreen.hideAsync().catch(() => {})}
-        onContentProcessDidTerminate={(e) => e.nativeEvent && setRoot(`${root}`)}
+        onContentProcessDidTerminate={() => setRoot(`${root}`)}
         {...(Platform.OS === 'android' ? { mixedContentMode: 'always' as const } : {})}
       />
     </View>

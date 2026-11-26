@@ -19,7 +19,8 @@
       },
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
-      }
+      },
+      "usesAppleSignIn": true
     },
     "android": {
       "package": "fr.oneera.app",
@@ -39,13 +40,15 @@
           "resizeMode": "contain",
           "backgroundColor": "#010922"
         }
-      ]
+      ],
+      "expo-apple-authentication"
     ],
     "owner": "juniorjoyants-team",
     "extra": {
       "eas": {
         "projectId": "6ea45fea-0cab-42c0-8bf0-216ffca69288"
-      }
+      },
+      "googleIosClientId": ""
     }
   }
 }
