@@ -9,7 +9,7 @@
 import { randomBytes, scrypt as scryptCb, timingSafeEqual } from 'node:crypto';
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import { promisify } from 'node:util';
-import { jwtVerify, SignJWT } from 'jose';
+import { createRemoteJWKSet, JWTVerifyGetKey, jwtVerify, SignJWT } from 'jose';
 import { Pool, withContext, withSystem } from './db';
 import { issueToken } from './gateway';
 
@@ -35,7 +35,15 @@ class HttpError extends Error {
   constructor(readonly status: number, readonly code: string, message?: string) { super(message ?? code); }
 }
 
-export interface ApiOptions { pool: Pool; secret: Uint8Array; publicWsUrl?: string }
+export interface ApiOptions {
+  pool: Pool; secret: Uint8Array; publicWsUrl?: string;
+  /** Identifiants d'app acceptés pour « Se connecter avec Apple » (bundle iOS). */
+  appleAudiences?: string[];
+  /** Identifiants client OAuth Google acceptés (client iOS, Android, web). */
+  googleAudiences?: string[];
+  /** Clés publiques (tests) ; par défaut celles d'Apple et de Google, téléchargées et mises en cache. */
+  jwks?: { apple?: JWTVerifyGetKey; google?: JWTVerifyGetKey };
+}
 
 type User = { id: string; displayName: string; avatar: unknown };
 
@@ -70,6 +78,33 @@ export function createApi(opts: ApiOptions) {
     if (!chunks.length) return {};
     try { const v = JSON.parse(Buffer.concat(chunks).toString('utf8')); return v && typeof v === 'object' ? v : {}; } catch { throw new HttpError(400, 'invalid_json'); }
   }
+  const appleKeys = opts.jwks?.apple ?? createRemoteJWKSet(new URL('https://appleid.apple.com/auth/keys'));
+  const googleKeys = opts.jwks?.google ?? createRemoteJWKSet(new URL('https://www.googleapis.com/oauth2/v3/certs'));
+  /** Connexion ou inscription par un fournisseur d'identité : le jeton est vérifié (signature, émetteur, destinataire, expiration). */
+  async function social(provider: 'apple' | 'google', idToken: string, nameHint: unknown) {
+    const aud = provider === 'apple' ? opts.appleAudiences ?? [] : opts.googleAudiences ?? [];
+    if (!aud.length) throw new HttpError(503, 'provider_disabled', `Connexion ${provider === 'apple' ? 'Apple' : 'Google'} pas encore configurée.`);
+    let p: Record<string, unknown>;
+    try {
+      p = (await jwtVerify(idToken, provider === 'apple' ? appleKeys : googleKeys, {
+        issuer: provider === 'apple' ? 'https://appleid.apple.com' : ['https://accounts.google.com', 'accounts.google.com'], audience: aud,
+      })).payload as Record<string, unknown>;
+    } catch {
+      throw new HttpError(401, 'invalid_identity', 'Connexion refusée : identité non vérifiée. Réessaie.');
+    }
+    const sub = String(p.sub ?? ''); if (!sub) throw new HttpError(401, 'invalid_identity');
+    const email = typeof p.email === 'string' ? p.email.toLowerCase() : '';
+    const found = await withSystem(pool, async (c) => (await c.query('SELECT id FROM users WHERE auth_provider = $1 AND auth_subject = $2 AND deleted_at IS NULL', [provider, sub])).rows[0]);
+    if (found) return { token: await signApi(found.id), user: await me(found.id), isNew: false };
+    const hint = typeof nameHint === 'string' && nameHint.trim() ? nameHint : typeof p.given_name === 'string' ? p.given_name : typeof p.name === 'string' ? p.name : email && !email.endsWith('privaterelay.appleid.com') ? email.split('@')[0] : 'Moi';
+    const name = String(hint).trim().replace(/\s+/g, ' ').slice(0, 40) || 'Moi';
+    const id = await withSystem(pool, async (c) => {
+      const t = (await c.query("SELECT id FROM tenants WHERE slug = 'oneera'")).rows[0].id;
+      return (await c.query('INSERT INTO users (tenant_id, display_name, is_guest, auth_provider, auth_subject) VALUES ($1, $2, false, $3, $4) RETURNING id', [t, name, provider, sub])).rows[0].id as string;
+    });
+    return { token: await signApi(id), user: await me(id), isNew: true };
+  }
+
   const me = (userId: string) => withContext(pool, { userId }, async (c) => {
     const r = (await c.query('SELECT id, display_name, avatar FROM users WHERE id = $1', [userId])).rows[0];
     const consent = (await c.query("SELECT 1 FROM consents WHERE user_id = $1 AND purpose = 'location_friends' AND withdrawn_at IS NULL", [userId])).rowCount;
@@ -113,6 +148,10 @@ export function createApi(opts: ApiOptions) {
       await withSystem(pool, (c) => c.query('UPDATE user_credentials SET last_login_at = now() WHERE user_id = $1', [row.user_id]));
       return { token: await signApi(row.user_id), user: await me(row.user_id) };
     },
+
+    'POST /v1/auth/apple': async (req) => { limit(req, 20); const b = await body(req); return social('apple', String(b.identityToken ?? ''), b.fullName); },
+    'POST /v1/auth/google': async (req) => { limit(req, 20); const b = await body(req); return social('google', String(b.idToken ?? ''), b.name); },
+    'GET /v1/auth/providers': async () => ({ apple: !!opts.appleAudiences?.length, google: !!opts.googleAudiences?.length }),
 
     'GET /v1/me': async (req) => me(await auth(req)),
 
