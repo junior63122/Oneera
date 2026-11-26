@@ -1,0 +1,28 @@
+const { chromium, devices } = require('playwright');
+const API = 'http://127.0.0.1:8787';
+(async () => { const b = await chromium.launch(); const U = 'http://127.0.0.1:8090/local.html?api=' + API;
+  const mk = async (name, av) => { const ctx = await b.newContext({ ...devices['iPhone 14'], deviceScaleFactor: 1 }); const p = await ctx.newPage();
+    const r = await (await fetch(API + '/v1/auth/signup', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ email: `${name}${Date.now()}@shots.test`, password: 'Motdepasse-42', displayName: name }) })).json();
+    await fetch(API + '/v1/me', { method: 'PATCH', headers: { 'content-type': 'application/json', authorization: 'Bearer ' + r.token }, body: JSON.stringify({ avatar: av }) });
+    await p.goto(U + '&nouveau'); await p.evaluate((j) => localStorage.setItem('oneera.real.v1', JSON.stringify({ token: j.token, user: j.user })), r); await p.goto(U); await p.waitForTimeout(1500);
+    await p.evaluate(() => { ST.tourDone = true; document.querySelectorAll('.tour').forEach(e => e.remove()); ST.perms.loc = 'app'; });
+    p.tok = r.token; p.uid = r.user.id; return p; };
+  const A = await mk('Camille', { g: 'f', hair: 'long' }), B = await mk('Hugo', { g: 'm', hair: 'crop' }), C = await mk('Sarah', { g: 'f', hair: 'bun' });
+  const call = (p, m, path, body) => fetch(API + path, { method: m, headers: { 'content-type': 'application/json', authorization: 'Bearer ' + p.tok }, body: body ? JSON.stringify(body) : undefined }).then(r => r.json());
+  await call(B, 'POST', '/v1/friends/requests', { userIds: [A.uid] }); await call(A, 'POST', `/v1/friends/${B.uid}/accept`, {});
+  await call(C, 'POST', '/v1/friends/requests', { userIds: [A.uid] });
+  await A.waitForTimeout(1200);
+  // Hugo se place sur la carte
+  await B.evaluate(() => { V.map(); }); await B.waitForTimeout(800); await B.evaluate(() => { ST.me.pos = [52, 48]; }); await B.waitForTimeout(3500);
+  await call(B, 'POST', '/v1/messages', { to: A.uid, body: 'Je suis devant la grande scène 🔥' });
+  await call(B, 'POST', '/v1/messages', { to: A.uid, kind: 'meet', body: '🙋 Rejoins-moi ici', loc: { x: 52, y: 48, floor: 'bdf', label: 'Grande scène' } });
+  await A.waitForTimeout(1500);
+  const sh = async (n) => { await A.waitForTimeout(700); await A.screenshot({ path: 'shots103/' + n + '.png' }); };
+  await A.evaluate(() => V.friendsTab('all')); await sh('20-amis-tous');
+  await A.evaluate(() => V.friendsTab('req')); await sh('21-amis-demandes');
+  await A.evaluate((id) => V.friendSheet(id), B.uid); await sh('22-fiche-ami');
+  await A.evaluate(() => V.chatList()); await sh('23-discussions');
+  await A.evaluate((id) => V.chat(id), B.uid); await A.waitForTimeout(500); await A.fill('#tx', 'J’arrive !'); await A.click('#snd'); await sh('24-discussion');
+  await A.evaluate(() => V.map()); await A.waitForTimeout(1500); await sh('25-carte-ami-bulle');
+  await A.evaluate((id) => V.findFriend(id), B.uid); await sh('26-boussole');
+  await b.close(); })();

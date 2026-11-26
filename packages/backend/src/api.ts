@@ -128,7 +128,7 @@ export function createApi(opts: ApiOptions) {
   /** Empreinte d'un identifiant de l'utilisateur (e-mail ou téléphone) : seule l'empreinte est stockée. */
   const addIdentifier = (userId: string, kind: 'email' | 'phone', value: string) => withSystem(pool, (c) => c.query('INSERT INTO user_identifiers (user_id, kind, hash) VALUES ($1, $2, $3) ON CONFLICT DO NOTHING', [userId, kind, sha256(value)]));
   const perUser = new Map<string, { n: number; t: number }>();
-  const limitUser = (u: string, max: number) => { const now = Date.now(), e = perUser.get(u); if (!e || now - e.t > 60_000) { perUser.set(u, { n: 1, t: now }); return; } if (++e.n > max) throw new HttpError(429, 'too_many_requests', 'Trop de demandes, réessaie dans une minute.'); };
+  const limitUser = (user: string, max: number, bucket = 'default') => { const u = bucket + '|' + user; const now = Date.now(), e = perUser.get(u); if (!e || now - e.t > 60_000) { perUser.set(u, { n: 1, t: now }); return; } if (++e.n > max) throw new HttpError(429, 'too_many_requests', 'Trop de demandes, réessaie dans une minute.'); };
 
   const me = (userId: string) => withContext(pool, { userId }, async (c) => {
     const r = (await c.query('SELECT id, display_name, avatar FROM users WHERE id = $1', [userId])).rows[0];
@@ -290,6 +290,42 @@ export function createApi(opts: ApiOptions) {
       return { friends: rows.map(friendOut) };
     },
 
+    // ---------- Messagerie entre amis ----------
+    'GET /v1/conversations': async (req) => {
+      const u = await auth(req);
+      const rows = await withContext(pool, { userId: u }, async (c) => (await c.query('SELECT * FROM app.my_conversations()')).rows);
+      return { conversations: rows.map((r) => ({ friendId: r.friend_id, last: { id: Number(r.last_id), mine: r.last_mine, kind: r.last_kind, body: r.last_body, at: r.last_at }, unread: r.unread })) };
+    },
+    'GET /v1/messages/(?<id>[0-9a-f-]{36})': async (req, m) => {
+      const u = await auth(req);
+      const q = new URL(req.url ?? '/', 'http://x').searchParams; const before = q.get('before'); const lim = Math.min(200, Math.max(1, Number(q.get('limit')) || 50));
+      const beforeId = before && /^\d{1,18}$/.test(before) ? before : null;
+      const rows = await withContext(pool, { userId: u }, async (c) => (await c.query('SELECT * FROM app.messages_with($1, $2, $3)', [m.groups!.id, beforeId, lim])).rows);
+      return { messages: rows.reverse().map((r) => ({ id: Number(r.id), mine: r.mine, kind: r.kind, body: r.body, loc: r.loc, at: r.created_at, readAt: r.read_at })) };
+    },
+    'POST /v1/messages': async (req) => {
+      const u = await auth(req); limitUser(u, 40, 'msg'); const b = await body(req);
+      const to = String(b.to ?? ''); if (!UUID.test(to)) throw new HttpError(400, 'invalid_recipient');
+      const kind = b.kind === 'loc' || b.kind === 'meet' ? b.kind : 'text';
+      const text = typeof b.body === 'string' ? b.body.normalize('NFC').replace(/[\u0000-\u0008\u000b-\u001f\u007f\u202a-\u202e\u2066-\u2069]/g, '').trim() : '';
+      if (!text || [...text].length > 1000) throw new HttpError(400, 'invalid_message', 'Message vide ou trop long (1000 caractères maximum).');
+      let loc: object | null = null;
+      if (kind !== 'text') {
+        const l = (b.loc ?? {}) as Record<string, unknown>; const x = Number(l.x), y = Number(l.y);
+        if (!(x >= 0 && x <= 100 && y >= 0 && y <= 100)) throw new HttpError(400, 'invalid_location');
+        const floor = typeof l.floor === 'string' && TOKEN.test(l.floor) ? l.floor : '';
+        const label = typeof l.label === 'string' ? l.label.replace(/[<>"&`\\\u0000-\u001f\u007f]/g, '').trim().slice(0, 60) : '';
+        loc = { x: Math.round(x * 100) / 100, y: Math.round(y * 100) / 100, floor, label };
+      }
+      const r = await withContext(pool, { userId: u }, async (c) => (await c.query('SELECT * FROM app.send_message($1, $2, $3, $4)', [to, kind, text, loc])).rows[0]);
+      return { id: Number(r.id), at: r.created_at };
+    },
+    'POST /v1/messages/(?<id>[0-9a-f-]{36})/read': async (req, m) => {
+      const u = await auth(req);
+      const n = await withContext(pool, { userId: u }, async (c) => (await c.query('SELECT app.mark_read($1) AS n', [m.groups!.id])).rows[0].n);
+      return { read: n };
+    },
+
     'DELETE /v1/friends/(?<id>[0-9a-f-]{36})': async (req, m) => {
       const u = await auth(req); const id = m.groups!.id;
       await withContext(pool, { userId: u }, (c) => c.query('DELETE FROM friendships WHERE user_a = least($1::uuid, $2::uuid) AND user_b = greatest($1::uuid, $2::uuid)', [u, id]));
@@ -344,7 +380,7 @@ export function createApi(opts: ApiOptions) {
       res.end(JSON.stringify(out));
     } catch (e) {
       const pgCode = (e as { code?: string }).code;
-      const he = e instanceof HttpError ? e : pgCode === '23514' || pgCode === '22001' || pgCode === '22P02' ? new HttpError(400, 'invalid_input', 'Donnée invalide : vérifie ce que tu as saisi.') : null;
+      const he = e instanceof HttpError ? e : pgCode === '42501' ? new HttpError(403, 'forbidden', 'Action réservée à tes amis.') : pgCode === '23514' || pgCode === '22001' || pgCode === '22P02' ? new HttpError(400, 'invalid_input', 'Donnée invalide : vérifie ce que tu as saisi.') : null;
       if (!he) console.error('[api]', req.method, path, (e as Error).message);
       res.writeHead(he?.status ?? 500, { 'content-type': 'application/json; charset=utf-8' });
       res.end(JSON.stringify({ error: he?.code ?? 'server_error', message: he?.message ?? 'Erreur serveur, réessaie.' }));

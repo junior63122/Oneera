@@ -8,7 +8,7 @@ const { chromium, devices } = require('playwright');
     await p.goto('http://127.0.0.1:8090/local.html?nouveau&api=http://127.0.0.1:9'); await p.waitForTimeout(700);
     const screens = [
       ['inscription', `V.signup()`], ['connexion', `V.login()`],
-      ['ajout ami (code)', `REAL.token='x';REAL.user={displayName:'T'};V.addFriends(false)`],
+      ['ajout ami (code)', `REAL.token='x';REAL.user={displayName:'T'};V.addFriends(false);setTimeout(()=>{const d=document.querySelector('#phd');if(d)d.open=true},50)`],
       ['chat', `REAL.token=null;quickSetup();V.chat ? V.chat('lea') : V.map()`],
       ['recherche', `quickSetup();V.search ? V.search() : 0`],
       ['suppression compte', `quickSetup();V.deleteAccount()`],

@@ -43,7 +43,11 @@ export type ServerMsg =
   /** Présence d'un ami (connecté / hors ligne), envoyée aux seuls spectateurs autorisés. */
   | { type: 'presence'; userId: string; online: boolean; at: number }
   | { type: 'refresh'; what: 'friends' }
+  /** Message d'un ami (ou envoyé depuis un autre appareil du même compte). */
+  | { type: 'message'; message: ChatMessage }
   | { type: 'error'; code: string };
+
+export interface ChatMessage { id: number; from: string; to: string; kind: string; body: string; loc: unknown; at: string }
 
 export interface FriendPosition {
   userId: string;
@@ -144,8 +148,10 @@ export class Gateway {
     this.listener = new pg.Client({ connectionString: this.opts.listenUrl });
     await this.listener.connect();
     await this.listener.query('LISTEN share_changed');
+    await this.listener.query('LISTEN message_new');
     this.listener.on('notification', (n) => {
       if (n.channel === 'share_changed' && n.payload) void this.onShareChanged(n.payload);
+      if (n.channel === 'message_new' && n.payload) this.onChatMessage(n.payload);
     });
     this.flushTimer = setInterval(() => void this.flush(), this.opts.flushMs ?? 300);
     this.pingTimer = setInterval(() => this.heartbeat(), this.opts.pingMs ?? 15_000);
@@ -284,6 +290,14 @@ export class Gateway {
         this.stats.delivered++;
       }
     }
+  }
+
+  /** Nouveau message entre amis : livré en direct au destinataire et aux autres appareils de l'expéditeur. */
+  private onChatMessage(payload: string): void {
+    let m: ChatMessage;
+    try { m = JSON.parse(payload); } catch { return; }
+    const msg: ServerMsg = { type: 'message', message: { id: m.id, from: m.from, to: m.to, kind: m.kind, body: m.body, loc: m.loc ?? null, at: m.at } };
+    for (const uid of new Set([m.to, m.from])) for (const c of this.conns.get(uid) ?? []) this.send(c.ws, msg);
   }
 
   /** Un partage, un consentement ou une amitié de `owner` a changé. */

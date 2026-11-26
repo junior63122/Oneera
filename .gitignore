@@ -9,3 +9,5 @@ reports/tmp/
 .turbo/
 .expo/
 private/
+prototype/test/*.png
+prototype/test/*.jpg

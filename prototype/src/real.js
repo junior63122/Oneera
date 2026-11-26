@@ -90,7 +90,7 @@ const authForm = (signup) => `${statusBar()}<div class="topbar"><button class="r
   <form class="body" id="f" style="padding-top:4px" novalidate>
     ${signup ? '<div class="field"><label for="fn">Prénom (affiché à tes amis)</label><input class="inp" id="fn" autocomplete="given-name" maxlength="40" required></div>' : ''}
     <div class="field"><label for="em">E-mail (jamais affiché)</label><input class="inp" id="em" type="email" inputmode="email" autocomplete="email" autocapitalize="none" spellcheck="false" required></div>
-    <div class="field"><label for="pw">Mot de passe${signup ? ' (8 caractères minimum)' : ''}</label><div style="position:relative"><input class="inp ${signup ? 'pwmask' : ''}" id="pw" type="${signup ? 'text' : 'password'}" autocomplete="${signup ? 'off' : 'current-password'}" autocapitalize="none" autocorrect="off" spellcheck="false" minlength="${signup ? 8 : 1}" required style="padding-right:96px!important;width:100%;box-sizing:border-box"><button type="button" class="link" id="see" style="position:absolute;right:6px;top:50%;transform:translateY(-50%);min-height:30px;background:#fff;padding:0 8px">Afficher</button></div></div>
+    <div class="field"><label for="pw">Mot de passe${signup ? ' (8 caractères minimum)' : ''}</label><div style="position:relative"><input class="inp ${signup ? 'pwmask' : ''}" id="pw" type="${signup ? 'text' : 'password'}" autocomplete="${signup ? 'off' : 'current-password'}" autocapitalize="none" autocorrect="off" spellcheck="false" minlength="${signup ? 8 : 1}" required style="padding-right:96px!important;width:100%;box-sizing:border-box"><button type="button" class="link" id="see" style="position:absolute;right:6px;left:auto;width:auto!important;height:auto;border:0;box-shadow:none;top:50%;transform:translateY(-50%);min-height:30px;background:#fff;padding:0 8px">Afficher</button></div></div>
     ${signup ? '<button type="button" class="row" id="cs" style="background:#F3F5FB;border-radius:14px"><div class="grow"><div class="t">Partager ma position avec mes amis</div><div class="s">Seuls tes amis la voient. Tu peux arrêter à tout moment.</div></div><span class="tog on" role="switch" aria-checked="true"></span></button>' : ''}
     <div id="err" class="small" style="color:#C62828;font-weight:700" hidden></div>
     <button class="btn" id="go" type="submit">${signup ? 'Créer mon compte' : 'Me connecter'}</button>
@@ -159,8 +159,8 @@ async function realSyncFriends() {
 function realApplyFriends() {
   const acc = REAL.friends.filter(f => f.status === 'accepted');
   FRIENDS.splice(0, FRIENDS.length, ...acc.map((f, i) => ({ id: f.id, n: f.displayName, col: REAL_COLS[i % REAL_COLS.length], acc: 3, zone: '', at: 'F', bat: null })));
-  Object.keys(FRIEND_AV2).forEach(k => { if (!acc.some(f => f.id === k)) delete FRIEND_AV2[k]; });
-  acc.forEach(f => { FRIEND_AV2[f.id] = f.avatar && f.avatar.g ? f.avatar : { g: 'm', hair: 'crop' }; });
+  Object.keys(FRIEND_AV2).forEach(k => { if (!REAL.friends.some(f => f.id === k)) delete FRIEND_AV2[k]; });
+  REAL.friends.forEach(f => { FRIEND_AV2[f.id] = f.avatar && f.avatar.g ? f.avatar : { g: 'm', hair: 'crop' }; });
   acc.forEach(f => { if (!FR_STATE[f.id]) FR_STATE[f.id] = { pos: null }; });
   realRefreshVisible(true);
 }
@@ -187,22 +187,25 @@ initFriends = function () { _initFriendsReal(); if (realOn()) FRIENDS.forEach(f 
 
 // ---------- temps réel ----------
 async function realConnect() {
-  if (!realOn() || (REAL.ws && REAL.ws.readyState <= 1)) return;
+  if (!realOn() || (REAL.ws && REAL.ws.readyState <= 1) || REAL.connecting) return;
+  REAL.connecting = true;
   try {
     if (!REAL.eventId) REAL.eventId = (await api('GET', '/v1/events/BDF-DEMO')).id;
     const { token } = await api('POST', '/v1/realtime-token', { eventId: REAL.eventId });
+    if (!realOn()) { REAL.connecting = false; return; }
     const ws = new WebSocket(REAL.api.replace(/^http/, 'ws') + '/rt?token=' + encodeURIComponent(token));
-    REAL.ws = ws;
+    REAL.ws = ws; REAL.connecting = false;
     ws.onopen = () => { REAL.wsOk = true; REAL.retry = 0; REAL.lastSent = null; emit(); };
     ws.onmessage = (ev) => { let m; try { m = JSON.parse(ev.data); } catch (_) { return; }
       if (m.type === 'snapshot') m.friends.forEach(p => realApplyPos(p));
       else if (m.type === 'friend') realApplyPos(m.pos);
       else if (m.type === 'presence') { REAL.online[m.userId] = m.online; if (m.online && !FRIENDS.some(f => f.id === m.userId)) realSyncFriends().catch(() => {}); realRefreshVisible(); }
       else if (m.type === 'gone') { delete REAL.pos[m.userId]; delete FR_STATE[m.userId]; realRefreshVisible(true); }
+      else if (m.type === 'message') realOnMessage(m.message);
       else if (m.type === 'refresh') realSyncFriends().then(() => REAL.onFriends && REAL.onFriends()).catch(() => {});
       if (m.type === 'snapshot' || m.type === 'friend') realRefreshVisible(); };
     ws.onclose = () => { REAL.wsOk = false; emit(); if (!realOn()) return; const d = [1, 2, 5, 10, 20][Math.min(REAL.retry++, 4)]; setTimeout(realConnect, d * 1000); };
-  } catch (_) { const d = [2, 5, 10, 20][Math.min(REAL.retry++, 3)]; setTimeout(realConnect, d * 1000); }
+  } catch (_) { REAL.connecting = false; const d = [2, 5, 10, 20][Math.min(REAL.retry++, 3)]; setTimeout(realConnect, d * 1000); }
 }
 function realApplyPos(p) {
   if (!p || !p.userId) return;
