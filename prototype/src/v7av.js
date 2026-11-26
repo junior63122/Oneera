@@ -57,9 +57,14 @@ V.avatarPick = (onDone, step = true) => {
     big.innerHTML = avatar2SVG(L, { pedestal: false, style: 'width:100%;height:100%' }); cam(); $('#un', el).disabled = !undo.length; $('#mpi', el).src = av2URI(L);
   };
   // caméra du studio : zoom sur le visage pour cheveux / visage / accessoires, sur le buste pour le haut, sur les pieds pour les chaussures
-  const CAM = { face: [42, 4, 116, 146], hair: [38, -2, 124, 156], acc: [38, -2, 124, 156], top: [8, 26, 184, 262], bottom: [4, 120, 192, 292], shoes: [52, 318, 96, 92] }, FULL = [14, -4, 172, 428];
+  const CAM = { face: [22, -52, 156, 200], hair: [16, -60, 168, 214], acc: [16, -60, 168, 214], top: [0, -30, 200, 300], bottom: [4, 120, 192, 292], shoes: [52, 318, 96, 92] }, FULL = [14, -26, 172, 450]; // cadrages pour la tête agrandie (×1,2 autour du menton)
   let camV = FULL.slice(), camT = 0;
-  const cam = () => { const svg = big.querySelector('svg'); if (!svg) return; const to = CAM[tab] || FULL, from = camV.slice(), t0 = performance.now(); cancelAnimationFrame(camT);
+  // Vue en pied : cadrage calculé sur la vraie taille de la scène, pour que la tête passe sous la barre du haut (Femme / Homme)
+  const fullCam = () => { const st = el.querySelector('.stStage'), tp = el.querySelector('.stTop'); if (!st || !tp) return FULL;
+    const R = st.getBoundingClientRect(), T = tp.getBoundingClientRect(); if (!R.height) return FULL;
+    const top = Math.min(.42, Math.max(0, (T.bottom - R.top) / R.height + .02)), bot = .035, H = 436 / (1 - top - bot);
+    return [100 - 86, -26 - top * H, 172, H]; };
+  const cam = () => { const svg = big.querySelector('svg'); if (!svg) return; const to = CAM[tab] || fullCam(), from = camV.slice(), t0 = performance.now(); cancelAnimationFrame(camT);
     const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
     const step = now => { const k = reduce ? 1 : Math.min(1, (now - t0) / 380), e = 1 - Math.pow(1 - k, 3); camV = from.map((v, i) => v + (to[i] - v) * e); const sv = big.querySelector('svg'); sv && sv.setAttribute('viewBox', camV.map(v => v.toFixed(1)).join(' ')); if (k < 1) camT = requestAnimationFrame(step); };
     svg.setAttribute('viewBox', camV.join(' ')); { const fl = el.querySelector('.stPed, .stFloor'); if (fl) fl.style.opacity = CAM[tab] ? 0 : 1; } camT = requestAnimationFrame(step); };
