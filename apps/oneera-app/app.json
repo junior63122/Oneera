@@ -1,0 +1,26 @@
+{
+  "expo": {
+    "name": "ONEERA",
+    "slug": "oneera",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "automatic",
+    "backgroundColor": "#010922",
+    "splash": { "image": "./assets/splash.png", "resizeMode": "cover", "backgroundColor": "#010922" },
+    "assetBundlePatterns": ["web/**/*"],
+    "ios": {
+      "bundleIdentifier": "fr.oneera.app",
+      "buildNumber": "1",
+      "supportsTablet": false,
+      "config": { "usesNonExemptEncryption": false },
+      "infoPlist": { "ITSAppUsesNonExemptEncryption": false }
+    },
+    "android": {
+      "package": "fr.oneera.app",
+      "versionCode": 1,
+      "adaptiveIcon": { "foregroundImage": "./assets/icon.png", "backgroundColor": "#010922" }
+    },
+    "plugins": ["expo-asset"]
+  }
+}
