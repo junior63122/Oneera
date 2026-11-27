@@ -18,6 +18,7 @@ function avatar2SVG(c0, opt = {}) {
   // humeur : remplace yeux + bouche (fou rire, clin d'œil, amoureux, waouh, cool, fatigué, endormi)
   const MOOD = { laugh: ['smile', 'grin'], wink: ['wink', 'smirk'], love: ['love', 'grin'], wow: ['open', 'o'], cool: ['soft', 'smirk'], yawn: ['shut', 'yawn'], sleep: ['shut', 'calm'] }[c.mood];
   if (MOOD) { c.eyes = MOOD[0]; c.mouth = MOOD[1]; }
+  if (typeof avCostume === 'function' && c.costume && c.costume !== 'none') { avCostume(c); J.clear(); (c.jewel || []).forEach(x => J.add(x)); } // déguisement / tenue de métier : fixe les pièces de base (haut, bas, chaussures…)
   const sk = col(AV2.skin, c.skin, AV2.skin[3]), hc = col(AV2.hairC, c.hairC, AV2.hairC[2]), ec = col(AV2.eyeC, c.eyeC, AV2.eyeC[0]);
   const out = c.outfit && c.outfit !== 'none', dress = ['slip', 'midi'].includes(c.outfit);
   const tc = col(AV2.cloth, out ? (c.outfitC ?? c.topC) : c.topC, AV2.cloth[0]), bc = col(AV2.cloth, out ? (c.outfitC ?? c.topC) : c.bottomC, AV2.cloth[2]), sc = col(AV2.cloth, c.shoesC, AV2.cloth[0]);
@@ -51,21 +52,31 @@ function avatar2SVG(c0, opt = {}) {
   const wAt = y => y <= yS ? sh - 2 : y <= yW ? sh + (wa - sh) * Math.pow((y - yS) / (yW - yS), 1.2) : y <= yH ? wa + (hp - wa) * (y - yW) / (yH - yW) : hp + (y - yH) * .05;
   // ---------- cheveux
   const H = hairParts(c.hair, F, { hc, hcD, hcL, hcM, HR, HB, u });
+  const hatOn = (c.hat && c.hat !== 'none') || !!c._hatOn; // un chignon ne traverse pas un bob, un bonnet ou une casquette : il est dessous
+  if (c.hairHL != null && c.hairHL !== -1 && typeof AV2.accC !== 'undefined') { const hl = col(AV2.accC, c.hairHL, null); if (hl) ['front', 'mid'].forEach(k => { if (H[k]) H[k] = H[k].split(hcL).join(hl).replace(/opacity="\.(55|6)"/g, 'opacity=".9"').replace(new RegExp(`stroke="${hl}" stroke-width="([\\d.]+)"`, 'g'), (m, w) => `stroke="${hl}" stroke-width="${(+w * 2.2).toFixed(1)}"`); }); } // mèches de couleur qui suivent les mèches de la coiffure
+  if (c._hood) { H.back = ''; H.mid = ''; } // une capuche couvre les cheveux : ils ne passent pas au travers
+  if (hatOn && (c.hair === 'bun' || c.hair === 'man_bun')) { H.back = (H.back || '').replace(/<circle cx="100" cy="16" r="15"[^>]*\/>/, ''); H.front = H.front.replace(/<circle cx="100" cy="16" r="14"[^>]*\/><path d="M90 10[^>]*\/><path d="M92 8[^>]*\/>/, '').replace(/<ellipse cx="100" cy="18" rx="12" ry="10"[^>]*\/><path d="M90 16 q10 -8 20 0"[^>]*\/>/, ''); }
   const big = (!opt.view || opt.view === 'bust') && opt.big !== false, HK = 1.2, HP = 112, hIdx = []; // tête plus grande (style avatar de messagerie) en vue en pied
+  const G = { c, F, u, sk, skD, SK, hc, hcD, hcL, tc, tcD, tcL, bc, bcD, sc, scD, yN, yS, yW, yH, yC, yK, yA, yG, sh, wa, hp, lw, wAt, out, dress, col, dark, ink, contact }, X = (st) => { try { return typeof avX === 'function' ? avX(st, G) : ''; } catch (e) { return ''; } };
+  add(X('back')); // ailes, cape, queue : derrière tout le corps
   if (H.back) { hIdx.push(S.length); } add(H.back); // masse arrière (derrière le corps)
   // ---------- jambes (peau)
   const legPts = s => { const tx = 100 + s * (hp - 14), kx = 100 + s * 11.5, ax = 100 + s * 10.5, tw = 15 + lw, kw = 8.6 + lw * .5, cw = 9.6 + lw * .6, aw = 5.6;
     const o = [[tx + s * tw, yH - 4], [kx + s * (kw + 1), yK - 18], [kx + s * kw, yK], [kx + s * cw + s * .5, yK + 22], [ax + s * aw, yA]], i = [[ax - s * aw, yA], [kx - s * (cw - 2.5), yK + 24], [kx - s * (kw - .5), yK], [100 + s * 2, yC + 6], [100 + s * 1, yH]];
     return { o, i, path: `M${o[0].map(f1).join(' ')}` + A3.cr(o) + ` L${i[0].map(f1).join(' ')}` + A3.cr(i) + 'Z' }; };
-  const legX = (s, y) => { const kx = 100 + s * 11.5, ax = 100 + s * 10.5, cw = 9.6 + lw * .6, aw = 5.6, y0 = yK + 22, t = Math.max(-.3, Math.min(1, (y - y0) / (yA - y0))); const oX = (kx + s * (cw + .5)) + ((ax + s * aw) - (kx + s * (cw + .5))) * t, iX = (kx - s * (cw - 2.5)) + ((ax - s * aw) - (kx - s * (cw - 2.5))) * t; return [oX, iX]; };
-  add(shoesBehind(c.shoes, { yA, yG, legX })); // intérieur sombre de la tige, derrière la jambe : la jambe entre dans la chaussure
+  const legX = G.legX = (s, y) => { const kx = 100 + s * 11.5, ax = 100 + s * 10.5, cw = 9.6 + lw * .6, aw = 5.6, y0 = yK + 22, t = Math.max(-.3, Math.min(1, (y - y0) / (yA - y0))); const oX = (kx + s * (cw + .5)) + ((ax + s * aw) - (kx + s * (cw + .5))) * t, iX = (kx - s * (cw - 2.5)) + ((ax - s * aw) - (kx - s * (cw - 2.5))) * t; return [oX, iX]; };
+  add(shoesBehind(c.shoes, { yA, yG, legX, tuck: !!c.tuck && c.shoes === 'boots' && !(c.outfit && c.outfit !== 'none') && ['jeans', 'chinos', 'joggers', 'cargo'].includes(c.bottom) })); // intérieur sombre de la tige, derrière la jambe : la jambe entre dans la chaussure
   const LL = legPts(-1), LR = legPts(1);
   add(`<path d="${LL.path}" fill="${SK}"/><path d="${LR.path}" fill="${SK}"/><path d="M${100 - 11.5 + 4} ${yK - 6} q-3 4 0 8 M${100 + 11.5 - 4} ${yK - 6} q3 4 0 8" stroke="${skD}" stroke-width="1" fill="none" opacity=".6"/>`);
+  add(X('legs')); // tatouages des jambes
   // ---------- chaussures (3/4, pointes légèrement vers l'extérieur)
   const longHem = (['cargo', 'flare', 'maxi', 'joggers'].includes(c.bottom) && !out) || c.outfit === 'jumpsuit';
-  add(shoes(c.shoes, { yA, yG, sc, scD, scL, u, F, sk, skD, SK, legX, covered: longHem || ['jeans', 'chinos'].includes(c.bottom) && !out }));
+  const tuck = !!c.tuck && c.shoes === 'boots' && !out && ['jeans', 'chinos', 'joggers', 'cargo'].includes(c.bottom); // bas rentré dans les bottines : la bottine passe par-dessus le pantalon
+  const shoeArgs = { yA, yG, sc, scD, scL, u, F, sk, skD, SK, legX, tuck };
+  if (!tuck) add(shoes(c.shoes, { yA, yG, sc, scD, scL, u, F, sk, skD, SK, legX, tuck, covered: longHem || ['jeans', 'chinos'].includes(c.bottom) && !out }));
   // ---------- torse (peau) et cou
   const torsoSkin = A3.sm([[100 - 9, yN + 9], [100 - sh + 11, yS + 1], [100 - sh + 4, yS + 10], [100 - wAt(170), 170], [100 - wa, yW], [100 - hp, yH], [100 + hp, yH], [100 + wa, yW], [100 + wAt(170), 170], [100 + sh - 4, yS + 10], [100 + sh - 11, yS + 1], [100 + 9, yN + 9]]);
+  add(X('feet')); // bague d'orteil, chaîne de cheville, vernis
   add(`<path d="${torsoSkin}" fill="${SK}"/>`);
   // ---------- bas
   const pants = (o) => { // o : { hemY, hemW (demi-largeur bas), kneeW, thighW, flare, waistY }
@@ -82,7 +93,7 @@ function avatar2SVG(c0, opt = {}) {
   const waistband = (y = yH - 16) => `<path d="M${100 - wAt(y) - 1.5} ${y} Q100 ${y + 3} ${100 + wAt(y) + 1.5} ${y} L${100 + wAt(y + 7) + 1.5} ${y + 7} Q100 ${y + 10} ${100 - wAt(y + 7) - 1.5} ${y + 7} Z" fill="${bcD}" opacity=".55"/>`;
   const fold = (x, y, s, k = 1) => `<path d="M${x} ${y} q${s * 4} 5 ${s * 1} 11" stroke="${bcD}" stroke-width="1.1" fill="none" opacity="${.5 * k}" stroke-linecap="round"/>`;
   const legsOn = !dress && !['suit', 'overalls', 'jumpsuit'].includes(c.outfit);
-  const hemOf = { cargo: yA + 4, jeans: yA - 2, flare: yA + 8, chinos: yA - 6, joggers: yA - 1 }[c.bottom], hemOut = out ? ({ suit: yA - 4, jumpsuit: yA + 6, overalls: yA - 4 }[c.outfit]) : hemOf;
+  const hemOf = tuck ? 0 : { cargo: yA + 4, jeans: yA - 2, flare: yA + 8, chinos: yA - 6, joggers: yA - 1 }[c.bottom], hemOut = out ? ({ suit: yA - 4, jumpsuit: yA + 6, overalls: yA - 4 }[c.outfit]) : hemOf;
   if (hemOut) add([-1, 1].map(s2 => contact(100 + s2 * 11.5, hemOut + 3, 13, 3.4, .9)).join('')); // ombre de l'ourlet sur la chaussure
   const brk = (hy) => [-1, 1].map(s2 => `<path d="M${100 + s2 * 4} ${hy - 7} q${s2 * 6} 3.5 ${s2 * 13} 0 M${100 + s2 * 6} ${hy - 13} q${s2 * 5} 2.5 ${s2 * 10} -.5" stroke="${bcD}" stroke-width="1.1" fill="none" opacity=".55" stroke-linecap="round"/>`).join('');
   if (legsOn) add(`<g ${ink(bc)}>` + ({
@@ -96,6 +107,7 @@ function avatar2SVG(c0, opt = {}) {
     maxi: () => `<path d="M${100 - wAt(yH - 16) - 1} ${yH - 16} L${100 + wAt(yH - 16) + 1} ${yH - 16} C${100 + hp + 6} ${yH + 40} ${100 + hp + 16} ${yA - 40} ${100 + hp + 22} ${yA - 4} Q${100 + 14} ${yA + 4} 100 ${yA - 2} Q${100 - 14} ${yA + 4} ${100 - hp - 22} ${yA - 4} C${100 - hp - 16} ${yA - 40} ${100 - hp - 6} ${yH + 40} ${100 - wAt(yH - 16) - 1} ${yH - 16} Z" fill="${BT}"/>${waistband()}${[[-14, -4], [0, 2], [14, 6]].map(([x, d]) => `<path d="M${100 + x * .6} ${yH} Q${100 + x + d} ${(yH + yA) / 2} ${100 + x * 1.6} ${yA - 4}" stroke="${bcD}" stroke-width="1.2" fill="none" opacity=".45"/>`).join('')}`,
     joggers: () => `<path d="${pants({ hemY: yA - 1, hemW: 8.5, kneeW: 14, thighW: 2, hemX: 10.5 })}" fill="${BT}"/>${waistband()}${[-1, 1].map(s => `<path d="M${100 + s * (hp + 1)} ${yH - 8} Q${100 + s * (hp - 1)} ${yK} ${100 + s * 19} ${yA - 6}" stroke="${tcL}" stroke-width="2.6" fill="none" opacity=".9"/><rect x="${s < 0 ? 100 - 19 : 100 + 6.4}" y="${yA - 8}" width="12.6" height="8" rx="3.5" fill="${bcD}" opacity=".55"/>`).join('')}<path d="M96 ${yH - 12} l-2 12 M104 ${yH - 12} l2 12" stroke="#F4F1EA" stroke-width="1.3" stroke-linecap="round"/>${fold(100 - 20, yK - 14, -1)}${fold(100 + 20, yK - 8, 1)}`
   }[c.bottom]?.() || '') + (hemOf && hemOf >= yA - 8 ? brk(hemOf) : '') + '</g>');
+  if (tuck) { const yT = yA - 30; add([-1, 1].map(s2 => { const [a, b] = legX(s2, yT - 6), cx = (a + b) / 2; return `<path d="M${f1(cx - s2 * 9)} ${yT - 4} q${s2 * 6} -3 ${s2 * 13} 1 M${f1(cx - s2 * 8)} ${yT - 10} q${s2 * 5} -2.4 ${s2 * 11} .6" stroke="${bcD}" stroke-width="1.2" fill="none" opacity=".6"/>`; }).join('')); add(shoes(c.shoes, shoeArgs)); }
   // ---------- tenues une pièce (partie basse)
   if (c.outfit === 'suit' || c.outfit === 'overalls' || c.outfit === 'jumpsuit') {
     const P = pants({ hemY: c.outfit === 'jumpsuit' ? yA + 6 : yA - 4, hemW: c.outfit === 'jumpsuit' ? 18 : 11, kneeW: c.outfit === 'jumpsuit' ? 17 : 12.5, hemIn: c.outfit === 'jumpsuit' ? 8 : undefined, waistY: yW - 4 });
@@ -104,6 +116,7 @@ function avatar2SVG(c0, opt = {}) {
   if (dress) add(c.outfit === 'slip'
     ? `<path d="M${100 - wAt(160) + 1} 160 C${100 - wa - 2} ${yW} ${100 - hp - 2} ${yH} ${100 - hp - 10} ${yK - 2} Q100 ${yK + 8} ${100 + hp + 10} ${yK - 2} C${100 + hp + 2} ${yH} ${100 + wa + 2} ${yW} ${100 + wAt(160) - 1} 160 Q100 150 ${100 - wAt(160) + 1} 160 Z" fill="${TP}"/><path d="M${100 - 6} ${yH - 10} Q${100 - 10} ${yH + 40} ${100 - 18} ${yK - 2} M${100 + 10} ${yH} Q${100 + 14} ${yH + 40} ${100 + 22} ${yK}" stroke="#FFFFFF" stroke-width="2.4" fill="none" opacity=".22" stroke-linecap="round"/>`
     : `<path d="M${100 - wAt(150) - 1} 150 L${100 - wa - 1} ${yW} C${100 - hp} ${yH} ${100 - hp - 14} ${yK + 10} ${100 - hp - 18} ${yK + 30} Q100 ${yK + 40} ${100 + hp + 18} ${yK + 30} C${100 + hp + 14} ${yK + 10} ${100 + hp} ${yH} ${100 + wa + 1} ${yW} L${100 + wAt(150) + 1} 150 Z" fill="url(#${u}fl)"/><path d="M${100 - wa - 1} ${yW} Q100 ${yW + 4} ${100 + wa + 1} ${yW} L${100 + wa + 1} ${yW + 6} Q100 ${yW + 10} ${100 - wa - 1} ${yW + 6} Z" fill="${tcD}"/>${[[-16, -8], [0, 0], [16, 8]].map(([x, d]) => `<path d="M${100 + x * .5} ${yW + 8} Q${100 + x + d} ${yK} ${100 + x * 1.7} ${yK + 32}" stroke="${tcD}" stroke-width="1.3" fill="none" opacity=".45"/>`).join('')}`);
+  add(X('bottoms')); // tablier, jambières
   // ---------- haut
   const top = out ? (c.outfit === 'suit' ? 'suit' : c.outfit === 'overalls' ? 'overalls' : c.outfit === 'jumpsuit' ? 'jumpsuit' : c.outfit === 'slip' ? 'slip' : 'midi') : c.top;
   const torsoCloth = (hemY, ext = 0, neck = 'crew') => { const nk = { crew: [[100 + 11, yN + 6], [100, yN + 11], [100 - 11, yN + 6]], v: [[100 + 10, yN + 5], [100, yN + 30], [100 - 10, yN + 5]], deep: [[100 + 9, yN + 5], [100, yN + 40], [100 - 9, yN + 5]], wide: [[100 + 16, yN + 10], [100, yN + 16], [100 - 16, yN + 10]] }[neck];
@@ -134,24 +147,28 @@ function avatar2SVG(c0, opt = {}) {
     midi: () => `<path d="${torsoCloth(yW + 2, 1, 'v')}" fill="url(#${u}fl)"/>${shade(yW + 2, 1)}`
   };
   // ---------- bras et mains
-  const pose = c.pose || 'pocket', modes = { pocket: ['pocket', 'relax'], hip: ['hip', 'relax'], relax: ['relax', 'relax'], wave: ['relax', 'wave'], dance: ['up', 'up'] }[pose] || ['relax', 'relax'];
-  const aw = (F ? 10.5 : 12.5) + lw * .8;
+  const noPocket = dress || c.outfit === 'slip' || (!out && ['skirt', 'maxi'].includes(c.bottom)) || !!c._noPocket; // pas de poche : la main ne peut pas y disparaître
+  G.top = top;
+  const pose = (c.pose || 'pocket') === 'pocket' && noPocket ? 'relax' : (c.pose || 'pocket'), modes = { pocket: ['pocket', 'relax'], hip: ['hip', 'relax'], relax: ['relax', 'relax'], wave: ['relax', 'wave'], dance: ['up', 'up'] }[pose] || ['relax', 'relax'];
+  const aw = G.aw = (F ? 10.5 : 12.5) + lw * .8; G.top = top;
   const arm = (s, mode) => { const S0 = [100 + s * (sh - 6), yS + 10];
     const E = { relax: [100 + s * (sh + 4), 196], pocket: [100 + s * (sh + 8), 192], hip: [100 + s * (sh + 18), 184], wave: [100 + s * (sh + 22), 144], up: [100 + s * (sh + 20), 122] }[mode], W = { relax: [100 + s * (sh + 3), 250], pocket: [100 + s * (hp - 3), yH - 2], hip: [100 + s * (wa + 6), yW + 8], wave: [100 + s * (sh + 24), 96], up: [100 + s * (sh + 26), 70] }[mode];
     const d = `M${S0.map(f1).join(' ')} Q${f1((S0[0] + E[0]) / 2 + s * 2)} ${f1((S0[1] + E[1]) / 2)} ${E.map(f1).join(' ')} L${W.map(f1).join(' ')}`; return { d, E, W, mode, s }; };
   const A = [arm(-1, modes[0]), arm(1, modes[1])];
+  const HF = c._handC || SK; // gants des déguisements
   const hand = a => { if (a.mode === 'pocket') return ''; const ang = Math.atan2(a.W[1] - a.E[1], a.W[0] - a.E[0]) * 180 / Math.PI - 90, s = a.s;
-    const shape = a.mode === 'wave' || a.mode === 'up' ? `<path d="M-6.5 -2 C-8 4 -7 9 -4 11 L4 11 C7 9 8 4 6.5 -2 Z" fill="${SK}"/><g fill="${SK}" stroke="${skD}" stroke-width=".7"><rect x="-6.6" y="8" width="3.4" height="11" rx="1.7" transform="rotate(10 -5 8)"/><rect x="-3.2" y="9" width="3.4" height="12.5" rx="1.7" transform="rotate(3 -1.5 9)"/><rect x=".2" y="9" width="3.4" height="12" rx="1.7" transform="rotate(-4 2 9)"/><rect x="3.4" y="8" width="3.2" height="10" rx="1.6" transform="rotate(-12 5 8)"/></g><path d="M${-s * 6} 2 q${-s * 7} 2 ${-s * 8} 9 q${s * 3} 1 ${s * 5} -3" fill="${SK}" stroke="${skD}" stroke-width=".7"/>`
-      : a.mode === 'hip' ? `<path d="M-6 -1 C-8 5 -6 12 0 13 C6 12 8 5 6 -1 Z" fill="${SK}"/><path d="M-4 9 q4 2 8 0" stroke="${skD}" stroke-width=".8" fill="none"/>`
-      : `<path d="M-6 -1 C-7.6 6 -7 13 -3.5 17 C-1 19.4 1.8 19.2 4 17 C7.2 13 7.6 6 6 -1 Z" fill="${SK}"/><path d="M${s * -5.5} 3 C${s * -9.5} 6 ${s * -9} 11 ${s * -5.5} 12" fill="${SK}" stroke="${skD}" stroke-width=".8"/><path d="M-1.5 12 l0 5 M1.8 12 l0 4.6" stroke="${skD}" stroke-width=".7" opacity=".6" stroke-linecap="round"/>`;
+    const shape = a.mode === 'wave' || a.mode === 'up' ? `<path d="M-6.5 -2 C-8 4 -7 9 -4 11 L4 11 C7 9 8 4 6.5 -2 Z" fill="${HF}"/><g fill="${HF}" stroke="${skD}" stroke-width=".7"><rect x="-6.6" y="8" width="3.4" height="11" rx="1.7" transform="rotate(10 -5 8)"/><rect x="-3.2" y="9" width="3.4" height="12.5" rx="1.7" transform="rotate(3 -1.5 9)"/><rect x=".2" y="9" width="3.4" height="12" rx="1.7" transform="rotate(-4 2 9)"/><rect x="3.4" y="8" width="3.2" height="10" rx="1.6" transform="rotate(-12 5 8)"/></g><path d="M${-s * 6} 2 q${-s * 7} 2 ${-s * 8} 9 q${s * 3} 1 ${s * 5} -3" fill="${HF}" stroke="${skD}" stroke-width=".7"/>`
+      : a.mode === 'hip' ? `<path d="M-6 -1 C-8 5 -6 12 0 13 C6 12 8 5 6 -1 Z" fill="${HF}"/><path d="M-4 9 q4 2 8 0" stroke="${skD}" stroke-width=".8" fill="none"/>`
+      : `<path d="M-6 -1 C-7.6 6 -7 13 -3.5 17 C-1 19.4 1.8 19.2 4 17 C7.2 13 7.6 6 6 -1 Z" fill="${HF}"/><path d="M${s * -5.5} 3 C${s * -9.5} 6 ${s * -9} 11 ${s * -5.5} 12" fill="${HF}" stroke="${skD}" stroke-width=".8"/><path d="M-1.5 12 l0 5 M1.8 12 l0 4.6" stroke="${skD}" stroke-width=".7" opacity=".6" stroke-linecap="round"/>`;
     return `<g transform="translate(${f1(a.W[0])} ${f1(a.W[1])}) rotate(${f1(ang)})">${shape}</g>`; };
-  const armSVG = a => { const sl = sleeveLen; const cl = top === 'midi' ? `url(#${u}fl)` : top === 'overalls' ? '#F4F1EA' : top === 'jacket' || top === 'suit' || top === 'openshirt' ? TP : TP;
+  const armSVG = a => { const sl = c._sleeve ?? sleeveLen; const cl = c._sleeveC ? c._sleeveC : top === 'midi' ? `url(#${u}fl)` : top === 'overalls' ? '#F4F1EA' : top === 'jacket' || top === 'suit' || top === 'openshirt' ? TP : TP;
     const pocketCut = a.mode === 'pocket' ? 92 : 100;
     return `<path d="${a.d}" stroke="${SK}" stroke-width="${aw}" stroke-linecap="round" stroke-linejoin="round" fill="none" pathLength="100" stroke-dasharray="${pocketCut} 200"/>`
       + (sl ? `<path d="${a.d}" stroke="${cl}" stroke-width="${aw + (sl > 60 ? 3.5 : 4.5)}" stroke-linecap="butt" stroke-linejoin="round" fill="none" pathLength="100" stroke-dasharray="${sl > 90 ? pocketCut - 4 : sl} 200"/>` : '')
       + (sl > 90 && a.mode !== 'pocket' ? `<circle cx="${f1(a.W[0])}" cy="${f1(a.W[1] - 2)}" r="${aw / 2 + 2}" fill="${tcD}"/>` : '') + hand(a); };
   const live = !!(opt.live || c._live);
   add(A.map(a => live && (a.mode === 'relax' || a.mode === 'wave' || a.mode === 'up') ? `<g class="avA${a.s < 0 ? 'l' : 'r'}${a.mode === 'up' ? ' up' : ''}" style="transform-origin:${f1(100 + a.s * (sh - 6))}px ${yS + 10}px">${armSVG(a)}</g>` : armSVG(a)).join(''));
+  G.A = A; add(X('arms')); // manches longues des blouses et vestes de déguisement
   const hemTop = { tee: yH - 6, oversize: yH + 6, crop: 186, tank: yH - 6, shirt: yH, polo: yH - 4, hoodie: yH + 4, blouse: yW + 6, jumpsuit: yW + 2, midi: yW + 2 }[top];
   if (hemTop && !dress) add(contact(100, hemTop + 3, wAt(Math.min(hemTop, yH)) + 6, 4.5, .85));
   add(`<g ${ink(tc)}>` + (T[top] ? T[top]() : T.tee()) + '</g>');
@@ -173,11 +190,13 @@ function avatar2SVG(c0, opt = {}) {
   if (J.has('glowstick')) { const a = A.find(x => x.mode === 'up' || x.mode === 'wave') || A.find(x => x.mode !== 'pocket') || A[1]; const up = a.mode === 'up' || a.mode === 'wave';
     add(`<g filter="url(#${u}gl)" transform="translate(${f1(a.W[0])} ${f1(a.W[1] + (up ? -6 : 10))}) rotate(${up ? a.s * 18 : a.s * -12})"><rect x="-2.6" y="${up ? -30 : -4}" width="5.2" height="34" rx="2.6" fill="${gc}"/><rect x="-1" y="${up ? -27 : -1}" width="2" height="28" rx="1" fill="#FFFFFF" opacity=".75"/></g>`); }
   if (J.has('watch')) { const a = A.find(x => x.mode === 'relax') || A[0]; add(`<rect x="${f1(a.W[0] - 6.5)}" y="${f1(a.W[1] - 6)}" width="13" height="6" rx="2" fill="#2B2B33"/><circle cx="${f1(a.W[0])}" cy="${f1(a.W[1] - 3)}" r="3.4" fill="#C9CED8" stroke="#2B2B33" stroke-width="1"/>`); }
+  add(X('top')); // blouses, gilets, ceintures, banane, écharpe, badges, stéthoscope, gants
   // ---------- cheveux qui tombent devant les épaules
   if (H.mid) { hIdx.push(S.length); } add(H.mid);
   // ---------- cou et tête
   add(`<path d="M${100 - 10} 98 L${100 - 10} ${yN + 6} Q100 ${yN + 14} ${100 + 10} ${yN + 6} L${100 + 10} 98 Z" fill="${SK}"/><path d="M${100 - 10} 106 Q100 ${120} ${100 + 10} 106 L${100 + 10} 100 L${100 - 10} 100 Z" fill="${skDD}" opacity=".5"/>`);
   if (J.has('necklace') && !['suit', 'shirt', 'polo', 'hoodie', 'jumpsuit'].includes(top)) add(`<path d="M${100 - 10} ${yN + 2} Q100 ${yN + 22} ${100 + 10} ${yN + 2}" stroke="#E2B451" stroke-width="1.2" fill="none"/><path d="M100 ${yN + 14} l-3 4 l3 4 l3 -4 Z" fill="#E2B451"/>`);
+  add(X('neck')); // cravate, nœud papillon, col haut
   const iHead0 = S.length;
   const face = F ? 'M67 68 C67 45 81 34 100 34 C119 34 133 45 133 68 C133 85 128 97 119 105 C112 111 106 114 100 114 C94 114 88 111 81 105 C72 97 67 85 67 68 Z' : 'M66 67 C66 44 80 33 100 33 C120 33 134 44 134 67 C134 86 130 99 121 107 C114 113 107 116 100 116 C93 116 86 113 79 107 C70 99 66 86 66 67 Z';
   const ear = s => `<path d="M${100 + s * 32} 70 C${100 + s * 41} 66 ${100 + s * 43} 78 ${100 + s * 40} 86 C${100 + s * 38} 92 ${100 + s * 34} 93 ${100 + s * 31} 90 Z" fill="${SK}"/><path d="M${100 + s * 34} 74 C${100 + s * 39} 73 ${100 + s * 39} 82 ${100 + s * 35} 86" stroke="${skD}" stroke-width="1.4" fill="none" stroke-linecap="round"/>`;
@@ -185,6 +204,7 @@ function avatar2SVG(c0, opt = {}) {
   if (J.has('hoops')) add(`<circle cx="${100 - 36}" cy="96" r="5" fill="none" stroke="#E2B451" stroke-width="1.8"/><circle cx="${100 + 36}" cy="96" r="5" fill="none" stroke="#E2B451" stroke-width="1.8"/>`);
   // joues
   add(`<ellipse cx="${100 - 21}" cy="92" rx="8" ry="5" fill="url(#${u}bl)"/><ellipse cx="${100 + 21}" cy="92" rx="8" ry="5" fill="url(#${u}bl)"/>`);
+  add(X('face')); // taches de rousseur, grain de beauté, maquillage de squelette
   // maquillage festival
   if (c.paint && c.paint !== 'none') { const sp = (x, y, r, f) => `<path d="M${x} ${y - r} L${x + r * .28} ${y - r * .28} L${x + r} ${y} L${x + r * .28} ${y + r * .28} L${x} ${y + r} L${x - r * .28} ${y + r * .28} L${x - r} ${y} L${x - r * .28} ${y - r * .28} Z" fill="${f}"/>`;
     add(`<g filter="url(#${u}gl)">` + ({
@@ -209,14 +229,15 @@ function avatar2SVG(c0, opt = {}) {
       + `<path d="M${x - w * .7} ${y + h * .62} Q${x} ${y + h * .95} ${x + w * .7} ${y + h * .6}" stroke="${skD}" stroke-width=".9" fill="none" opacity=".7"/>`
       + `<path d="M${x - w * .8} ${top - 3.4} Q${x} ${top - 6.4} ${x + w * .9} ${top - 3.2}" stroke="${skD}" stroke-width=".8" fill="none" opacity=".45"/>`; };
   add(eye(-1) + eye(1));
+  add(X('eyes')); // eye-liner, fard, masque
   // sourcils (pleins, effilés, couleur des cheveux)
-  const bc2 = shd(hc, dark(hc) ? .05 : -.25), bw = F ? 2.6 : 3.6;
+  const bc2 = shd(hc, dark(hc) ? .05 : -.25), bw = (F ? 2.6 : 3.6) * ({ thin: .55, thick: 1.5, arched: 1, straight: 1 }[c.brows] || 1);
   const brow = s => { const x0 = 100 + s * 6.5, x1 = 100 + s * 24; return `<path d="M${x0} ${66 + (F ? 1 : 0)} C${x0 + s * 4} ${62 - bw * .3} ${x1 - s * 6} ${60 - bw * .4} ${x1} ${64} C${x1 - s * 6} ${62 + bw * .1} ${x0 + s * 5} ${62 + bw} ${x0} ${66 + (F ? 1 : 0) + bw * .6} Z" fill="${bc2}"/>`; };
   add(live ? `<g class="avBw">${brow(-1) + brow(1)}</g>` : brow(-1) + brow(1));
   // nez
   add(`<path d="M${100 + 3} 80 C${100 + 4} 86 ${100 + 6} 90 ${100 + 5} 93" stroke="${skD}" stroke-width="1.4" fill="none" stroke-linecap="round" opacity=".8"/><path d="M${100 - 5.5} 92.5 Q${100 - 3} 95.6 100 94.6 Q${100 + 3} 95.6 ${100 + 5.5} 92.5" stroke="${skDD}" stroke-width="1.5" fill="none" stroke-linecap="round" opacity=".75"/><ellipse cx="${100 - 1}" cy="90" rx="2.4" ry="1.6" fill="#FFFFFF" opacity=".22"/>`);
   // bouche
-  const lipC = F ? '#C4586A' : shd(sk, -.34), mY = 103;
+  const lipC = c.lips && c.lips !== 'none' && typeof AV2.lips !== 'undefined' ? col(AV2.lips.map(x => x[2]), AV2.lips.findIndex(x => x[0] === c.lips), F ? '#C4586A' : shd(sk, -.34)) : F ? '#C4586A' : shd(sk, -.34), mY = 103;
   const mouthSVG = ({
     smile: `<path d="M${100 - 9} ${mY - 1} Q100 ${mY + 6} ${100 + 9} ${mY - 1} Q100 ${mY + 2.6} ${100 - 9} ${mY - 1} Z" fill="${lipC}"/><path d="M${100 - 9} ${mY - 1} Q100 ${mY + 6} ${100 + 9} ${mY - 1}" stroke="${shd(lipC, -.35)}" stroke-width="1.4" fill="none" stroke-linecap="round"/>${F ? `<path d="M${100 - 5} ${mY + 4.4} Q100 ${mY + 6.8} ${100 + 5} ${mY + 4.4}" stroke="${lipC}" stroke-width="2" fill="none" stroke-linecap="round" opacity=".8"/>` : ''}`,
     grin: `<path d="M${100 - 11} ${mY - 2} Q100 ${mY - .4} ${100 + 11} ${mY - 2} Q${100 + 9} ${mY + 10} 100 ${mY + 10} Q${100 - 9} ${mY + 10} ${100 - 11} ${mY - 2} Z" fill="#5A1E22"/><path d="M${100 - 10} ${mY - 1.4} Q100 ${mY + .2} ${100 + 10} ${mY - 1.4} L${100 + 8.6} ${mY + 2.6} Q100 ${mY + 3.6} ${100 - 8.6} ${mY + 2.6} Z" fill="#FFFFFF"/><path d="M${100 - 5} ${mY + 7.6} Q100 ${mY + 5.6} ${100 + 5} ${mY + 7.6} Q100 ${mY + 9.6} ${100 - 5} ${mY + 7.6} Z" fill="#E0707C"/>${F ? `<path d="M${100 - 11} ${mY - 2} Q${100 - 9} ${mY + 10} 100 ${mY + 10} Q${100 + 9} ${mY + 10} ${100 + 11} ${mY - 2}" stroke="${lipC}" stroke-width="1.8" fill="none"/>` : ''}`,
@@ -234,6 +255,7 @@ function avatar2SVG(c0, opt = {}) {
       mustache: `<path d="M88 99 Q94 95 100 97.5 Q106 95 112 99 Q107 102 100 100 Q93 102 88 99 Z" fill="${bcol}"/>`,
       goatee: `<path d="M89.5 99 Q94.5 96 100 97.6 Q105.5 96 110.5 99 Q106 100.6 100 99.8 Q94 100.6 89.5 99 Z" fill="${bcol}"/><path d="M93.5 108.4 Q100 106.6 106.5 108.4 Q106 115 100 116.6 Q94 115 93.5 108.4 Z" fill="${bcol}"/>${hairs([[95, 109], [98, 108.6], [101, 108.6], [104, 109], [96.5, 112], [100, 112.4], [103.5, 112]])}` }[c.beard] || ''); }
   add(mouthSVG);
+  add(X('mouth')); // crocs, barbe de Père Noël, moustaches de chat
   // ---------- cheveux (avant)
   add(H.front);
   // ---------- lunettes, couvre-chef
@@ -245,6 +267,7 @@ function avatar2SVG(c0, opt = {}) {
   add({ none: '', cap: `<path d="M66 58 C64 30 82 20 100 20 C118 20 136 30 134 58 Z" fill="${hcol}"/><path d="M100 20 L100 58 M82 24 Q78 40 80 57 M118 24 Q122 40 120 57" stroke="${hD}" stroke-width="1" fill="none" opacity=".6"/><path d="M64 56 Q100 46 136 56 Q138 62 136 66 Q100 58 64 66 Q62 62 64 56 Z" fill="${hD}"/><path d="M70 58 Q100 51 130 58" stroke="${hL}" stroke-width="1.4" fill="none" opacity=".6"/><circle cx="100" cy="21" r="3" fill="${hD}"/>`,
     bucket: `<path d="M71 56 C70 32 84 24 100 24 C116 24 130 32 129 56 Z" fill="${hcol}"/><path d="M58 62 Q100 46 142 62 L138 70 Q100 58 62 70 Z" fill="${hD}"/><path d="M72 52 Q100 47 128 52" stroke="${hD}" stroke-width="1.2" fill="none"/>`,
     beanie: `<path d="M66 62 C62 28 82 16 100 16 C118 16 138 28 134 62 Z" fill="${hcol}"/>${Array.from({ length: 9 }, (_, i) => `<path d="M${72 + i * 7} 22 L${71 + i * 7.2} 54" stroke="${hD}" stroke-width="1" opacity=".35"/>`).join('')}<rect x="63" y="52" width="74" height="14" rx="7" fill="${hD}"/><path d="M66 58 h68" stroke="${hcol}" stroke-width="1" opacity=".5" stroke-dasharray="2 3"/>` }[c.hat] || '');
+  add(X('head')); // couvre-chefs des déguisements, accessoires de tête, piercings, cache-œil
   if (big) { const hz = (x) => `<g transform="translate(100 ${HP}) scale(${HK}) translate(-100 -${HP})">${x}</g>`;
     S.splice(iHead0, S.length - iHead0, hz(S.slice(iHead0).join(''))); hIdx.forEach(i => { S[i] = hz(S[i]); }); }
   if (live) { const hd = S.splice(iHead0, S.length - iHead0).join(''); S.push(`<g class="avH" style="transform-origin:100px ${yN}px">${hd}</g>`); }
@@ -301,7 +324,7 @@ function shoes(kind, o) {
   // bottines et toiles montantes : une seule silhouette (tige + pied), un peu plus large que la jambe, dans le repère du corps
   const tall = s => { const bt = kind === 'boots', yA = o.yA, yT = yA - (bt ? 30 : 16), fx = 100 + s * 13, fw = bt ? 11.6 : 12;
     const at = (y, m) => { const [a, b] = o.legX(s, y); return [a + s * m, b - s * m]; };
-    const [oT, iT] = at(yT, 2.7), [oA, iA] = at(yA - 3, 2.3), cx = (oT + iT) / 2;
+    const [oT, iT] = at(yT, o.tuck ? 7.2 : 2.7), [oA, iA] = at(yA - 3, o.tuck ? 5.4 : 2.3), cx = (oT + iT) / 2;
     const P = `M${f1(iT)} ${f1(yT)} C${f1(iT - s * .1)} ${f1(yT + 10)} ${f1(iA)} ${f1(yA - 14)} ${f1(iA)} ${f1(yA - 3)} C${f1(iA)} ${f1(yA + 5)} ${f1(fx - s * fw)} ${f1(yG - 15)} ${f1(fx - s * fw)} ${f1(yG - 5)} C${f1(fx - s * fw)} ${f1(yG + 1.5)} ${f1(fx + s * fw)} ${f1(yG + 1.5)} ${f1(fx + s * fw)} ${f1(yG - 5)} C${f1(fx + s * fw)} ${f1(yG - 13)} ${f1(oA)} ${f1(yA + 4)} ${f1(oA)} ${f1(yA - 3)} C${f1(oA)} ${f1(yA - 14)} ${f1(oT + s * .1)} ${f1(yT + 10)} ${f1(oT)} ${f1(yT)} Q${f1(cx)} ${f1(yT + 3.4)} ${f1(iT)} ${f1(yT)} Z`;
     const xs = [iT, oT, fx - s * fw, fx + s * fw], x0 = Math.min(...xs), x1 = Math.max(...xs), g = `${o.u}bs${s < 0 ? 'l' : 'r'}`;
     const lightAt = s < 0 ? .3 : .7; // lumière venant de la gauche
@@ -333,15 +356,18 @@ function shoes(kind, o) {
     const sole = `<path d="M${f1(fx - s * (fw + 1.6))} ${f1(top - .6)} Q${f1(fx)} ${f1(top - 2.6)} ${f1(fx + s * (fw + 1.6))} ${f1(top - .6)} L${f1(fx + s * (fw + 1.8))} ${f1(yG + 1)} Q${f1(fx)} ${f1(yG + 2.6)} ${f1(fx - s * (fw + 1.8))} ${f1(yG + 1)} Z" fill="${strapD}"/><path d="M${f1(fx - s * (fw + 1.6))} ${f1(top - .6)} Q${f1(fx)} ${f1(top - 2.6)} ${f1(fx + s * (fw + 1.6))} ${f1(top - .6)} L${f1(fx + s * (fw + 1.6))} ${f1(top + 1)} Q${f1(fx)} ${f1(top - 1)} ${f1(fx - s * (fw + 1.6))} ${f1(top + 1)} Z" fill="${shd(strap, .1)}"/>`;
     const band = (d, w) => `<path d="${d}" stroke="${strapD}" stroke-width="${w + 1}" fill="none" stroke-linecap="round"/><path d="${d}" stroke="${strap}" stroke-width="${w}" fill="none" stroke-linecap="round"/><path d="${d}" stroke="${strapL}" stroke-width="${f1(w * .3)}" fill="none" stroke-linecap="round" opacity=".7" transform="translate(0 -${f1(w * .22)})"/>`;
     const fore = `M${f1(fx - s * (fw - 1.2))} ${f1(top - 8.6)} Q${f1(fx)} ${f1(top - 14)} ${f1(fx + s * (fw - 1.2))} ${f1(top - 8.6)}`, ank = `M${f1(iA - s * .4)} ${f1(yA - 1)} Q${f1((iA + oA) / 2)} ${f1(yA + 2.4)} ${f1(oA + s * .4)} ${f1(yA - 1)}`;
+    if (kind === 'barefoot') return `<path d="${foot}" fill="${o.SK || o.sk}" stroke="${o.skD}" stroke-width=".7" stroke-opacity=".8"/><path d="M${f1((iA + oA) / 2 + s * 1)} ${f1(yA + 3)} Q${f1(fx + s * 2)} ${f1(yG - 12)} ${f1(fx + s * 5)} ${f1(top - 4)}" stroke="${o.skD}" stroke-width="1.4" fill="none" opacity=".3" stroke-linecap="round"/>` + toes;
+    if (kind === 'heels') { const hc = o.sc, hd = shd(hc, -.3), hl = shd(hc, .3); // escarpin : cou-de-pied nu, bout pointu verni, fine semelle
+      return `<path d="${foot}" fill="${o.SK || o.sk}" stroke="${o.skD}" stroke-width=".7" stroke-opacity=".8"/><path d="M${f1(fx - s * (fw + .6))} ${f1(yG - 2)} C${f1(fx - s * (fw + .8))} ${f1(yG - 9)} ${f1(fx - s * 4)} ${f1(top - 7.4)} ${f1(fx + s * 1)} ${f1(top - 8.4)} C${f1(fx + s * 6)} ${f1(top - 7.4)} ${f1(fx + s * (fw + .8))} ${f1(yG - 9)} ${f1(fx + s * (fw + .6))} ${f1(yG - 2)} Q${f1(fx + s * 2)} ${f1(yG + 3.4)} ${f1(fx - s * (fw + .6))} ${f1(yG - 2)} Z" fill="${hc}" stroke="${hd}" stroke-width=".8"/><path d="M${f1(fx - s * 5)} ${f1(top - 5)} Q${f1(fx)} ${f1(top - 7.6)} ${f1(fx + s * 3)} ${f1(top - 5.6)}" stroke="${hl}" stroke-width="1.6" fill="none" opacity=".8" stroke-linecap="round"/><path d="M${f1(fx - s * (fw + .4))} ${f1(yG - .6)} Q${f1(fx + s * 2)} ${f1(yG + 4.2)} ${f1(fx + s * (fw + .4))} ${f1(yG - .6)}" stroke="${hd}" stroke-width="1.6" fill="none"/>`; }
     return sole + `<path d="${foot}" fill="${o.SK || o.sk}" stroke="${o.skD}" stroke-width=".7" stroke-opacity=".8"/><path d="M${f1((iA + oA) / 2 + s * 1)} ${f1(yA + 3)} Q${f1(fx + s * 2)} ${f1(yG - 12)} ${f1(fx + s * 5)} ${f1(top - 4)}" stroke="${o.skD}" stroke-width="1.4" fill="none" opacity=".3" stroke-linecap="round"/>` + toes
       + `<path d="M${f1(fx - s * fw)} ${f1(top - .6)} Q${f1(fx)} ${f1(top + .4)} ${f1(fx + s * fw)} ${f1(top - .6)}" stroke="${strapD}" stroke-width=".6" fill="none" opacity=".5"/>`
       + band(fore, 3.4) + band(ank, 2.6) + `<rect x="${f1(oA - s * .2 - 1.7)}" y="${f1(yA - 2.6)}" width="3.4" height="3.2" rx=".8" fill="#E8C26A" stroke="#9A7A2E" stroke-width=".5"/>`; };
-  const abs = ['boots', 'canvas'].includes(kind) && o.legX ? tall(-1) + tall(1) : kind === 'sandals' && o.legX ? sandal(-1) + sandal(1) : one(-1) + one(1);
+  const abs = ['boots', 'canvas'].includes(kind) && o.legX ? tall(-1) + tall(1) : ['sandals', 'barefoot', 'heels'].includes(kind) && o.legX ? sandal(-1) + sandal(1) : one(-1) + one(1);
   return `<ellipse cx="100" cy="${yG + 1.5}" rx="34" ry="4.4" fill="#1B1430" opacity=".18"/>` + abs;
 }
 // intérieur sombre de la tige (dessiné AVANT les jambes) : on voit la jambe entrer dans la bottine
 function shoesBehind(kind, o) { if (!['boots', 'canvas'].includes(kind) || !o.legX) return '';
-  return [-1, 1].map(s => { const yT = o.yA - (kind === 'boots' ? 30 : 16), [a, b] = o.legX(s, yT), oT = a + s * 2.7, iT = b - s * 2.7, cx = (oT + iT) / 2, rx = Math.abs(oT - iT) / 2;
+  return [-1, 1].map(s => { const yT = o.yA - (kind === 'boots' ? 30 : 16), [a, b] = o.legX(s, yT), oT = a + s * (o.tuck ? 7.2 : 2.7), iT = b - s * (o.tuck ? 7.2 : 2.7), cx = (oT + iT) / 2, rx = Math.abs(oT - iT) / 2;
     return `<ellipse cx="${f1(cx)}" cy="${f1(yT + .6)}" rx="${f1(rx)}" ry="3" fill="#1A1310"/><path d="M${f1(cx - rx + .6)} ${f1(yT)} A${f1(rx - .6)} 2.6 0 0 1 ${f1(cx + rx - .6)} ${f1(yT)}" stroke="#3A2C24" stroke-width="1" fill="none"/>`; }).join(''); }
 
 // ---------- cheveux : masse arrière (back), mèches devant les épaules (mid), avant / frange (front)
