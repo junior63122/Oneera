@@ -36,7 +36,8 @@ function liveMotion(energy) {
 const liveHour = () => { if (typeof realOn === 'function' && realOn()) { if (LIVE.sim.hour != null) return LIVE.sim.hour; const d = new Date(); return d.getHours() + d.getMinutes() / 60; } return ((ST.clock % 1440) + 1440) % 1440 / 60; };
 function liveStateOf(id, me) {
   if (!LIVE.on) return {};
-  const h = liveHour(), night = h >= 21.5 || h < 6.5, sleepy = h >= 4.5 && h < 7.5;
+  const h = liveHour(), sleepy = h >= 4.5 && h < 7.5;
+  const night = (typeof realOn === 'function' && realOn()) ? (LIVE.sim.hour != null ? (h >= 21.5 || h < 6.5) : nightK((20 * 60 + nowMin()) % 1440) > .5 || h >= 21.5 || h < 6.5) && ST.mapMode !== 'day' : nightK((20 * 60 + nowMin()) % 1440) > .5;
   let act, bat, near = false;
   if (me) { act = liveAct(); bat = liveBat(); if (LIVE.charging && LIVE.sim.bat == null) bat = null; }
   else if (typeof realOn === 'function' && realOn()) { const l = REAL.live[id]; if (l && Date.now() - l.t < 120000) { act = l.act; bat = l.bat; } }
@@ -112,3 +113,9 @@ function stickerTray(onPick) {
   const sb = openSheet(`<h2 class="h2">Stickers</h2><div class="small" style="margin-top:-6px">Avec ton avatar, en un geste.</div><div class="stkGrid">${Object.keys(STICKERS).map(k => `<button data-s="${k}" aria-label="${esc(stickerCap(k))}">${stickerHTML(myAv2(), k, true)}</button>`).join('')}</div>`);
   sb.onclick = (e) => { const b = e.target.closest('[data-s]'); if (b) { closeSheet(true); onPick(b.dataset.s); } };
 }
+
+// ---------- Portail : ouverture de l'app et sortie de l'univers ----------
+const _bootPortal = boot;
+boot = function () { _bootPortal.apply(this, arguments); PORTAL.launch(); };
+const _logoutPortal = realLogout;
+realLogout = function (silent) { if (MV && MV.alive && $('#mv') && !PORTAL.busy) { PORTAL.exit('logo').then(() => _logoutPortal(silent)); return; } _logoutPortal(silent); };

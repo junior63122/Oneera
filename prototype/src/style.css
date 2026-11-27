@@ -593,3 +593,55 @@ details.phone{background:#F7F7F9;border-radius:14px;padding:12px 14px}details.ph
 .st2 .stTabs button span{white-space:nowrap}
 @media (max-width:380px){.st2 .stTabs{padding:4px 2px 0}.st2 .stTabs button{min-width:44px;padding:8px 1px 7px;font-size:9.6px;letter-spacing:-.15px}.st2 .stTabs button svg{width:20px;height:20px}}
 @media (max-width:340px){.st2 .stTabs button{min-width:38px;font-size:8.8px;letter-spacing:-.25px}.st2 .stTabs button svg{width:18px;height:18px}}
+/* Portail ONEERA */
+#portal{position:absolute;inset:0;z-index:3000;background:#010922;transition:opacity .42s ease}
+#portal canvas{display:block}
+#portal.fade{opacity:0;pointer-events:none}
+#screen.pIn .mapTop,#screen.pIn .ctrls,#screen.pIn .nav,#screen.pIn .livebar,#screen.pIn .map .ov{opacity:0}
+#screen.pShow .mapTop{animation:pUiT .7s cubic-bezier(.2,.8,.2,1) both}
+#screen.pShow .nav{animation:pUiB .7s .12s cubic-bezier(.2,.8,.2,1) both}
+#screen.pShow .ctrls,#screen.pShow .livebar{animation:pUiF .8s .25s ease both}
+#screen.pShow .map .ov{animation:pUiF .9s .35s ease both}
+@keyframes pUiT{from{opacity:0;transform:translateY(-18px)}to{opacity:1;transform:none}}
+@keyframes pUiB{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:none}}
+@keyframes pUiF{from{opacity:0}to{opacity:1}}
+/* Mer de nuages sous la carte : couche dérivante composée par le GPU + profondeur (vignettage, lumière zénithale) */
+.map .seaL{position:absolute;left:0;top:0;width:calc(100% + 1200px);height:calc(100% + 1200px);background-size:600px 600px;will-change:transform;pointer-events:none;z-index:0}
+.map .seaV{position:absolute;inset:0;pointer-events:none;z-index:0;background:radial-gradient(130% 90% at 30% 0%,rgba(255,250,235,.38) 0%,rgba(255,250,235,0) 45%),radial-gradient(140% 110% at 50% 50%,rgba(0,0,0,0) 55%,rgba(30,40,90,.28) 100%)}
+.map.seaN .seaV{background:radial-gradient(120% 80% at 25% 0%,rgba(170,180,255,.22) 0%,rgba(170,180,255,0) 45%),radial-gradient(140% 110% at 50% 50%,rgba(0,0,0,0) 50%,rgba(4,3,20,.55) 100%)}
+.map .tl,.map .ov{position:absolute;z-index:1}
+/* Vue des Dieux : couches d'atmosphère animées par le GPU (transform / opacité uniquement) */
+.map .atmo{position:absolute;inset:0;pointer-events:none;z-index:1;overflow:hidden;--zf:1;--par:translate3d(0,0,0)}
+.map .atmo i{position:absolute;display:block;will-change:transform,opacity}
+.atmo .aRays{inset:0;background:var(--rays) 0 0/100% 100% no-repeat;opacity:.9;animation:aRays 9s ease-in-out infinite alternate}
+@keyframes aRays{from{opacity:.55;transform:rotate(-1.2deg) scale(1.02)}to{opacity:1;transform:rotate(1deg) scale(1.04)}}
+.atmo .aMist{width:180%;height:30%;left:-40%;background:var(--cl) center/contain no-repeat;opacity:.16;animation:aMist 70s linear infinite}
+.atmo .aMist.m1{top:8%}.atmo .aMist.m2{top:40%;animation-duration:95s;animation-delay:-40s}.atmo .aMist.m3{top:70%;animation-duration:120s;animation-delay:-70s}
+@keyframes aMist{from{transform:translate3d(-35%,0,0)}to{transform:translate3d(35%,0,0)}}
+.atmo .aFg{width:95%;aspect-ratio:1.65;background:var(--cl) center/contain no-repeat;opacity:.42;animation:aFg 26s ease-in-out infinite alternate}
+.atmo .aFg.f1{left:-38%;top:-6%}.atmo .aFg.f2{left:56%;top:78%;animation-delay:-9s}.atmo .aFg.f3{left:64%;top:-10%;animation-delay:-17s}
+@keyframes aFg{from{transform:var(--par) translate3d(-14px,0,0)}to{transform:var(--par) translate3d(16px,8px,0)}}
+.atmo .aBirds{left:-12%;top:16%;width:70px;height:26px;animation:aBirds 46s linear infinite}
+.atmo .aBirds.b2{top:58%;animation-duration:62s;animation-delay:-30s}
+.atmo .aBirds b{position:absolute;width:10px;height:5px;border:1.5px solid rgba(30,34,60,.55);border-color:rgba(30,34,60,.55) transparent transparent transparent;border-radius:50% 50% 0 0}
+.atmo .aBirds b:nth-child(1){left:0;top:10px}.atmo .aBirds b:nth-child(2){left:13px;top:5px;animation-delay:-.2s}.atmo .aBirds b:nth-child(3){left:26px;top:0;animation-delay:-.1s}.atmo .aBirds b:nth-child(4){left:39px;top:6px;animation-delay:-.3s}.atmo .aBirds b:nth-child(5){left:52px;top:12px;animation-delay:-.15s}
+@keyframes aFlap{from{transform:scaleY(1)}to{transform:scaleY(.35) translateY(2px)}}
+@keyframes aBirds{from{transform:translate3d(0,0,0)}to{transform:translate3d(560px,-60px,0)}}
+.atmo.night .aBirds,.atmo.dusk .aBirds b{border-top-color:rgba(60,40,80,.5)}
+.atmo.night .aBirds{display:none}
+.atmo .aStar{display:none;left:10%;top:12%;width:120px;height:2px;background:linear-gradient(90deg,rgba(255,255,255,0),#fff);border-radius:2px;transform:rotate(22deg);opacity:0;animation:aStar 11s ease-in infinite}
+.atmo.night .aStar{display:block}
+@keyframes aStar{0%,88%{opacity:0;transform:rotate(22deg) translate3d(0,0,0)}90%{opacity:1}97%{opacity:0;transform:rotate(22deg) translate3d(260px,0,0)}100%{opacity:0}}
+.map.tilted .atmo .aMist,.map.tilted .atmo .aFg{opacity:0}
+.atmo.still i{animation:none!important}
+@media (prefers-reduced-motion: reduce){.atmo i{animation:none!important}}
+
+/* brume et nuages de premier plan : retirés en un seul fondu quand on zoome (lisibilité), sans recalcul continu */
+.atmo .aMist,.atmo .aFg{transition:opacity .6s}
+.atmo.zin .aMist,.atmo.zin .aFg{opacity:0}
+.atmo.zmid .aMist{opacity:.08}.atmo.zmid .aFg{opacity:.2}
+.atmo .aFg{transform:none}
+
+.map .atmo{transition:opacity .45s}
+.map .atmo.busy{display:none}
+#portal img.pre{position:absolute;left:50%;top:50%;width:180px;height:180px;margin:-90px 0 0 -90px}

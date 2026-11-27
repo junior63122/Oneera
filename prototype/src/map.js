@@ -12,7 +12,7 @@ class MapView {
     this.bind(); this.loop = this.loop.bind(this); requestAnimationFrame(this.loop);
     this.ro = new ResizeObserver(() => { const c = this.centerPct(); this.resize(); this.center(c, this.s); }); this.ro.observe(host);
   }
-  resize() { this.vw = this.host.clientWidth || 368; this.vh = this.host.clientHeight || 822; this.minS = Math.max(this.vw / this.W, this.vh / this.H) * (this.strict ? 1.001 : 0.98 * (this.alpha ? .72 : .8)); }
+  resize() { this.vw = this.host.clientWidth || 368; this.vh = this.host.clientHeight || 822; this.minS = this.strict ? Math.max(this.vw / this.W, this.vh / this.H) * 1.001 : Math.min(this.vw / this.W, this.vh / this.H) * (this.alpha ? .86 : .9); /* vue des Dieux : on peut reculer jusqu à voir tout le site suspendu dans les nuages */ }
   destroy() { this.alive = false; this.ro.disconnect(); }
   centerPct() { return this.unproj(this.vw / 2, this.vh / 2); }
   center(at, s) { this.s = Math.min(this.maxS, Math.max(this.minS, s)); const c = Math.cos(this.rot), n = Math.sin(this.rot), x = at[0] / 100 * this.W, y = at[1] / 100 * this.H; this.tx = this.vw / 2 - this.s * (x * c - y * n); this.ty = this.vh / 2 - this.s * (x * n + y * c); this.clamp(); this.apply(); }
@@ -39,7 +39,7 @@ class MapView {
       }
       return;
     }
-    if (this.rot || this.tilt) { const [cx, cy] = this.unproj(this.vw / 2, this.vh / 2), kx = Math.min(100, Math.max(0, cx)), ky = Math.min(100, Math.max(0, cy)); if (kx !== cx || ky !== cy) { const [px, py] = this.proj([kx, ky]); this.tx += this.vw / 2 - px; this.ty += this.vh / 2 - py; } return; }
+    if (this.rot || this.tilt) { const fc = this.s2flat(this.vw / 2, this.vh / 2), [cx, cy] = this.unproj(fc[0], fc[1]), kx = Math.min(100, Math.max(0, cx)), ky = Math.min(100, Math.max(0, cy)); if (kx !== cx || ky !== cy) { const [px, py] = this.proj([kx, ky]); this.tx += fc[0] - px; this.ty += fc[1] - py; } return; } // le point vu au centre de l'écran (perspective comprise) reste sur le site
     const mw = this.W * this.s, mh = this.H * this.s, padX = this.vw * .25, padY = this.vh * .25;
     this.tx = mw + padX * 2 < this.vw ? (this.vw - mw) / 2 : Math.min(padX, Math.max(this.vw - mw - padX, this.tx));
     this.ty = mh + padY * 2 < this.vh ? (this.vh - mh) / 2 : Math.min(padY, Math.max(this.vh - mh - padY, this.ty));

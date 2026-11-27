@@ -31,7 +31,7 @@ V.map = (opts = {}) => {
     <div class="livebar" id="lb"></div>${navBar('map')}`);
   wireNav(el);
   if (MV) MV.destroy();
-  MV = new MapView($('#mv', el), { at: opts.at || [ST.me.pos[0], ST.me.pos[1] - 8], zoom: opts.zoom || VENUE.zoom, rotate: true, markers: mapMarkers, onLong: at => V.rdvSheet(at), onTapEmpty: () => {}, fx: () => ({ crowd: !showCrowd }) }); wireViewCtl(el, MV);
+  MV = new MapView($('#mv', el), { at: opts.at || [ST.me.pos[0], ST.me.pos[1] - 8], zoom: opts.zoom || VENUE.zoom, rotate: true, strict: false, markers: mapMarkers, onLong: at => V.rdvSheet(at), onTapEmpty: () => {}, fx: () => ({ crowd: !showCrowd }) }); wireViewCtl(el, MV);
   ST.introSeen = ST.introSeen || {}; if (!opts.at && !ST.introSeen[VENUE.id]) { ST.introSeen[VENUE.id] = 1; FX.intro(MV, [ST.me.pos[0], ST.me.pos[1] - 8], VENUE.zoom); }
   $('#flt', el).onclick = e => { const b = e.target.closest('[data-f]'); if (!b) return; mapFilter = b.dataset.f; $$('#flt .chip', el).forEach(c => c.classList.toggle('on', c === b)); if (mapFilter === 'friends' && myFriends().length) { const p = myFriends().map(f => friendPos(f.id)); MV.flyTo([p.reduce((a, q) => a + q[0], 0) / p.length, p.reduce((a, q) => a + q[1], 0) / p.length], .45); } };
   $('#floors', el) && ($('#floors', el).onclick = e => { const b = e.target.closest('[data-fl]'); if (!b) return; if (b.dataset.fl !== 'club') { toast('Tes amis au casino apparaissent à l’escalier avec « au RDC (Casino) ↑ ». Itinéraire par l’escalier de l’entrée.'); return; } });

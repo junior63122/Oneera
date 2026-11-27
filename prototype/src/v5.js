@@ -278,6 +278,7 @@ let _shk = []; addEventListener('devicemotion', e => { const a = e.accelerationI
 // ---------- Premier lancement : 3 repères seulement, puis l'écran reste épuré ----------
 V.tour = () => {
   if (ST.tourDone || !$('#mv') || $('.tour')) return;
+  if (typeof PORTAL !== 'undefined' && (PORTAL.busy || $('#portal'))) { setTimeout(() => V.tour(), 700); return; } // le guide attend la fin du portail
   const steps = [['#mepill', 'Toi, tes amis', 'Tes amis apparaissent sur la carte. Touche ta pastille pour inviter un ami ou partager ta position.'], ['#flt', 'Trouver un lieu', 'Bars, scènes, toilettes : touche un filtre ou une icône pour voir sa fiche et l’itinéraire.'], ['#sos', 'En cas de problème', 'Le bouton SOS prévient l’équipe du lieu avec ta position.']];
   let i = 0; const box = document.createElement('div'); box.className = 'tour'; SCREEN.append(box);
   const end = () => { ST.tourDone = true; box.remove(); emit(); };

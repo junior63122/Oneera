@@ -597,6 +597,58 @@ details.phone{background:#F7F7F9;border-radius:14px;padding:12px 14px}details.ph
 .st2 .stTabs button span{white-space:nowrap}
 @media (max-width:380px){.st2 .stTabs{padding:4px 2px 0}.st2 .stTabs button{min-width:44px;padding:8px 1px 7px;font-size:9.6px;letter-spacing:-.15px}.st2 .stTabs button svg{width:20px;height:20px}}
 @media (max-width:340px){.st2 .stTabs button{min-width:38px;font-size:8.8px;letter-spacing:-.25px}.st2 .stTabs button svg{width:18px;height:18px}}
+/* Portail ONEERA */
+#portal{position:absolute;inset:0;z-index:3000;background:#010922;transition:opacity .42s ease}
+#portal canvas{display:block}
+#portal.fade{opacity:0;pointer-events:none}
+#screen.pIn .mapTop,#screen.pIn .ctrls,#screen.pIn .nav,#screen.pIn .livebar,#screen.pIn .map .ov{opacity:0}
+#screen.pShow .mapTop{animation:pUiT .7s cubic-bezier(.2,.8,.2,1) both}
+#screen.pShow .nav{animation:pUiB .7s .12s cubic-bezier(.2,.8,.2,1) both}
+#screen.pShow .ctrls,#screen.pShow .livebar{animation:pUiF .8s .25s ease both}
+#screen.pShow .map .ov{animation:pUiF .9s .35s ease both}
+@keyframes pUiT{from{opacity:0;transform:translateY(-18px)}to{opacity:1;transform:none}}
+@keyframes pUiB{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:none}}
+@keyframes pUiF{from{opacity:0}to{opacity:1}}
+/* Mer de nuages sous la carte : couche dérivante composée par le GPU + profondeur (vignettage, lumière zénithale) */
+.map .seaL{position:absolute;left:0;top:0;width:calc(100% + 1200px);height:calc(100% + 1200px);background-size:600px 600px;will-change:transform;pointer-events:none;z-index:0}
+.map .seaV{position:absolute;inset:0;pointer-events:none;z-index:0;background:radial-gradient(130% 90% at 30% 0%,rgba(255,250,235,.38) 0%,rgba(255,250,235,0) 45%),radial-gradient(140% 110% at 50% 50%,rgba(0,0,0,0) 55%,rgba(30,40,90,.28) 100%)}
+.map.seaN .seaV{background:radial-gradient(120% 80% at 25% 0%,rgba(170,180,255,.22) 0%,rgba(170,180,255,0) 45%),radial-gradient(140% 110% at 50% 50%,rgba(0,0,0,0) 50%,rgba(4,3,20,.55) 100%)}
+.map .tl,.map .ov{position:absolute;z-index:1}
+/* Vue des Dieux : couches d'atmosphère animées par le GPU (transform / opacité uniquement) */
+.map .atmo{position:absolute;inset:0;pointer-events:none;z-index:1;overflow:hidden;--zf:1;--par:translate3d(0,0,0)}
+.map .atmo i{position:absolute;display:block;will-change:transform,opacity}
+.atmo .aRays{inset:0;background:var(--rays) 0 0/100% 100% no-repeat;opacity:.9;animation:aRays 9s ease-in-out infinite alternate}
+@keyframes aRays{from{opacity:.55;transform:rotate(-1.2deg) scale(1.02)}to{opacity:1;transform:rotate(1deg) scale(1.04)}}
+.atmo .aMist{width:180%;height:30%;left:-40%;background:var(--cl) center/contain no-repeat;opacity:.16;animation:aMist 70s linear infinite}
+.atmo .aMist.m1{top:8%}.atmo .aMist.m2{top:40%;animation-duration:95s;animation-delay:-40s}.atmo .aMist.m3{top:70%;animation-duration:120s;animation-delay:-70s}
+@keyframes aMist{from{transform:translate3d(-35%,0,0)}to{transform:translate3d(35%,0,0)}}
+.atmo .aFg{width:95%;aspect-ratio:1.65;background:var(--cl) center/contain no-repeat;opacity:.42;animation:aFg 26s ease-in-out infinite alternate}
+.atmo .aFg.f1{left:-38%;top:-6%}.atmo .aFg.f2{left:56%;top:78%;animation-delay:-9s}.atmo .aFg.f3{left:64%;top:-10%;animation-delay:-17s}
+@keyframes aFg{from{transform:var(--par) translate3d(-14px,0,0)}to{transform:var(--par) translate3d(16px,8px,0)}}
+.atmo .aBirds{left:-12%;top:16%;width:70px;height:26px;animation:aBirds 46s linear infinite}
+.atmo .aBirds.b2{top:58%;animation-duration:62s;animation-delay:-30s}
+.atmo .aBirds b{position:absolute;width:10px;height:5px;border:1.5px solid rgba(30,34,60,.55);border-color:rgba(30,34,60,.55) transparent transparent transparent;border-radius:50% 50% 0 0}
+.atmo .aBirds b:nth-child(1){left:0;top:10px}.atmo .aBirds b:nth-child(2){left:13px;top:5px;animation-delay:-.2s}.atmo .aBirds b:nth-child(3){left:26px;top:0;animation-delay:-.1s}.atmo .aBirds b:nth-child(4){left:39px;top:6px;animation-delay:-.3s}.atmo .aBirds b:nth-child(5){left:52px;top:12px;animation-delay:-.15s}
+@keyframes aFlap{from{transform:scaleY(1)}to{transform:scaleY(.35) translateY(2px)}}
+@keyframes aBirds{from{transform:translate3d(0,0,0)}to{transform:translate3d(560px,-60px,0)}}
+.atmo.night .aBirds,.atmo.dusk .aBirds b{border-top-color:rgba(60,40,80,.5)}
+.atmo.night .aBirds{display:none}
+.atmo .aStar{display:none;left:10%;top:12%;width:120px;height:2px;background:linear-gradient(90deg,rgba(255,255,255,0),#fff);border-radius:2px;transform:rotate(22deg);opacity:0;animation:aStar 11s ease-in infinite}
+.atmo.night .aStar{display:block}
+@keyframes aStar{0%,88%{opacity:0;transform:rotate(22deg) translate3d(0,0,0)}90%{opacity:1}97%{opacity:0;transform:rotate(22deg) translate3d(260px,0,0)}100%{opacity:0}}
+.map.tilted .atmo .aMist,.map.tilted .atmo .aFg{opacity:0}
+.atmo.still i{animation:none!important}
+@media (prefers-reduced-motion: reduce){.atmo i{animation:none!important}}
+
+/* brume et nuages de premier plan : retirés en un seul fondu quand on zoome (lisibilité), sans recalcul continu */
+.atmo .aMist,.atmo .aFg{transition:opacity .6s}
+.atmo.zin .aMist,.atmo.zin .aFg{opacity:0}
+.atmo.zmid .aMist{opacity:.08}.atmo.zmid .aFg{opacity:.2}
+.atmo .aFg{transform:none}
+
+.map .atmo{transition:opacity .45s}
+.map .atmo.busy{display:none}
+#portal img.pre{position:absolute;left:50%;top:50%;width:180px;height:180px;margin:-90px 0 0 -90px}
 
 </style></head><body><script>
 // ===== Données de démonstration (fictives) =====
@@ -1088,7 +1140,7 @@ class MapView {
     this.bind(); this.loop = this.loop.bind(this); requestAnimationFrame(this.loop);
     this.ro = new ResizeObserver(() => { const c = this.centerPct(); this.resize(); this.center(c, this.s); }); this.ro.observe(host);
   }
-  resize() { this.vw = this.host.clientWidth || 368; this.vh = this.host.clientHeight || 822; this.minS = Math.max(this.vw / this.W, this.vh / this.H) * (this.strict ? 1.001 : 0.98 * (this.alpha ? .72 : .8)); }
+  resize() { this.vw = this.host.clientWidth || 368; this.vh = this.host.clientHeight || 822; this.minS = this.strict ? Math.max(this.vw / this.W, this.vh / this.H) * 1.001 : Math.min(this.vw / this.W, this.vh / this.H) * (this.alpha ? .86 : .9); /* vue des Dieux : on peut reculer jusqu à voir tout le site suspendu dans les nuages */ }
   destroy() { this.alive = false; this.ro.disconnect(); }
   centerPct() { return this.unproj(this.vw / 2, this.vh / 2); }
   center(at, s) { this.s = Math.min(this.maxS, Math.max(this.minS, s)); const c = Math.cos(this.rot), n = Math.sin(this.rot), x = at[0] / 100 * this.W, y = at[1] / 100 * this.H; this.tx = this.vw / 2 - this.s * (x * c - y * n); this.ty = this.vh / 2 - this.s * (x * n + y * c); this.clamp(); this.apply(); }
@@ -1115,7 +1167,7 @@ class MapView {
       }
       return;
     }
-    if (this.rot || this.tilt) { const [cx, cy] = this.unproj(this.vw / 2, this.vh / 2), kx = Math.min(100, Math.max(0, cx)), ky = Math.min(100, Math.max(0, cy)); if (kx !== cx || ky !== cy) { const [px, py] = this.proj([kx, ky]); this.tx += this.vw / 2 - px; this.ty += this.vh / 2 - py; } return; }
+    if (this.rot || this.tilt) { const fc = this.s2flat(this.vw / 2, this.vh / 2), [cx, cy] = this.unproj(fc[0], fc[1]), kx = Math.min(100, Math.max(0, cx)), ky = Math.min(100, Math.max(0, cy)); if (kx !== cx || ky !== cy) { const [px, py] = this.proj([kx, ky]); this.tx += fc[0] - px; this.ty += fc[1] - py; } return; } // le point vu au centre de l'écran (perspective comprise) reste sur le site
     const mw = this.W * this.s, mh = this.H * this.s, padX = this.vw * .25, padY = this.vh * .25;
     this.tx = mw + padX * 2 < this.vw ? (this.vw - mw) / 2 : Math.min(padX, Math.max(this.vw - mw - padX, this.tx));
     this.ty = mh + padY * 2 < this.vh ? (this.vh - mh) / 2 : Math.min(padY, Math.max(this.vh - mh - padY, this.ty));
@@ -1235,6 +1287,9 @@ function personMarker(id, name, head, at, { me, stale, staff, acc = 4, sub, onCl
   };
 }
 
+// Généré par build.py (tools/mapdecor.py) : ne pas modifier à la main.
+const MAP_DECOR = {"bdf": {"veg": [[44.0, 64.0, 1.0], [58.8, 64.0, 1.0], [59.7, 66.9, 1.0], [39.4, 47.8, 0.96], [28.2, 87.5, 0.96], [77.3, 56.6, 0.92], [19.9, 28.7, 0.88], [68.1, 58.1, 0.88], [84.7, 59.6, 0.88], [22.7, 31.6, 0.84], [51.4, 86.0, 0.84], [25.5, 30.1, 0.8], [39.4, 61.0, 0.8], [43.1, 66.9, 0.8], [34.7, 19.9, 0.76], [44.9, 22.8, 0.76], [45.8, 25.7, 0.76], [28.2, 40.4, 0.76], [48.6, 64.0, 0.76], [50.5, 28.7, 0.72], [55.1, 33.1, 0.72], [68.1, 46.3, 0.72], [37.5, 59.6, 0.72], [78.2, 64.0, 0.72], [84.7, 65.4, 0.72], [90.3, 66.9, 0.72], [41.2, 27.2, 0.68], [10.6, 31.6, 0.68], [35.6, 44.9, 0.64], [72.7, 49.3, 0.64], [36.6, 50.7, 0.64], [39.4, 77.2, 0.64], [36.6, 22.8, 0.6], [33.8, 25.7, 0.6], [27.3, 31.6, 0.6], [29.2, 36.0, 0.6], [67.1, 43.4, 0.6], [61.6, 69.9, 0.6], [41.2, 72.8, 0.6], [73.6, 74.3, 0.6], [31.0, 77.2, 0.6], [45.8, 77.2, 0.6], [60.6, 37.5, 0.56], [76.4, 53.7, 0.56], [69.9, 75.7, 0.56], [78.2, 75.7, 0.56], [48.6, 77.2, 0.56], [16.2, 25.7, 0.52], [31.9, 41.9, 0.52], [73.6, 59.6, 0.52], [70.8, 62.5, 0.52], [38.4, 68.4, 0.52], [30.1, 19.9, 0.48], [37.5, 30.1, 0.48], [36.6, 36.0, 0.48], [39.4, 55.1, 0.48], [82.9, 58.1, 0.48], [33.8, 15.4, 0.44], [22.7, 21.3, 0.44], [20.8, 25.7, 0.44], [33.8, 36.0, 0.44], [34.7, 49.3, 0.44], [69.9, 56.6, 0.44], [33.8, 77.2, 0.44]], "lit": [[31.0, 25.7, 0.84], [54.2, 40.4, 0.84], [54.2, 44.9, 0.68], [50.5, 43.4, 0.56], [52.3, 47.8, 0.56], [56.0, 50.7, 0.48], [52.3, 52.2, 0.48]]}, "bisous": {"veg": [], "lit": [[28.2, 75.7, 1.0], [31.0, 75.7, 1.0], [86.6, 16.0, 0.84], [32.9, 79.9, 0.76], [77.3, 20.1, 0.72], [65.3, 31.2, 0.72], [27.3, 85.4, 0.72], [24.5, 88.2, 0.68], [73.6, 24.3, 0.68], [92.1, 25.7, 0.64], [69.0, 27.1, 0.64], [21.8, 88.2, 0.6], [89.4, 21.5, 0.56], [18.1, 85.4, 0.56], [31.0, 82.6, 0.55], [83.8, 14.6, 0.48]]}, "selva": {"veg": [[32.9, 32.4, 1.0], [21.8, 33.7, 1.0], [34.7, 33.7, 1.0], [23.6, 35.0, 1.0], [31.0, 35.0, 1.0], [29.2, 36.3, 1.0], [31.9, 37.5, 1.0], [34.7, 37.5, 1.0], [28.2, 38.8, 1.0], [36.6, 38.8, 1.0], [30.1, 40.1, 1.0], [32.9, 40.1, 1.0], [17.1, 41.3, 1.0], [22.7, 41.3, 1.0], [26.4, 41.3, 1.0], [34.7, 41.3, 1.0], [20.8, 42.6, 1.0], [28.2, 42.6, 1.0], [37.5, 42.6, 1.0], [18.1, 43.9, 1.0], [30.1, 43.9, 1.0], [14.4, 45.2, 1.0], [19.9, 45.2, 1.0], [22.7, 45.2, 1.0], [25.5, 45.2, 1.0], [27.3, 46.4, 1.0], [60.6, 46.4, 1.0], [17.1, 47.7, 1.0], [20.8, 47.7, 1.0], [23.6, 47.7, 1.0], [58.8, 47.7, 1.0], [11.6, 49.0, 1.0], [19.0, 49.0, 1.0], [25.5, 49.0, 1.0], [14.4, 50.3, 1.0], [21.8, 50.3, 1.0], [28.2, 50.3, 1.0], [12.5, 51.5, 1.0], [19.9, 51.5, 1.0], [15.3, 52.8, 1.0], [13.4, 54.1, 1.0], [16.2, 55.3, 1.0], [14.4, 56.6, 1.0], [17.1, 59.2, 1.0], [70.8, 65.5, 1.0], [59.7, 70.6, 1.0], [73.6, 32.4, 0.96], [25.5, 37.5, 0.96], [31.0, 47.7, 0.96], [8.8, 50.3, 0.96], [39.4, 38.8, 0.92], [62.5, 45.2, 0.92], [21.8, 55.3, 0.92], [42.1, 35.0, 0.88], [10.6, 52.8, 0.84], [19.0, 54.1, 0.84], [12.5, 57.9, 0.84], [19.9, 40.1, 0.8], [24.5, 42.6, 0.8], [26.4, 35.0, 0.76], [31.0, 31.2, 0.68], [56.9, 49.0, 0.6], [18.1, 38.8, 0.52], [9.7, 47.7, 0.48], [17.1, 51.5, 0.48], [31.9, 45.2, 0.44]], "lit": []}};
+
 // ===== Carte vivante =====
 // Ciel et nuages autour du plan (pas de fond uni), vrai jour/nuit (éclairages des scènes, bars et allées, pas un simple filtre),
 // foule animée qui suit les chiffres d'affluence, passants sur les allées, flux animés (tableau de bord), ambulance en route,
@@ -1284,16 +1339,23 @@ function polyAt(pts, u) { // point à la fraction u (0..1) de la longueur d'une 
 const fxSea = {};
 function fxSeaURL(kind) { // mer de nuages en volume (ombre, corps, reflets) : aucun aplat de couleur autour des plans détourés
   if (fxSea[kind] !== undefined) return fxSea[kind]; const N = 600, c = document.createElement('canvas'); c.width = c.height = N; const x = c.getContext('2d');
-  const pal = { day: ['#CFDDF7', 'rgba(120,140,200,', 'rgba(255,255,255,', 'rgba(255,255,255,'], dusk: ['#D9A9C8', 'rgba(120,80,140,', 'rgba(255,214,228,', 'rgba(255,240,235,'], night: ['#2B2660', 'rgba(8,6,30,', 'rgba(132,122,208,', 'rgba(190,180,245,'] }[kind];
+  const pal = { day: ['#9DB8EC', 'rgba(92,116,184,', 'rgba(250,252,255,', 'rgba(255,255,255,'], dusk: ['#B77FB0', 'rgba(96,56,120,', 'rgba(255,212,226,', 'rgba(255,242,236,'], night: ['#15123A', 'rgba(4,3,20,', 'rgba(104,94,186,', 'rgba(176,166,240,'] }[kind];
   const blob = (col, cx, cy, r, a) => { const g = x.createRadialGradient(cx, cy - r * .2, r * .1, cx, cy, r); g.addColorStop(0, col + a + ')'); g.addColorStop(.65, col + a * .85 + ')'); g.addColorStop(1, col + '0)'); x.fillStyle = g; x.beginPath(); x.arc(cx, cy, r, 0, 7); x.fill(); };
   const wrap = f => { for (const dx of [-N, 0, N]) for (const dy of [-N, 0, N]) f(dx, dy); };
   x.fillStyle = pal[0]; x.fillRect(0, 0, N, N);
-  const C = Array.from({ length: 34 }, (_, i) => [fxRnd(i * 3 + 2) * N, fxRnd(i * 7 + 3) * N, 60 + fxRnd(i * 5 + 1) * 90]);
-  C.forEach(([cx, cy, r]) => wrap((dx, dy) => blob(pal[1], cx + dx + r * .15, cy + dy + r * .35, r * 1.15, .35)));
-  C.forEach(([cx, cy, r], i) => wrap((dx, dy) => { for (let k = 0; k < 4; k++) blob(pal[2], cx + dx + (fxRnd(i * 13 + k) - .5) * r * 1.4, cy + dy + (fxRnd(i * 17 + k) - .5) * r * .5, r * (.55 + fxRnd(i + k * 7) * .4), .95); }));
+  const C = Array.from({ length: kind === 'night' ? 34 : 20 }, (_, i) => [fxRnd(i * 3 + 2) * N, fxRnd(i * 7 + 3) * N, (kind === 'night' ? 60 : 48) + fxRnd(i * 5 + 1) * (kind === 'night' ? 90 : 70)]);
+  C.forEach(([cx, cy, r]) => wrap((dx, dy) => blob(pal[1], cx + dx + r * .18, cy + dy + r * .4, r * 1.2, .55)));
+  C.forEach(([cx, cy, r], i) => wrap((dx, dy) => { for (let k = 0; k < 4; k++) blob(pal[2], cx + dx + (fxRnd(i * 13 + k) - .5) * r * 1.4, cy + dy + (fxRnd(i * 17 + k) - .5) * r * .5, r * (kind === 'night' ? .55 + fxRnd(i + k * 7) * .4 : .42 + fxRnd(i + k * 7) * .3), .95); }));
   C.forEach(([cx, cy, r], i) => wrap((dx, dy) => blob(pal[3], cx + dx - r * .2, cy + dy - r * .25, r * .45, kind === 'night' ? .5 : .7)));
   try { fxSea[kind] = c.toDataURL('image/webp', .85); } catch (_) { fxSea[kind] = ''; } return fxSea[kind];
 }
+// rayons divins pré-dessinés une fois (puis seulement animés en opacité par le GPU)
+const fxRays = {}; function fxRaysURL(kind) { if (fxRays[kind]) return fxRays[kind]; const W = 512, H = 900, c = document.createElement('canvas'); c.width = W; c.height = H; const g = c.getContext('2d');
+  const col = kind === 'night' ? '150,165,255' : kind === 'dusk' ? '255,196,214' : '255,244,214', A = kind === 'night' ? .16 : .26, ox = -W * .15, oy = -H * .1;
+  for (let i = 0; i < 6; i++) { const a = .95 + i * .13, L = Math.hypot(W, H) * 1.3, wd = .025 + fxRnd(i + 11) * .04; const gr = g.createLinearGradient(ox, oy, ox + Math.cos(a) * L, oy + Math.sin(a) * L); gr.addColorStop(0, `rgba(${col},${A})`); gr.addColorStop(.6, `rgba(${col},${A * .3})`); gr.addColorStop(1, `rgba(${col},0)`);
+    g.fillStyle = gr; g.beginPath(); g.moveTo(ox, oy); g.lineTo(ox + Math.cos(a - wd) * L, oy + Math.sin(a - wd) * L); g.lineTo(ox + Math.cos(a + wd) * L, oy + Math.sin(a + wd) * L); g.closePath(); g.fill(); }
+  const sg = g.createRadialGradient(0, 0, 0, 0, 0, W * .8); sg.addColorStop(0, `rgba(${col},${A * 1.4})`); sg.addColorStop(1, `rgba(${col},0)`); g.fillStyle = sg; g.fillRect(0, 0, W, H);
+  return (fxRays[kind] = c.toDataURL('image/png')); }
 FX.draw = (mv, now) => {
   const cv = mv.fx; if (!cv) return;
   const w = mv.vw, h = mv.vh, dpr = 1 /* effets doux : la résolution native ×1 suffit et divise le coût de dessin par 4 sur écran Retina */, px0 = mv.tiltTo || mv.tilt ? Math.round(w * .6) : 0, py0 = mv.tiltTo || mv.tilt ? Math.round(h * 1.1) : 0, cw = w + 2 * px0, ch = h + py0;
@@ -1307,8 +1369,11 @@ FX.draw = (mv, now) => {
   const f = (nk > .01 ? `brightness(${(1 - .56 * nk).toFixed(2)}) saturate(${(1 + .35 * nk).toFixed(2)}) hue-rotate(${(-16 * nk).toFixed(0)}deg) contrast(${(1 + .1 * nk).toFixed(2)})` : '') + (cfg.filter ? ' ' + cfg.filter : '');
   if (mv._f !== f) { mv.base.style.filter = f; mv._f = f; }
   const nkr = Math.round(nk * 20) / 20; if (mv._nk !== nkr) { mv._nk = nkr; mv.host.classList.toggle('nite', nk > .5);
-    const sk = nk > .5 ? 'night' : nk > .05 ? 'dusk' : 'day', sea = fxSeaURL(sk); mv.host.style.backgroundImage = (sea ? `url(${sea}),` : '') + (nk > .5 ? `radial-gradient(120% 80% at 50% 0%,#2C2468 0%,#151436 55%,#0B0B22 100%)` : nk > .05 ? `linear-gradient(180deg,#7E86D8,#E7A9C4 60%,#F6C7A8)` : `linear-gradient(180deg,#A9C4F5,#DCE6FB 55%,#F6E1EE)`); mv.host.style.backgroundSize = sea ? '600px 600px, 100% 100%' : ''; }
-  const bp = `${Math.round(mv.tx * .3)}px ${Math.round(mv.ty * .3)}px, 0 0`; if (mv._bp !== bp) { mv._bp = bp; mv.host.style.backgroundPosition = bp; }
+    const sk = nk > .5 ? 'night' : nk > .05 ? 'dusk' : 'day', sea = fxSeaURL(sk);
+    mv.host.style.backgroundImage = nk > .5 ? `radial-gradient(120% 80% at 50% 0%,#2C2468 0%,#151436 55%,#0B0B22 100%)` : nk > .05 ? `linear-gradient(180deg,#7E86D8,#E7A9C4 60%,#F6C7A8)` : `linear-gradient(180deg,#A9C4F5,#DCE6FB 55%,#F6E1EE)`;
+    if (!mv.seaEl) { mv.seaEl = document.createElement('div'); mv.seaEl.className = 'seaL'; mv.host.prepend(mv.seaEl); const vg = document.createElement('div'); vg.className = 'seaV'; mv.seaEl.after(vg); }
+    mv.seaEl.style.backgroundImage = sea ? `url(${sea})` : 'none'; mv.host.classList.toggle('seaN', nk > .5); }
+  if (mv.seaEl) { const dx = ((mv.tx * .3 + t * 5) % 600 + 600) % 600, dy = ((mv.ty * .3 + t * 1.5) % 600 + 600) % 600, bp = `translate3d(${(dx - 600).toFixed(1)}px,${(dy - 600).toFixed(1)}px,0)`; if (mv._bp !== bp) { mv._bp = bp; mv.seaEl.style.transform = bp; } }
   const D0 = fxData(), C00 = mv.proj([0, 0]), C10 = mv.proj([100, 0]), C11 = mv.proj([100, 100]), C01 = mv.proj([0, 100]), Wm = mv.W * mv.s, Hm = mv.H * mv.s, zs = Math.max(.55, Math.min(1.7, mv.s / (VENUE.zoom || .5)));
   const vis = (x, y, m = 80) => x > -m - px0 && y > -m - py0 && x < w + px0 + m && y < h + m;
   // 1. ombres de nuages qui glissent sur le site (jour)
@@ -1375,6 +1440,23 @@ FX.draw = (mv, now) => {
         ctx.beginPath(); ctx.moveTo(px - Math.cos(ang) * tl, py - Math.sin(ang) * tl * .8); ctx.lineTo(px, py); ctx.stroke(); ctx.fillStyle = nk > .3 ? '#E6FBFF' : '#fff'; ctx.beginPath(); ctx.arc(px, py, 2.4, 0, 7); ctx.fill(); }
       ctx.globalCompositeOperation = 'source-over'; });
   }
+  // 7b. décor vivant (repéré automatiquement dans l'illustration) : feuillage au vent, feuilles, lucioles, enseignes, fumée de scène
+  const DEC = (typeof MAP_DECOR !== 'undefined' && MAP_DECOR[VENUE.id]) || { veg: [], lit: [] };
+  if (cfg.decor !== false && top) { const c2 = mv.fx.getContext('2d');
+    const wind = (x, y) => Math.sin(t * 1.25 - x * .18 + y * .05) * .55 + Math.sin(t * 2.3 + x * .4 + y * .2) * .2; // rafales qui traversent le site
+    const vr = Math.max(3, mv.mPx(1.4));
+    DEC.veg.forEach(([vx, vy], i) => { if (i >= 48) return; const [px, py] = mv.proj([vx, vy]); if (!vis(px, py, 30)) return; const wv = wind(vx, vy);
+      if (nk < .85) { c2.globalAlpha = (.12 + .14 * Math.max(0, wv)) * (1 - nk); c2.fillStyle = '#F6FFD8'; c2.beginPath(); c2.ellipse(px + wv * vr * .5, py - vr * .35, vr * .72, vr * .38, wv * .45, 0, 7); c2.fill(); }
+      if (nk > .4 && i % 2 === 0) { const ph = t * (.6 + fxRnd(i) * .7) + i * 3.1, a = Math.max(0, Math.sin(ph)); if (a > .2) { c2.globalAlpha = 1; c2.globalCompositeOperation = 'lighter'; fxGlow(c2, px + Math.sin(ph * .7 + i) * vr * 1.4, py - vr * .6 + Math.cos(ph * .5) * vr * .8, 7 + vr * .4, '200,255,120', .6 * a * nk); c2.globalCompositeOperation = 'source-over'; } } });
+    c2.globalAlpha = 1;
+    if (nk < .6 && DEC.veg.length && anim) for (let i = 0; i < 12; i++) { const src = DEC.veg[(i * 7) % DEC.veg.length], life = ((t * .1 + fxRnd(i)) % 1), [px, py] = mv.proj([src[0] + life * 7, src[1] - life * 2 + Math.sin(t * 2 + i) * .5]); if (!vis(px, py, 10)) continue;
+      c2.globalAlpha = Math.sin(life * Math.PI) * .85 * (1 - nk); c2.fillStyle = i % 2 ? '#6FB043' : '#B9D66A'; c2.save(); c2.translate(px, py); c2.rotate(t * 3 + i); c2.beginPath(); c2.ellipse(0, 0, 2.8 * Math.min(1.6, zs), 1.3 * Math.min(1.6, zs), 0, 0, 7); c2.fill(); c2.restore(); }
+    c2.globalAlpha = 1;
+    if (nk > .05) { c2.globalCompositeOperation = 'lighter'; DEC.lit.forEach(([lx, ly], i) => { const [px, py] = mv.proj([lx, ly]); if (!vis(px, py, 40)) return; const fl = fxRnd(Math.floor(t * 8) + i * 13) > .93 ? .25 : 1, pul = .75 + .25 * Math.sin(t * 2.4 + i); fxGlow(c2, px, py, mv.mPx(2.4) + 14, i % 3 ? '255,80,200' : '120,200,255', .45 * nk * fl * pul); }); c2.globalCompositeOperation = 'source-over'; }
+    (VENUE.stages || []).forEach(([sid], si) => { const st = POIS.find(o => o.id === sid); if (!st || !st.at) return;
+      for (let i = 0; i < 6; i++) { const life = ((t * .09 + i / 6 + si * .3) % 1), [px, py] = mv.proj([st.at[0] + (fxRnd(i + si * 7) - .5) * 4 + life * 2.5, st.at[1] - life * 4]); if (!vis(px, py, 120)) continue;
+        const S = (mv.mPx(5) + 30) * (.6 + life * 1.4); c2.globalAlpha = Math.sin(life * Math.PI) * (nk > .5 ? .2 : .15); c2.drawImage(nk > .5 ? fxSprites.night : fxSprites.day, px - S / 2, py - S * .3, S, S * .6); } });
+    c2.globalAlpha = 1; }
   // calque du dessus (au-dessus des marqueurs) : secours, feu d'artifice, entrée/sortie
   if (top) { ctx = top.getContext('2d'); ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.clearRect(0, 0, w, h); }
   const visS = (x, y, m = 80) => x > -m && y > -m && x < w + m && y < h + m;
@@ -1403,13 +1485,25 @@ FX.draw = (mv, now) => {
     ctx.globalCompositeOperation = 'source-over'; }
   // 8. nuages qui encadrent le site (bornes de la carte) avec léger effet de profondeur
   if (cfg.clouds !== false) {
-    const sz = Math.max(150, Math.min(420, Wm * .09)), par = [(w / 2 - (C00[0] + C11[0]) / 2) * .06, (h / 2 - (C00[1] + C11[1]) / 2) * .06], rc = Math.cos(mv.rot), rn = Math.sin(mv.rot), N = (x, y) => [x * rc - y * rn, x * rn + y * rc];
+    const small = Wm < w * 1.4, sz = small ? Math.max(46, Wm * .11) : Math.max(150, Math.min(420, Wm * .09)), par = [(w / 2 - (C00[0] + C11[0]) / 2) * .06, (h / 2 - (C00[1] + C11[1]) / 2) * .06], rc = Math.cos(mv.rot), rn = Math.sin(mv.rot), N = (x, y) => [x * rc - y * rn, x * rn + y * rc];
     const spr = nk > .5 ? fxSprites.night : dk > .3 ? fxSprites.dusk : fxSprites.day;
     const edge = (ax, ay, bx, by, out, seed) => { const len = Math.hypot(bx - ax, by - ay), n = Math.max(4, Math.min(36, Math.ceil(len / (sz * .5))));
       for (let ring = 0; ring < 2; ring++) for (let i = 0; i <= n; i++) { const u = (i + ((t * .01 + fxRnd(seed + i)) % 1) * .6) / n, wob = Math.sin(t * .2 + i + seed) * sz * .04;
         const cx = ax + (bx - ax) * u + out[0] * (sz * (ring ? .55 : .05) + wob) + par[0] * (1 + ring), cy = ay + (by - ay) * u + out[1] * (sz * (ring ? .55 : .05) + wob) + par[1] * (1 + ring), S = sz * (ring ? 1.35 : 1) * (.8 + fxRnd(seed * 3 + i) * .5);
-        if (cx + S < -px0 || cy + S < -py0 || cx - S > w + px0 || cy - S > h) continue; ctx.globalAlpha = ring ? .97 : .9; ctx.drawImage(spr, cx - S / 2, cy - S * .3, S, S * .6); } };
+        if (cx + S < -px0 || cy + S < -py0 || cx - S > w + px0 || cy - S > h) continue; ctx.globalAlpha = small ? (ring ? .55 : .85) : (ring ? .97 : .9); ctx.drawImage(spr, cx - S / 2, cy - S * .3, S, S * .6); } };
     edge(C00[0], C00[1], C10[0], C10[1], N(0, -1), 1); edge(C01[0], C01[1], C11[0], C11[1], N(0, 1), 2); edge(C00[0], C00[1], C01[0], C01[1], N(-1, 0), 3); edge(C10[0], C10[1], C11[0], C11[1], N(1, 0), 4); ctx.globalAlpha = 1;
+  }
+  // 8b. « vue des Dieux » : rayons, voiles de brume, nuages de premier plan, oiseaux / étoile filante — couches animées par le GPU (aucun dessin par image)
+  if (cfg.atmo !== false) {
+    if (!mv.atmo) { const a = document.createElement('div'); a.className = 'atmo'; a.setAttribute('aria-hidden', 'true');
+      a.innerHTML = '<i class="aRays"></i><i class="aMist m1"></i><i class="aMist m2"></i><i class="aFg f1"></i><i class="aFg f2"></i><i class="aBirds"><b></b><b></b><b></b><b></b><b></b></i><i class="aStar"></i>';
+      mv.tl.after(a); mv.atmo = a; }
+    const kind = nk > .5 ? 'night' : dk > .3 ? 'dusk' : 'day';
+    if (mv._atK !== kind) { mv._atK = kind; mv.atmo.className = 'atmo ' + kind; const spr = typeof pSpr === 'function' ? pSpr(kind) : null; if (spr) { const u = spr.toDataURL('image/png'); mv.atmo.style.setProperty('--cl', `url(${u})`); } mv.atmo.style.setProperty('--rays', `url(${fxRaysURL(kind)})`); }
+    if (mv._atS !== mv.s) { mv._atS = mv.s; mv._atZt = now; if (!mv.atmo.classList.contains('busy')) mv.atmo.classList.add('busy'); }
+    else if (mv._atZt && now - mv._atZt > 320) { mv._atZt = 0; mv.atmo.classList.remove('busy'); }
+    if (!mv._atT || now - mv._atT > 300) { mv._atT = now; const zf = Math.max(0, Math.min(1, 1.6 - mv.s / ((VENUE.zoom || .5) * 1.1))), zc = zf > .66 ? '' : zf > .2 ? 'zmid' : 'zin';
+      if (mv._atZ !== zc) { mv._atZ = zc; mv.atmo.classList.remove('zin', 'zmid'); if (zc) mv.atmo.classList.add(zc); } mv.atmo.classList.toggle('still', !anim); }
   }
   // 9. entrée / sortie « vue des Dieux » : les nuages s'écartent pendant la descente (ou se referment en partant)
   const io = mv.intro || mv.outro; if (io) { let k = Math.min(1, (now - io.t0) / io.dur); if (mv.outro) k = 1 - k;
@@ -1443,6 +1537,156 @@ FX.dispatch = r => { // l'équipe part vers l'alerte : trajet réel sur le graph
   if (pts.length < 2) pts = [from ? from.at : NODES[n0], r.at];
   FX.vehicles.push({ rid: r.id, pts, t0: performance.now(), dur: 9000, kind: r.cat === 'medical' ? 'amb' : 'agent' });
 };
+
+// ===== Portail ONEERA : on n'ouvre pas une carte, on entre dans un univers — et on en ressort par le même chemin =====
+// Ouverture de l'app : l'écran de démarrage (logo sur bleu nuit) s'ouvre comme un portail au centre du « O », on traverse
+// les nuages et on plonge sur le lieu, suspendu dans une mer de nuages, jusqu'à se poser exactement sur la carte.
+// Changement de lieu : même plongée depuis le ciel. Sortie : le même film à l'envers (remontée dans les nuages, puis le logo).
+// Variante « depuis le logo » réutilisable par les partenaires : window.ONEERA_PORTAL({ mode: 'logo' }).
+const PORTAL = { busy: false, pending: null };
+const pLogo = new Image(); pLogo.src = A + 'logo.webp';
+const pImgs = {}; const pImg = (src) => pImgs[src] || (pImgs[src] = Object.assign(new Image(), { src, decoding: 'async' }));
+const pE = { io: k => k < .5 ? 4 * k * k * k : 1 - Math.pow(-2 * k + 2, 3) / 2, in: k => k * k * k, out: k => 1 - Math.pow(1 - k, 3), o2: k => 1 - (1 - k) * (1 - k) };
+const pClamp = (v, a = 0, b = 1) => Math.max(a, Math.min(b, v));
+const portalAllowed = () => mapAnim() && !(navigator.webdriver && !/[?&]portal=1/.test(location.search));
+// nuages en 3D (profondeur z : 1 = loin, 0 = sur la caméra)
+const pCloud = Array.from({ length: 54 }, (_, i) => { const a = fxRnd(i * 3 + 1) * 6.283, r = .5 + fxRnd(i * 5 + 2) * 1.1; return { x: Math.cos(a) * r, y: Math.sin(a) * r * .85, z: fxRnd(i * 7 + 3), s: .7 + fxRnd(i * 11 + 4) * 1.1 }; });
+// logo détouré (fondu circulaire) : son fond carré ne se voit jamais en grand
+const pLogoM = (() => { const c = document.createElement('canvas'); c.width = c.height = 512; const done = () => { const g = c.getContext('2d'); g.clearRect(0, 0, 512, 512); g.drawImage(pLogo, 0, 0, 512, 512); g.globalCompositeOperation = 'destination-in'; const r = g.createRadialGradient(256, 256, 150, 256, 256, 256); r.addColorStop(0, '#000'); r.addColorStop(1, 'rgba(0,0,0,0)'); g.fillStyle = r; g.fillRect(0, 0, 512, 512); c.ok = true; };
+  if (pLogo.complete && pLogo.naturalWidth) done(); else pLogo.addEventListener('load', done); return c; })();
+// nuage du portail : volumes doux entièrement contenus dans l'image (aucun bord coupé)
+const pCloudSpr = {}; function pSpr(kind) { if (pCloudSpr[kind]) return pCloudSpr[kind];
+  const c = document.createElement('canvas'); c.width = 360; c.height = 220; const g = c.getContext('2d');
+  const col = { day: ['255,255,255', '214,226,248'], dusk: ['255,226,236', '214,170,206'], night: ['150,140,220', '70,62,140'] }[kind];
+  const blob = (x, y, r, rgb, a) => { const gr = g.createRadialGradient(x, y - r * .2, r * .1, x, y, r); gr.addColorStop(0, `rgba(${rgb},${a})`); gr.addColorStop(.6, `rgba(${rgb},${a * .8})`); gr.addColorStop(1, `rgba(${rgb},0)`); g.fillStyle = gr; g.beginPath(); g.arc(x, y, r, 0, 7); g.fill(); };
+  [[180, 132, 70], [120, 128, 54], [240, 126, 58], [150, 104, 58], [210, 98, 52], [92, 140, 40], [270, 140, 40]].forEach(([x, y, r]) => blob(x + 6, y + 14, r, col[1], .5));
+  [[180, 124, 70], [120, 122, 54], [240, 118, 58], [150, 96, 58], [210, 90, 52], [92, 134, 40], [270, 134, 40], [182, 80, 44]].forEach(([x, y, r]) => blob(x, y, r, col[0], .95));
+  return (pCloudSpr[kind] = c); }
+// plan aux bords fondus pendant la descente (les plans à fond transparent sont déjà détourés)
+const pFeather = {}; function pMapSoft(img, night = 0) { const key = img.src + '|' + Math.round(night * 10); if (pFeather[key]) return pFeather[key]; if (!img.complete || !img.naturalWidth) return null;
+  const c = document.createElement('canvas'), w = c.width = Math.min(1400, img.naturalWidth), h = c.height = Math.round(w * img.naturalHeight / img.naturalWidth), g = c.getContext('2d'); g.drawImage(img, 0, 0, w, h);
+  if (night > .05) { g.globalCompositeOperation = 'source-atop'; g.fillStyle = `rgba(16,12,52,${.5 * night})`; g.fillRect(0, 0, w, h); }
+  if (!VENUE.map.alpha) { g.globalCompositeOperation = 'destination-in'; const f = (x0, y0, x1, y1) => { const gr = g.createLinearGradient(x0, y0, x1, y1); gr.addColorStop(0, 'rgba(0,0,0,0)'); gr.addColorStop(.09, '#000'); gr.addColorStop(.91, '#000'); gr.addColorStop(1, 'rgba(0,0,0,0)'); g.fillStyle = gr; g.fillRect(0, 0, w, h); };
+    f(0, 0, w, 0); f(0, 0, 0, h); }
+  return (pFeather[key] = c); }
+const pStars = Array.from({ length: 90 }, (_, i) => [fxRnd(i * 17 + 1), fxRnd(i * 19 + 2), fxRnd(i * 23 + 3)]);
+
+function portalPalette() {
+  const nk = nightK((20 * 60 + nowMin()) % 1440), kind = nk > .5 ? 'night' : nk > .05 ? 'dusk' : 'day';
+  return { nk, kind, spr: pSpr(kind), sea: fxSeaURL(kind),
+    sky: kind === 'night' ? ['#0B0D2A', '#1E1A52', '#3A2C6E'] : kind === 'dusk' ? ['#5560B8', '#C98BC0', '#F6C2A6'] : ['#5D8DE8', '#A9C6F6', '#EAF1FD'],
+    ray: kind === 'night' ? '170,180,255' : kind === 'dusk' ? '255,200,214' : '255,246,220' };
+}
+// Une image du film « entrée » à l'instant u (0 → 1). Le film « sortie » est le même, joué à l'envers.
+function portalFrame(ctx, W, H, u, o) {
+  const P = o.pal, logoMode = o.mode === 'logo', A0 = logoMode ? .26 : 0; // part du film consacrée au logo
+  const now = performance.now() / 1000;
+  // --- ciel (fond de toute la scène hors logo)
+  const drawSky = (k) => {
+    const g = ctx.createLinearGradient(0, 0, 0, H); g.addColorStop(0, P.sky[0]); g.addColorStop(.55, P.sky[1]); g.addColorStop(1, P.sky[2]); ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+    if (P.kind === 'night') { ctx.fillStyle = '#fff'; pStars.forEach(([x, y, r], i) => { ctx.globalAlpha = (.35 + .65 * Math.abs(Math.sin(now * (1 + r) + i))) * (1 - k * .8); ctx.fillRect(x * W, y * H * .7, 1 + r * 1.4, 1 + r * 1.4); }); ctx.globalAlpha = 1; }
+    // soleil / lune et rayons divins
+    const sx = W * .22, sy = H * .1; ctx.globalCompositeOperation = 'lighter';
+    const sg = ctx.createRadialGradient(sx, sy, 0, sx, sy, W * .7); sg.addColorStop(0, `rgba(${P.ray},.55)`); sg.addColorStop(.25, `rgba(${P.ray},.16)`); sg.addColorStop(1, `rgba(${P.ray},0)`); ctx.fillStyle = sg; ctx.fillRect(0, 0, W, H);
+    for (let i = 0; i < 6; i++) { const a = .9 + i * .16 + Math.sin(now * .3 + i) * .03, L = H * 1.6, wd = .035 + fxRnd(i + 3) * .05;
+      const lg = ctx.createLinearGradient(sx, sy, sx + Math.cos(a) * L, sy + Math.sin(a) * L); lg.addColorStop(0, `rgba(${P.ray},${.22 - i * .02})`); lg.addColorStop(1, `rgba(${P.ray},0)`);
+      ctx.fillStyle = lg; ctx.beginPath(); ctx.moveTo(sx, sy); ctx.lineTo(sx + Math.cos(a - wd) * L, sy + Math.sin(a - wd) * L); ctx.lineTo(sx + Math.cos(a + wd) * L, sy + Math.sin(a + wd) * L); ctx.closePath(); ctx.fill(); }
+    ctx.globalCompositeOperation = 'source-over';
+  };
+  // --- l'île : le lieu suspendu dans la mer de nuages, qui grandit jusqu'à la position exacte de la carte
+  const drawIsland = (k) => {
+    const img = o.map; const R = o.rect; const fw = R ? R.w : W * .9, fh = R ? R.h : fw * (img.naturalHeight / img.naturalWidth || .63);
+    const fx0 = R ? R.x : (W - fw) / 2, fy0 = R ? R.y : (H - fh) / 2;
+    const e = pE.in(pClamp(k)), sc = .07 + .93 * e, w = fw * sc, h = fh * sc;
+    const cx = W / 2 + ((fx0 + fw / 2) - W / 2) * e, cy = H * .54 + ((fy0 + fh / 2) - H * .54) * e, x = cx - w / 2, y = cy - h / 2;
+    // mer de nuages autour de l'île (même matière que sous la carte)
+    if (o.seaImg && o.seaImg.complete && e > .02) { ctx.save(); ctx.globalAlpha = pClamp((e - .02) * 2.2) * (P.kind === 'night' ? .55 : 1); const ts = 600 * (.35 + .65 * e), pat = ctx.createPattern(o.seaImg, 'repeat'); const m = new DOMMatrix([ts / 600, 0, 0, ts / 600, cx, cy]); pat.setTransform && pat.setTransform(m); ctx.fillStyle = pat; ctx.fillRect(0, 0, W, H); ctx.restore(); }
+    const soft = pMapSoft(img, P.nk); if (soft) { ctx.save(); ctx.globalAlpha = pClamp(k * 4); ctx.shadowColor = 'rgba(10,14,40,.35)'; ctx.shadowBlur = 40 * sc; ctx.shadowOffsetY = 18 * sc; ctx.drawImage(soft, x, y, w, h); ctx.restore(); }
+  };
+  // --- traversée des nuages (ils foncent vers la caméra), plus dense au milieu du film
+  const drawClouds = (k, dens) => {
+    const travel = k * 2.4; pCloud.forEach((c) => { let z = ((c.z - travel) % 1 + 1) % 1; z = .06 + z * .94; const sc = 1 / z;
+      const px = W / 2 + c.x * W * .42 * sc, py = H * .54 + c.y * H * .34 * sc, S = W * .3 * c.s * sc;
+      const a = .9 * pClamp((1 - z) * 2.4) * pClamp((z - .06) * 4) * dens; if (a < .02 || px + S < 0 || px - S > W || py + S < 0 || py - S > H) return;
+      ctx.globalAlpha = a; ctx.drawImage(P.spr, px - S / 2, py - S * .3, S, S * .6); }); ctx.globalAlpha = 1;
+    if (dens > .3) { ctx.globalCompositeOperation = 'lighter'; ctx.strokeStyle = `rgba(${P.ray},${(P.kind === 'night' ? .07 : .18) * dens})`; ctx.lineWidth = 1.4; // traînées de vitesse
+      for (let i = 0; i < 26; i++) { const a = fxRnd(i * 9) * 6.283, ph = ((k * 3 + fxRnd(i * 4)) % 1), r0 = W * (.15 + ph * .9), r1 = r0 + W * .12 * ph; ctx.beginPath(); ctx.moveTo(W / 2 + Math.cos(a) * r0, H * .54 + Math.sin(a) * r0); ctx.lineTo(W / 2 + Math.cos(a) * r1, H * .54 + Math.sin(a) * r1); ctx.stroke(); }
+      ctx.globalCompositeOperation = 'source-over'; }
+  };
+  if (logoMode && u < A0) { // ---------- 1. le portail s'ouvre au centre du logo
+    const k = u / A0; ctx.fillStyle = '#010922'; ctx.fillRect(0, 0, W, H);
+    const r = pE.in(pClamp((k - .25) / .75)) * Math.hypot(W, H) * .62;
+    if (r > 1) { ctx.save(); ctx.beginPath(); ctx.ellipse(W / 2, H / 2, r * .78, r, -.35, 0, 7); ctx.clip(); drawSky(0); drawIsland(0); drawClouds(0, 1); ctx.restore();
+      ctx.globalCompositeOperation = 'lighter'; const gr = ctx.createRadialGradient(W / 2, H / 2, r * .7, W / 2, H / 2, r * 1.15); gr.addColorStop(0, 'rgba(120,170,255,0)'); gr.addColorStop(.5, 'rgba(150,190,255,.55)'); gr.addColorStop(1, 'rgba(120,170,255,0)'); ctx.fillStyle = gr; ctx.fillRect(0, 0, W, H); ctx.globalCompositeOperation = 'source-over'; }
+    // le logo, identique à l'écran de démarrage, qui s'agrandit en traversant l'écran
+    const L0 = 180, sl = 1 + pE.in(pClamp((k - .12) / .88)) * 9, ls = L0 * sl, breathe = 1 + Math.sin(now * 3) * .012 * (1 - k);
+    if (pLogo.complete) { ctx.globalAlpha = pClamp(1 - (k - .55) / .45); ctx.drawImage(sl > 1.15 && pLogoM.ok ? pLogoM : pLogo, W / 2 - ls * breathe / 2, H / 2 - ls * breathe / 2, ls * breathe, ls * breathe); ctx.globalAlpha = 1; }
+    return;
+  }
+  // ---------- 2. descente : ciel, rayons, nuages, l'île qui approche ; 3. on se pose sur la carte
+  const k = logoMode ? (u - A0) / (1 - A0) : u;
+  drawSky(k);
+  drawIsland(pClamp((k - .08) / .92));
+  drawClouds(k, k < .7 ? 1 : pClamp(1 - (k - .7) / .3));
+  // voile final : la mer de nuages se dissipe et laisse place à la vraie carte
+  if (logoMode && k < .08) { ctx.fillStyle = `rgba(150,190,255,${(1 - k / .08) * .5})`; ctx.fillRect(0, 0, W, H); }
+}
+
+// Lecture du film (entrée : 0 → 1, sortie : 1 → 0). Le dernier quart de l'entrée s'efface sur la vraie carte.
+PORTAL.play = (o) => new Promise((resolve) => {
+  if (!portalAllowed() || !SCREEN) { resolve(); return; }
+  PORTAL.busy = true; const pre = document.getElementById('portal'); const el = pre || document.createElement('div'); el.id = 'portal'; el.setAttribute('aria-hidden', 'true');
+  const cv = document.createElement('canvas'); el.append(cv); if (!pre) SCREEN.append(el); setTimeout(() => { const im = el.querySelector('img.pre'); im && im.remove(); }, 60);
+  const W = SCREEN.clientWidth, H = SCREEN.clientHeight, dpr = Math.min(2, devicePixelRatio || 1); cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr); cv.style.width = W + 'px'; cv.style.height = H + 'px';
+  const ctx = cv.getContext('2d'); ctx.scale(dpr, dpr);
+  const pal = portalPalette(), seaImg = pal.sea ? pImg(pal.sea) : null, map = pImg(VENUE.map.src);
+  const dur = o.dur || (o.dir === 'out' ? (o.mode === 'logo' ? 1700 : 1300) : (o.mode === 'logo' ? 3400 : 2500));
+  let t0 = null, stop = false, raf = 0;
+  const finish = () => { if (stop) return; stop = true; cancelAnimationFrame(raf); PORTAL.busy = false;
+    if (o.dir === 'in') { el.classList.add('fade'); setTimeout(() => el.remove(), 420); } else setTimeout(() => el.remove(), 40);
+    resolve(); };
+  const step = (ts) => { if (stop) return; if (t0 == null) t0 = ts; const p = pClamp((ts - t0) / dur), u = o.dir === 'out' ? 1 - pE.io(p) : pE.o2(p);
+    const rect = o.rect ? o.rect() : null; ctx.clearRect(0, 0, W, H); try { portalFrame(ctx, W, H, u, { mode: o.mode, pal, map, seaImg, rect }); } catch (_) {}
+    if (o.dir === 'in' && p > .78 && !el.classList.contains('fade')) { el.classList.add('fade'); o.onReveal && o.onReveal(); }
+    if (p >= 1) { finish(); return; } raf = requestAnimationFrame(step); };
+  // toucher l'écran = passer (on garde la continuité : fondu rapide)
+  el.addEventListener('pointerdown', () => { o.onReveal && !el.classList.contains('fade') && o.onReveal(); finish(); }, { once: true });
+  raf = requestAnimationFrame(step);
+});
+// rectangle exact de la carte à l'écran (pour se poser dessus sans saut)
+const portalMapRect = () => { if (!MV || !MV.alive) return null; const a = MV.proj([0, 0]), b = MV.proj([100, 100]); return { x: a[0], y: a[1], w: b[0] - a[0], h: b[1] - a[1] }; };
+
+// Entrée sur la carte (ouverture de l'app ou nouveau lieu) puis descente sur sa position
+PORTAL.enter = (mode = 'sky') => {
+  if (!portalAllowed() || !MV) return Promise.resolve();
+  const mv = MV, at = [ST.me.pos[0], ST.me.pos[1] - 8], zoom = VENUE.zoom; mv.center([50, 50], mv.minS); mv.intro = null;
+  SCREEN.classList.add('pIn');
+  return PORTAL.play({ mode, dir: 'in', rect: portalMapRect, onReveal: () => { SCREEN.classList.remove('pIn'); SCREEN.classList.add('pShow'); setTimeout(() => SCREEN.classList.remove('pShow'), 1400); setTimeout(() => mv.alive && mv.flyTo(at, zoom, 1500), 120); } })
+    .then(() => SCREEN.classList.remove('pIn'));
+};
+// Sortie : on remonte dans les nuages (et jusqu'au logo pour quitter l'univers)
+PORTAL.exit = (mode = 'sky') => {
+  if (!portalAllowed() || !MV || !MV.alive || !document.body.contains(MV.host)) return Promise.resolve();
+  MV.ov.style.opacity = '0'; MV.flyTo(MV.centerPct(), MV.minS, 380);
+  return new Promise(r => setTimeout(r, 380)).then(() => PORTAL.play({ mode, dir: 'out', rect: portalMapRect }));
+};
+// Ouverture d'un écran sans carte (accueil) : le portail s'ouvre puis se dissipe
+PORTAL.reveal = () => portalAllowed() ? PORTAL.play({ mode: 'logo', dir: 'in', dur: 2600 }) : Promise.resolve();
+window.ONEERA_PORTAL = (o = {}) => PORTAL.play({ mode: o.mode || 'logo', dir: o.dir || 'in', dur: o.dur, rect: portalMapRect });
+
+// ---------- branchements ----------
+// 1. ouverture de l'app : une fois par lancement
+PORTAL.launch = () => { let seen = false; try { seen = sessionStorage.getItem('oneera.portal') === '1'; sessionStorage.setItem('oneera.portal', '1'); } catch (_) {}
+  if (seen || !portalAllowed() || !SCREEN) return;
+  // voile immédiat (avant le premier affichage) : exactement l'écran de démarrage, aucun flash de la carte
+  const v = document.createElement('div'); v.id = 'portal'; v.setAttribute('aria-hidden', 'true'); v.innerHTML = `<img class="pre" src="${A}logo.webp" alt="">`; SCREEN.append(v); PORTAL.busy = true;
+  setTimeout(() => { PORTAL.busy = false; if ($('#mv') && MV) PORTAL.enter('logo'); else PORTAL.reveal(); }, 30); };
+// 2. première visite d'un lieu : la descente « vue des Dieux » devient le portail complet
+const _fxIntro = FX.intro, _fxLeave = FX.leave;
+FX.intro = (mv, at, zoom) => { if (PORTAL.busy) return; if (!portalAllowed()) return _fxIntro(mv, at, zoom); PORTAL.enter(PORTAL.pending || 'sky'); PORTAL.pending = null; };
+// 3. changer de lieu : on remonte dans les nuages, on change de monde, on redescend
+FX.leave = (cb) => { if (!portalAllowed()) return _fxLeave(cb); if (!MV || !MV.alive || !document.body.contains(MV.host)) { cb(); return; }
+  PORTAL.exit('sky').then(() => { const id0 = VENUE.id; cb(); if ((VENUE.id !== id0 || $('#mv')) && !PORTAL.busy && MV && $('#mv')) PORTAL.enter('sky'); }); };
 
 // ===== Moteur d'avatar ONEERA (rendu illustré SVG piloté par paramètres) =====
 // Le même objet de paramètres pilotera le rendu 3D de l'app finale.
@@ -2502,7 +2746,7 @@ V.map = (opts = {}) => {
     <div class="livebar" id="lb"></div>${navBar('map')}`);
   wireNav(el);
   if (MV) MV.destroy();
-  MV = new MapView($('#mv', el), { at: opts.at || [ST.me.pos[0], ST.me.pos[1] - 8], zoom: opts.zoom || VENUE.zoom, rotate: true, markers: mapMarkers, onLong: at => V.rdvSheet(at), onTapEmpty: () => {}, fx: () => ({ crowd: !showCrowd }) }); wireViewCtl(el, MV);
+  MV = new MapView($('#mv', el), { at: opts.at || [ST.me.pos[0], ST.me.pos[1] - 8], zoom: opts.zoom || VENUE.zoom, rotate: true, strict: false, markers: mapMarkers, onLong: at => V.rdvSheet(at), onTapEmpty: () => {}, fx: () => ({ crowd: !showCrowd }) }); wireViewCtl(el, MV);
   ST.introSeen = ST.introSeen || {}; if (!opts.at && !ST.introSeen[VENUE.id]) { ST.introSeen[VENUE.id] = 1; FX.intro(MV, [ST.me.pos[0], ST.me.pos[1] - 8], VENUE.zoom); }
   $('#flt', el).onclick = e => { const b = e.target.closest('[data-f]'); if (!b) return; mapFilter = b.dataset.f; $$('#flt .chip', el).forEach(c => c.classList.toggle('on', c === b)); if (mapFilter === 'friends' && myFriends().length) { const p = myFriends().map(f => friendPos(f.id)); MV.flyTo([p.reduce((a, q) => a + q[0], 0) / p.length, p.reduce((a, q) => a + q[1], 0) / p.length], .45); } };
   $('#floors', el) && ($('#floors', el).onclick = e => { const b = e.target.closest('[data-fl]'); if (!b) return; if (b.dataset.fl !== 'club') { toast('Tes amis au casino apparaissent à l’escalier avec « au RDC (Casino) ↑ ». Itinéraire par l’escalier de l’entrée.'); return; } });
@@ -3888,6 +4132,7 @@ let _shk = []; addEventListener('devicemotion', e => { const a = e.accelerationI
 // ---------- Premier lancement : 3 repères seulement, puis l'écran reste épuré ----------
 V.tour = () => {
   if (ST.tourDone || !$('#mv') || $('.tour')) return;
+  if (typeof PORTAL !== 'undefined' && (PORTAL.busy || $('#portal'))) { setTimeout(() => V.tour(), 700); return; } // le guide attend la fin du portail
   const steps = [['#mepill', 'Toi, tes amis', 'Tes amis apparaissent sur la carte. Touche ta pastille pour inviter un ami ou partager ta position.'], ['#flt', 'Trouver un lieu', 'Bars, scènes, toilettes : touche un filtre ou une icône pour voir sa fiche et l’itinéraire.'], ['#sos', 'En cas de problème', 'Le bouton SOS prévient l’équipe du lieu avec ta position.']];
   let i = 0; const box = document.createElement('div'); box.className = 'tour'; SCREEN.append(box);
   const end = () => { ST.tourDone = true; box.remove(); emit(); };
@@ -5158,7 +5403,8 @@ function liveMotion(energy) {
 const liveHour = () => { if (typeof realOn === 'function' && realOn()) { if (LIVE.sim.hour != null) return LIVE.sim.hour; const d = new Date(); return d.getHours() + d.getMinutes() / 60; } return ((ST.clock % 1440) + 1440) % 1440 / 60; };
 function liveStateOf(id, me) {
   if (!LIVE.on) return {};
-  const h = liveHour(), night = h >= 21.5 || h < 6.5, sleepy = h >= 4.5 && h < 7.5;
+  const h = liveHour(), sleepy = h >= 4.5 && h < 7.5;
+  const night = (typeof realOn === 'function' && realOn()) ? (LIVE.sim.hour != null ? (h >= 21.5 || h < 6.5) : nightK((20 * 60 + nowMin()) % 1440) > .5 || h >= 21.5 || h < 6.5) && ST.mapMode !== 'day' : nightK((20 * 60 + nowMin()) % 1440) > .5;
   let act, bat, near = false;
   if (me) { act = liveAct(); bat = liveBat(); if (LIVE.charging && LIVE.sim.bat == null) bat = null; }
   else if (typeof realOn === 'function' && realOn()) { const l = REAL.live[id]; if (l && Date.now() - l.t < 120000) { act = l.act; bat = l.bat; } }
@@ -5234,6 +5480,12 @@ function stickerTray(onPick) {
   const sb = openSheet(`<h2 class="h2">Stickers</h2><div class="small" style="margin-top:-6px">Avec ton avatar, en un geste.</div><div class="stkGrid">${Object.keys(STICKERS).map(k => `<button data-s="${k}" aria-label="${esc(stickerCap(k))}">${stickerHTML(myAv2(), k, true)}</button>`).join('')}</div>`);
   sb.onclick = (e) => { const b = e.target.closest('[data-s]'); if (b) { closeSheet(true); onPick(b.dataset.s); } };
 }
+
+// ---------- Portail : ouverture de l'app et sortie de l'univers ----------
+const _bootPortal = boot;
+boot = function () { _bootPortal.apply(this, arguments); PORTAL.launch(); };
+const _logoutPortal = realLogout;
+realLogout = function (silent) { if (MV && MV.alive && $('#mv') && !PORTAL.busy) { PORTAL.exit('logo').then(() => _logoutPortal(silent)); return; } _logoutPortal(silent); };
 
 // ===== Confort mobile : clavier qui ne masque jamais un champ, zoom involontaire bloqué =====
 (function () {

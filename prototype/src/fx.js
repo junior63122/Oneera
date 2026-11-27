@@ -47,16 +47,23 @@ function polyAt(pts, u) { // point à la fraction u (0..1) de la longueur d'une 
 const fxSea = {};
 function fxSeaURL(kind) { // mer de nuages en volume (ombre, corps, reflets) : aucun aplat de couleur autour des plans détourés
   if (fxSea[kind] !== undefined) return fxSea[kind]; const N = 600, c = document.createElement('canvas'); c.width = c.height = N; const x = c.getContext('2d');
-  const pal = { day: ['#CFDDF7', 'rgba(120,140,200,', 'rgba(255,255,255,', 'rgba(255,255,255,'], dusk: ['#D9A9C8', 'rgba(120,80,140,', 'rgba(255,214,228,', 'rgba(255,240,235,'], night: ['#2B2660', 'rgba(8,6,30,', 'rgba(132,122,208,', 'rgba(190,180,245,'] }[kind];
+  const pal = { day: ['#9DB8EC', 'rgba(92,116,184,', 'rgba(250,252,255,', 'rgba(255,255,255,'], dusk: ['#B77FB0', 'rgba(96,56,120,', 'rgba(255,212,226,', 'rgba(255,242,236,'], night: ['#15123A', 'rgba(4,3,20,', 'rgba(104,94,186,', 'rgba(176,166,240,'] }[kind];
   const blob = (col, cx, cy, r, a) => { const g = x.createRadialGradient(cx, cy - r * .2, r * .1, cx, cy, r); g.addColorStop(0, col + a + ')'); g.addColorStop(.65, col + a * .85 + ')'); g.addColorStop(1, col + '0)'); x.fillStyle = g; x.beginPath(); x.arc(cx, cy, r, 0, 7); x.fill(); };
   const wrap = f => { for (const dx of [-N, 0, N]) for (const dy of [-N, 0, N]) f(dx, dy); };
   x.fillStyle = pal[0]; x.fillRect(0, 0, N, N);
-  const C = Array.from({ length: 34 }, (_, i) => [fxRnd(i * 3 + 2) * N, fxRnd(i * 7 + 3) * N, 60 + fxRnd(i * 5 + 1) * 90]);
-  C.forEach(([cx, cy, r]) => wrap((dx, dy) => blob(pal[1], cx + dx + r * .15, cy + dy + r * .35, r * 1.15, .35)));
-  C.forEach(([cx, cy, r], i) => wrap((dx, dy) => { for (let k = 0; k < 4; k++) blob(pal[2], cx + dx + (fxRnd(i * 13 + k) - .5) * r * 1.4, cy + dy + (fxRnd(i * 17 + k) - .5) * r * .5, r * (.55 + fxRnd(i + k * 7) * .4), .95); }));
+  const C = Array.from({ length: kind === 'night' ? 34 : 20 }, (_, i) => [fxRnd(i * 3 + 2) * N, fxRnd(i * 7 + 3) * N, (kind === 'night' ? 60 : 48) + fxRnd(i * 5 + 1) * (kind === 'night' ? 90 : 70)]);
+  C.forEach(([cx, cy, r]) => wrap((dx, dy) => blob(pal[1], cx + dx + r * .18, cy + dy + r * .4, r * 1.2, .55)));
+  C.forEach(([cx, cy, r], i) => wrap((dx, dy) => { for (let k = 0; k < 4; k++) blob(pal[2], cx + dx + (fxRnd(i * 13 + k) - .5) * r * 1.4, cy + dy + (fxRnd(i * 17 + k) - .5) * r * .5, r * (kind === 'night' ? .55 + fxRnd(i + k * 7) * .4 : .42 + fxRnd(i + k * 7) * .3), .95); }));
   C.forEach(([cx, cy, r], i) => wrap((dx, dy) => blob(pal[3], cx + dx - r * .2, cy + dy - r * .25, r * .45, kind === 'night' ? .5 : .7)));
   try { fxSea[kind] = c.toDataURL('image/webp', .85); } catch (_) { fxSea[kind] = ''; } return fxSea[kind];
 }
+// rayons divins pré-dessinés une fois (puis seulement animés en opacité par le GPU)
+const fxRays = {}; function fxRaysURL(kind) { if (fxRays[kind]) return fxRays[kind]; const W = 512, H = 900, c = document.createElement('canvas'); c.width = W; c.height = H; const g = c.getContext('2d');
+  const col = kind === 'night' ? '150,165,255' : kind === 'dusk' ? '255,196,214' : '255,244,214', A = kind === 'night' ? .16 : .26, ox = -W * .15, oy = -H * .1;
+  for (let i = 0; i < 6; i++) { const a = .95 + i * .13, L = Math.hypot(W, H) * 1.3, wd = .025 + fxRnd(i + 11) * .04; const gr = g.createLinearGradient(ox, oy, ox + Math.cos(a) * L, oy + Math.sin(a) * L); gr.addColorStop(0, `rgba(${col},${A})`); gr.addColorStop(.6, `rgba(${col},${A * .3})`); gr.addColorStop(1, `rgba(${col},0)`);
+    g.fillStyle = gr; g.beginPath(); g.moveTo(ox, oy); g.lineTo(ox + Math.cos(a - wd) * L, oy + Math.sin(a - wd) * L); g.lineTo(ox + Math.cos(a + wd) * L, oy + Math.sin(a + wd) * L); g.closePath(); g.fill(); }
+  const sg = g.createRadialGradient(0, 0, 0, 0, 0, W * .8); sg.addColorStop(0, `rgba(${col},${A * 1.4})`); sg.addColorStop(1, `rgba(${col},0)`); g.fillStyle = sg; g.fillRect(0, 0, W, H);
+  return (fxRays[kind] = c.toDataURL('image/png')); }
 FX.draw = (mv, now) => {
   const cv = mv.fx; if (!cv) return;
   const w = mv.vw, h = mv.vh, dpr = 1 /* effets doux : la résolution native ×1 suffit et divise le coût de dessin par 4 sur écran Retina */, px0 = mv.tiltTo || mv.tilt ? Math.round(w * .6) : 0, py0 = mv.tiltTo || mv.tilt ? Math.round(h * 1.1) : 0, cw = w + 2 * px0, ch = h + py0;
@@ -70,8 +77,11 @@ FX.draw = (mv, now) => {
   const f = (nk > .01 ? `brightness(${(1 - .56 * nk).toFixed(2)}) saturate(${(1 + .35 * nk).toFixed(2)}) hue-rotate(${(-16 * nk).toFixed(0)}deg) contrast(${(1 + .1 * nk).toFixed(2)})` : '') + (cfg.filter ? ' ' + cfg.filter : '');
   if (mv._f !== f) { mv.base.style.filter = f; mv._f = f; }
   const nkr = Math.round(nk * 20) / 20; if (mv._nk !== nkr) { mv._nk = nkr; mv.host.classList.toggle('nite', nk > .5);
-    const sk = nk > .5 ? 'night' : nk > .05 ? 'dusk' : 'day', sea = fxSeaURL(sk); mv.host.style.backgroundImage = (sea ? `url(${sea}),` : '') + (nk > .5 ? `radial-gradient(120% 80% at 50% 0%,#2C2468 0%,#151436 55%,#0B0B22 100%)` : nk > .05 ? `linear-gradient(180deg,#7E86D8,#E7A9C4 60%,#F6C7A8)` : `linear-gradient(180deg,#A9C4F5,#DCE6FB 55%,#F6E1EE)`); mv.host.style.backgroundSize = sea ? '600px 600px, 100% 100%' : ''; }
-  const bp = `${Math.round(mv.tx * .3)}px ${Math.round(mv.ty * .3)}px, 0 0`; if (mv._bp !== bp) { mv._bp = bp; mv.host.style.backgroundPosition = bp; }
+    const sk = nk > .5 ? 'night' : nk > .05 ? 'dusk' : 'day', sea = fxSeaURL(sk);
+    mv.host.style.backgroundImage = nk > .5 ? `radial-gradient(120% 80% at 50% 0%,#2C2468 0%,#151436 55%,#0B0B22 100%)` : nk > .05 ? `linear-gradient(180deg,#7E86D8,#E7A9C4 60%,#F6C7A8)` : `linear-gradient(180deg,#A9C4F5,#DCE6FB 55%,#F6E1EE)`;
+    if (!mv.seaEl) { mv.seaEl = document.createElement('div'); mv.seaEl.className = 'seaL'; mv.host.prepend(mv.seaEl); const vg = document.createElement('div'); vg.className = 'seaV'; mv.seaEl.after(vg); }
+    mv.seaEl.style.backgroundImage = sea ? `url(${sea})` : 'none'; mv.host.classList.toggle('seaN', nk > .5); }
+  if (mv.seaEl) { const dx = ((mv.tx * .3 + t * 5) % 600 + 600) % 600, dy = ((mv.ty * .3 + t * 1.5) % 600 + 600) % 600, bp = `translate3d(${(dx - 600).toFixed(1)}px,${(dy - 600).toFixed(1)}px,0)`; if (mv._bp !== bp) { mv._bp = bp; mv.seaEl.style.transform = bp; } }
   const D0 = fxData(), C00 = mv.proj([0, 0]), C10 = mv.proj([100, 0]), C11 = mv.proj([100, 100]), C01 = mv.proj([0, 100]), Wm = mv.W * mv.s, Hm = mv.H * mv.s, zs = Math.max(.55, Math.min(1.7, mv.s / (VENUE.zoom || .5)));
   const vis = (x, y, m = 80) => x > -m - px0 && y > -m - py0 && x < w + px0 + m && y < h + m;
   // 1. ombres de nuages qui glissent sur le site (jour)
@@ -138,6 +148,23 @@ FX.draw = (mv, now) => {
         ctx.beginPath(); ctx.moveTo(px - Math.cos(ang) * tl, py - Math.sin(ang) * tl * .8); ctx.lineTo(px, py); ctx.stroke(); ctx.fillStyle = nk > .3 ? '#E6FBFF' : '#fff'; ctx.beginPath(); ctx.arc(px, py, 2.4, 0, 7); ctx.fill(); }
       ctx.globalCompositeOperation = 'source-over'; });
   }
+  // 7b. décor vivant (repéré automatiquement dans l'illustration) : feuillage au vent, feuilles, lucioles, enseignes, fumée de scène
+  const DEC = (typeof MAP_DECOR !== 'undefined' && MAP_DECOR[VENUE.id]) || { veg: [], lit: [] };
+  if (cfg.decor !== false && top) { const c2 = mv.fx.getContext('2d');
+    const wind = (x, y) => Math.sin(t * 1.25 - x * .18 + y * .05) * .55 + Math.sin(t * 2.3 + x * .4 + y * .2) * .2; // rafales qui traversent le site
+    const vr = Math.max(3, mv.mPx(1.4));
+    DEC.veg.forEach(([vx, vy], i) => { if (i >= 48) return; const [px, py] = mv.proj([vx, vy]); if (!vis(px, py, 30)) return; const wv = wind(vx, vy);
+      if (nk < .85) { c2.globalAlpha = (.12 + .14 * Math.max(0, wv)) * (1 - nk); c2.fillStyle = '#F6FFD8'; c2.beginPath(); c2.ellipse(px + wv * vr * .5, py - vr * .35, vr * .72, vr * .38, wv * .45, 0, 7); c2.fill(); }
+      if (nk > .4 && i % 2 === 0) { const ph = t * (.6 + fxRnd(i) * .7) + i * 3.1, a = Math.max(0, Math.sin(ph)); if (a > .2) { c2.globalAlpha = 1; c2.globalCompositeOperation = 'lighter'; fxGlow(c2, px + Math.sin(ph * .7 + i) * vr * 1.4, py - vr * .6 + Math.cos(ph * .5) * vr * .8, 7 + vr * .4, '200,255,120', .6 * a * nk); c2.globalCompositeOperation = 'source-over'; } } });
+    c2.globalAlpha = 1;
+    if (nk < .6 && DEC.veg.length && anim) for (let i = 0; i < 12; i++) { const src = DEC.veg[(i * 7) % DEC.veg.length], life = ((t * .1 + fxRnd(i)) % 1), [px, py] = mv.proj([src[0] + life * 7, src[1] - life * 2 + Math.sin(t * 2 + i) * .5]); if (!vis(px, py, 10)) continue;
+      c2.globalAlpha = Math.sin(life * Math.PI) * .85 * (1 - nk); c2.fillStyle = i % 2 ? '#6FB043' : '#B9D66A'; c2.save(); c2.translate(px, py); c2.rotate(t * 3 + i); c2.beginPath(); c2.ellipse(0, 0, 2.8 * Math.min(1.6, zs), 1.3 * Math.min(1.6, zs), 0, 0, 7); c2.fill(); c2.restore(); }
+    c2.globalAlpha = 1;
+    if (nk > .05) { c2.globalCompositeOperation = 'lighter'; DEC.lit.forEach(([lx, ly], i) => { const [px, py] = mv.proj([lx, ly]); if (!vis(px, py, 40)) return; const fl = fxRnd(Math.floor(t * 8) + i * 13) > .93 ? .25 : 1, pul = .75 + .25 * Math.sin(t * 2.4 + i); fxGlow(c2, px, py, mv.mPx(2.4) + 14, i % 3 ? '255,80,200' : '120,200,255', .45 * nk * fl * pul); }); c2.globalCompositeOperation = 'source-over'; }
+    (VENUE.stages || []).forEach(([sid], si) => { const st = POIS.find(o => o.id === sid); if (!st || !st.at) return;
+      for (let i = 0; i < 6; i++) { const life = ((t * .09 + i / 6 + si * .3) % 1), [px, py] = mv.proj([st.at[0] + (fxRnd(i + si * 7) - .5) * 4 + life * 2.5, st.at[1] - life * 4]); if (!vis(px, py, 120)) continue;
+        const S = (mv.mPx(5) + 30) * (.6 + life * 1.4); c2.globalAlpha = Math.sin(life * Math.PI) * (nk > .5 ? .2 : .15); c2.drawImage(nk > .5 ? fxSprites.night : fxSprites.day, px - S / 2, py - S * .3, S, S * .6); } });
+    c2.globalAlpha = 1; }
   // calque du dessus (au-dessus des marqueurs) : secours, feu d'artifice, entrée/sortie
   if (top) { ctx = top.getContext('2d'); ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.clearRect(0, 0, w, h); }
   const visS = (x, y, m = 80) => x > -m && y > -m && x < w + m && y < h + m;
@@ -166,13 +193,25 @@ FX.draw = (mv, now) => {
     ctx.globalCompositeOperation = 'source-over'; }
   // 8. nuages qui encadrent le site (bornes de la carte) avec léger effet de profondeur
   if (cfg.clouds !== false) {
-    const sz = Math.max(150, Math.min(420, Wm * .09)), par = [(w / 2 - (C00[0] + C11[0]) / 2) * .06, (h / 2 - (C00[1] + C11[1]) / 2) * .06], rc = Math.cos(mv.rot), rn = Math.sin(mv.rot), N = (x, y) => [x * rc - y * rn, x * rn + y * rc];
+    const small = Wm < w * 1.4, sz = small ? Math.max(46, Wm * .11) : Math.max(150, Math.min(420, Wm * .09)), par = [(w / 2 - (C00[0] + C11[0]) / 2) * .06, (h / 2 - (C00[1] + C11[1]) / 2) * .06], rc = Math.cos(mv.rot), rn = Math.sin(mv.rot), N = (x, y) => [x * rc - y * rn, x * rn + y * rc];
     const spr = nk > .5 ? fxSprites.night : dk > .3 ? fxSprites.dusk : fxSprites.day;
     const edge = (ax, ay, bx, by, out, seed) => { const len = Math.hypot(bx - ax, by - ay), n = Math.max(4, Math.min(36, Math.ceil(len / (sz * .5))));
       for (let ring = 0; ring < 2; ring++) for (let i = 0; i <= n; i++) { const u = (i + ((t * .01 + fxRnd(seed + i)) % 1) * .6) / n, wob = Math.sin(t * .2 + i + seed) * sz * .04;
         const cx = ax + (bx - ax) * u + out[0] * (sz * (ring ? .55 : .05) + wob) + par[0] * (1 + ring), cy = ay + (by - ay) * u + out[1] * (sz * (ring ? .55 : .05) + wob) + par[1] * (1 + ring), S = sz * (ring ? 1.35 : 1) * (.8 + fxRnd(seed * 3 + i) * .5);
-        if (cx + S < -px0 || cy + S < -py0 || cx - S > w + px0 || cy - S > h) continue; ctx.globalAlpha = ring ? .97 : .9; ctx.drawImage(spr, cx - S / 2, cy - S * .3, S, S * .6); } };
+        if (cx + S < -px0 || cy + S < -py0 || cx - S > w + px0 || cy - S > h) continue; ctx.globalAlpha = small ? (ring ? .55 : .85) : (ring ? .97 : .9); ctx.drawImage(spr, cx - S / 2, cy - S * .3, S, S * .6); } };
     edge(C00[0], C00[1], C10[0], C10[1], N(0, -1), 1); edge(C01[0], C01[1], C11[0], C11[1], N(0, 1), 2); edge(C00[0], C00[1], C01[0], C01[1], N(-1, 0), 3); edge(C10[0], C10[1], C11[0], C11[1], N(1, 0), 4); ctx.globalAlpha = 1;
+  }
+  // 8b. « vue des Dieux » : rayons, voiles de brume, nuages de premier plan, oiseaux / étoile filante — couches animées par le GPU (aucun dessin par image)
+  if (cfg.atmo !== false) {
+    if (!mv.atmo) { const a = document.createElement('div'); a.className = 'atmo'; a.setAttribute('aria-hidden', 'true');
+      a.innerHTML = '<i class="aRays"></i><i class="aMist m1"></i><i class="aMist m2"></i><i class="aFg f1"></i><i class="aFg f2"></i><i class="aBirds"><b></b><b></b><b></b><b></b><b></b></i><i class="aStar"></i>';
+      mv.tl.after(a); mv.atmo = a; }
+    const kind = nk > .5 ? 'night' : dk > .3 ? 'dusk' : 'day';
+    if (mv._atK !== kind) { mv._atK = kind; mv.atmo.className = 'atmo ' + kind; const spr = typeof pSpr === 'function' ? pSpr(kind) : null; if (spr) { const u = spr.toDataURL('image/png'); mv.atmo.style.setProperty('--cl', `url(${u})`); } mv.atmo.style.setProperty('--rays', `url(${fxRaysURL(kind)})`); }
+    if (mv._atS !== mv.s) { mv._atS = mv.s; mv._atZt = now; if (!mv.atmo.classList.contains('busy')) mv.atmo.classList.add('busy'); }
+    else if (mv._atZt && now - mv._atZt > 320) { mv._atZt = 0; mv.atmo.classList.remove('busy'); }
+    if (!mv._atT || now - mv._atT > 300) { mv._atT = now; const zf = Math.max(0, Math.min(1, 1.6 - mv.s / ((VENUE.zoom || .5) * 1.1))), zc = zf > .66 ? '' : zf > .2 ? 'zmid' : 'zin';
+      if (mv._atZ !== zc) { mv._atZ = zc; mv.atmo.classList.remove('zin', 'zmid'); if (zc) mv.atmo.classList.add(zc); } mv.atmo.classList.toggle('still', !anim); }
   }
   // 9. entrée / sortie « vue des Dieux » : les nuages s'écartent pendant la descente (ou se referment en partant)
   const io = mv.intro || mv.outro; if (io) { let k = Math.min(1, (now - io.t0) / io.dur); if (mv.outro) k = 1 - k;
