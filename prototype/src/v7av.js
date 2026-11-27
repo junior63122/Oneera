@@ -39,6 +39,7 @@ V.avatarPick = (onDone, step = true, init = null) => {
       <button class="stSave" id="go">${step ? 'C’est moi !' : 'Enregistrer'}</button>
     </div>
     <div class="stPanel">
+      <div class="stSearch"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.6-3.6"/></svg><input id="sq" type="search" placeholder="Rechercher : lunettes or, pompier, cheveux crépus…" autocomplete="off" autocapitalize="off" enterkeyhint="search" aria-label="Rechercher un élément pour ton avatar"><button id="sqx" aria-label="Effacer la recherche" hidden>✕</button></div>
       <div class="stTabs" id="tb" role="tablist">${TABS.map(t => `<button data-t="${t[0]}" role="tab" aria-label="${t[1]}">${t[2]}<span>${t[1]}</span></button>`).join('')}</div>
       <div class="stBody" id="bd"></div>
     </div></div>`, 'sky');
@@ -64,10 +65,51 @@ V.avatarPick = (onDone, step = true, init = null) => {
   const applyLook = lk => { push(); Object.assign(L, JSON.parse(JSON.stringify({ ...LOOK_BASE, ...lk }))); if (!L.text) delete L.text; pop(); draw(); try { navigator.vibrate && navigator.vibrate(12); } catch (_) {} };
   const lookTile = (lk, label, i, mine) => `<div class="stLook"><button data-look="${i}" data-mine="${mine ? 1 : 0}" aria-label="Mettre le look ${esc(label)}"><span class="th">${avatar2SVG({ ...L, ...LOOK_BASE, ...lk }, { view: undefined, style: 'width:100%;height:100%' })}</span><b>${esc(label)}</b></button>${mine ? `<button class="stLookX" data-lookx="${i}" aria-label="Supprimer ${esc(label)}">✕</button>` : ''}</div>`;
   const motifs = (key, ckey, view) => `<div class="stLbl">Motif</div><div class="stTiles stMot">${AV2.motif.map(([k, n]) => { const on = (L[key] || 'none') === k; return `<button data-k="${key}" data-v="${k}" class="${on ? 'on' : ''}" aria-pressed="${on}" aria-label="${n}" title="${n}"><span class="th">${avatar2SVG({ ...L, [key]: k }, { view, style: 'width:100%;height:100%' })}</span><b>${n}</b></button>`; }).join('')}</div>${L[key] && L[key] !== 'none' ? colors(ckey, AV2.cloth, 'Couleur du motif') : ''}`;
+  // ---------- recherche dans tout le catalogue (mots, synonymes, couleurs, noms au féminin)
+  const SQ = { q: '' }, nrm = x => String(x).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[’'`]/g, ' ').replace(/œ/g, 'oe');
+  const CLOTHC = { blanc: 0, blanche: 0, noir: 1, noire: 1, beige: 2, creme: 2, marine: 3, bleu: 3, bleue: 3, kaki: 4, vert: 4, verte: 4, bordeaux: 5, ciel: 6, rose: 7, sauge: 8, terracotta: 9, orange: 9, jean: 10, lavande: 11, violet: 11, violette: 11, mauve: 11, jaune: 12, moutarde: 12, sapin: 13, gris: 14, grise: 14, rouge: 15 };
+  const HAIRC = { noir: 0, noirs: 0, brun: 1, bruns: 1, brune: 1, chatain: 2, chatains: 2, auburn: 4, caramel: 5, blond: 7, blonds: 7, blonde: 7, roux: 8, rousse: 8, cuivre: 9, gris: 10, blanc: 11, blancs: 11, prune: 12, bleu: 13, bleus: 13 };
+  const SYN = { long: 'lisses raides longs', waves: 'ondules longs', curls: 'boucles frises', braids: 'tresses nattes box braids crepus', bun: 'chignon', ponytail: 'queue de cheval', bob: 'carre', pixie: 'court garconne', afro: 'afro crepus frises volume', crop: 'court degrade fade', messy: 'decoiffe meches', curlytop: 'boucles frises', wavy: 'mi long ondules', buzz: 'rase tres court', twists: 'vanilles twists crepus', man_bun: 'chignon', slick: 'plaque gomine', locs: 'dreadlocks locks dreads rasta crepus', spacebuns: 'space buns deux chignons macarons', puff: 'afro puff chignon crepus', coils: 'crepus frises courts coils', mohawk: 'crete iroquoise punk',
+    sun: 'soleil noires solaires', round: 'rondes', clear: 'fines vue', led: 'led neon lumineuses fete', aviator: 'aviateur or doree dorees gold', cateye: 'oeil de chat papillon', heart: 'coeur rose', star: 'etoile', goldround: 'or doree dorees rondes gold', shield: 'futuriste visiere masque',
+    cap: 'casquette', bucket: 'bob', beanie: 'bonnet', beret: 'beret', fedora: 'feutre borsalino', cowboyhat: 'cowboy western', visor: 'visiere', headwrap: 'foulard turban wax noue',
+    hoodie: 'sweat pull capuche', tee: 'tee shirt t shirt', oversize: 'tee shirt large', tank: 'debardeur marcel', shirt: 'chemise', openshirt: 'chemise ouverte', polo: 'polo', blouse: 'blouse chemisier', jacket: 'veste blouson', crop: 'crop top court', bandeau: 'bandeau bustier',
+    jeans: 'jean denim pantalon', cargo: 'cargo pantalon', chinos: 'chino pantalon', flare: 'pattes d eph evase jean', joggers: 'jogging survetement', shorts: 'short', bermuda: 'bermuda short', skirt: 'jupe courte mini', maxi: 'jupe longue',
+    suit: 'costume cravate', overalls: 'salopette', jumpsuit: 'combinaison', slip: 'robe nuisette', midi: 'robe fleurie',
+    sneakers: 'baskets', canvas: 'baskets montantes toile converse', chunky: 'baskets epaisses', sandals: 'sandales tongs', boots: 'bottines bottes', loafers: 'mocassins', heels: 'talons escarpins', barefoot: 'pieds nus',
+    lanyard: 'pass badge festival', bumbag: 'banane sac', toering: 'bague orteil pied', anklet: 'chaine cheville', nails: 'vernis ongles',
+    pompier: 'feu', police: 'flic gendarme', medecin: 'docteur hopital', secouriste: 'secours croix rouge', securite: 'vigile staff', barman: 'bar cocktail serveur', astronaute: 'espace nasa fusee', chantier: 'btp casque travaux', foot: 'football maillot sport', squelette: 'halloween os', heros: 'super hero heroine cape', vampire: 'dracula halloween', diable: 'demon halloween', noel: 'pere noel mere noel', sorciere: 'sorcier magie halloween', licorne: 'unicorn' };
+  const searchIndex = () => { const G = L.g, out = [], lab = (k, n) => n;
+    const add = (key, list, tabId, view, cat, colorKey, extra) => list.forEach(x => out.push({ key, v: x[0], n: G === 'f' && x[3] && key === 'costume' ? x[3] : x[1], tab: tabId, view, cat, colorKey, extra, txt: nrm(`${G === 'f' && x[3] ? x[3] : x[1]} ${x[3] || ''} ${SYN[x[0]] || ''} ${cat}`) }));
+    add('hair', AV2.hair[G], 'hair', 'hair', 'cheveux coiffure coupe', 'hairC'); add('glasses', AV2.glasses.filter(x => x[0] !== 'none'), 'acc', 'head', 'lunettes');
+    add('hat', AV2.hat.filter(x => x[0] !== 'none'), 'acc', 'hair', 'chapeau couvre chef', 'hatC'); add('headAcc', AV2.headAcc.filter(x => x[0] !== 'none'), 'acc', 'hair', 'accessoire tete');
+    add('top', AV2.top[G], 'top', 'torso', 'haut', 'topC'); add('outfit', AV2.outfit[G].filter(x => x[0] !== 'none'), 'top', undefined, 'tenue une piece', 'outfitC'); add('bottom', AV2.bottom[G], 'bottom', 'legs', 'bas', 'bottomC');
+    add('shoes', AV2.shoes, 'shoes', 'feet', 'chaussures', 'shoesC', { bottom: 'shorts', outfit: 'none' }); add('costume', AV2.costume.filter(x => x[0] !== 'none'), 'cost', undefined, 'costume deguisement metier tenue');
+    add('jewel', AV2.jewel, 'acc', 'torso', 'bijou bijoux'); add('acc', AV2.acc, 'acc', 'torso', 'accessoire'); add('piercing', AV2.piercing, 'face', 'head', 'piercing'); add('tattoo', AV2.tattoo, 'acc', undefined, 'tatouage tattoo');
+    add('feetAcc', AV2.feetAcc, 'shoes', 'feet', 'pieds', null, { bottom: 'shorts', outfit: 'none', shoes: 'barefoot' }); add('faceAcc', AV2.faceAcc, 'face', 'head', 'visage'); add('brows', AV2.brows, 'face', 'head', 'sourcils');
+    add('lips', AV2.lips.filter(x => x[0] !== 'none'), 'face', 'head', 'rouge a levres maquillage bouche'); add('shadow', AV2.shadow.filter(x => x[0] !== 'none'), 'face', 'head', 'fard paupieres maquillage yeux');
+    add('eyes', AV2.eyes, 'face', 'head', 'yeux'); add('mouth', AV2.mouth, 'face', 'head', 'sourire bouche'); if (G === 'm') add('beard', AV2.beard.filter(x => x[0] !== 'none'), 'face', 'head', 'barbe moustache');
+    add('mood', AV2.mood, 'fun', 'head', 'humeur expression'); add('paint', AV2.paint.filter(x => x[0] !== 'none'), 'fun', 'head', 'maquillage festival paillettes'); add('pose', AV2.pose, 'body', undefined, 'pose posture'); add('topP', AV2.motif.filter(x => x[0] !== 'none'), 'top', 'torso', 'motif imprime haut', 'topC');
+    AV2.hairC.forEach((h, i) => { const nm = Object.keys(HAIRC).find(w => HAIRC[w] === i); if (nm) out.push({ key: 'hairC', v: i, n: `Cheveux ${nm}`, tab: 'hair', view: 'hair', cat: 'cheveux couleur', txt: nrm(`cheveux couleur ${Object.keys(HAIRC).filter(w => HAIRC[w] === i).join(' ')}`) }); });
+    return out; };
+  const STOP = new Set(['de', 'des', 'du', 'le', 'la', 'les', 'un', 'une', 'en', 'a', 'avec', 'et', 'pour', 'mon', 'ma', 'mes']);
+  const searchRun = (q) => { const toks = nrm(q).split(/[^a-z0-9]+/).filter(t => t && !STOP.has(t)); if (!toks.length) return [];
+    const res = []; for (const e of searchIndex()) { const words = e.txt.split(/[^a-z0-9]+/); let sc = 0, color = null, ok = true;
+      for (const t of toks) { const hit = words.some(w => w.startsWith(t) || (t.length > 3 && w.startsWith(t.replace(/s$/, ''))));
+        if (hit) { sc += nrm(e.n).split(/[^a-z0-9]+/).some(w => w.startsWith(t)) ? 3 : 1; continue; }
+        const map = e.colorKey === 'hairC' ? HAIRC : CLOTHC, tt = t.replace(/s$/, ''); if (e.colorKey && (map[t] != null || map[tt] != null)) { color = map[t] ?? map[tt]; sc += 1; continue; }
+        ok = false; break; }
+      if (ok) res.push({ ...e, color, sc }); }
+    return res.sort((a, b) => b.sc - a.sc).slice(0, 30); };
+  const applyCfg = (e) => { const m = MULTI.includes(e.key), cur = Array.isArray(L[e.key]) ? L[e.key] : []; const o = { [e.key]: m ? (cur.includes(e.v) ? cur : [...cur, e.v]) : (e.key === 'hairC' ? e.v : e.v) };
+    if (e.color != null && e.colorKey) o[e.key === 'outfit' ? 'outfitC' : e.colorKey] = e.color; if (e.key === 'outfit' || e.key === 'top' || e.key === 'bottom') { if (e.key !== 'outfit' && L.outfit && L.outfit !== 'none') o.outfit = 'none'; }
+    if (['outfit', 'top', 'bottom', 'shoes', 'hat'].includes(e.key) && L.costume && L.costume !== 'none') o.costume = 'none'; return o; };
+  const searchHTML = () => { const r = searchRun(SQ.q); if (!r.length) return `<div class="stEmpty">Rien trouvé pour « ${esc(SQ.q)} ».<br><span class="stHint">Essaie : lunettes or, cheveux crépus, pompier, pull rouge, talons, piercing…</span></div>`;
+    return `<div class="stLbl">${r.length} résultat${r.length > 1 ? 's' : ''}</div><div class="stTiles stCos stRes">${r.map((e, i) => { const cfg = { ...L, ...(e.extra || {}), ...applyCfg(e) }; const on = MULTI.includes(e.key) ? (Array.isArray(L[e.key]) && L[e.key].includes(e.v)) : L[e.key] === e.v && (e.color == null || L[e.colorKey] === e.color);
+      return `<button data-sr="${i}" class="${on ? 'on' : ''}" aria-label="${esc(e.n)}"><span class="th">${avatar2SVG(cfg, { view: e.view, style: 'width:100%;height:100%' })}</span><b>${esc(e.n)}${e.color != null ? ` <i class="stDot" style="background:${(e.colorKey === 'hairC' ? AV2.hairC : AV2.cloth)[e.color]}"></i>` : ''}</b></button>`; }).join('')}</div>`; };
   const draw = () => {
     $$('#gd button', el).forEach(b => b.classList.toggle('on', b.dataset.g === L.g)); $$('#tb button', el).forEach(b => b.classList.toggle('on', b.dataset.t === tab));
     const G = L.g, one = L.outfit && L.outfit !== 'none';
-    bd.innerHTML = ({
+    bd.innerHTML = SQ.q ? searchHTML() : ({
       body: () => `${colors('skin', AV2.skin, 'Teint')}<div class="stLbl">Silhouette</div>${tiles('build', AV2.build[G], undefined)}<div class="stLbl">Taille</div><div class="seg small" id="ht">${AV2.height.map(([k, n]) => `<button data-h="${k}" class="${L.height === k ? 'on' : ''}">${n}</button>`).join('')}</div><div class="stLbl">Posture</div>${tiles('pose', AV2.pose, undefined)}`,
       face: () => `${colors('eyeC', AV2.eyeC, 'Couleur des yeux')}<div class="stLbl">Yeux</div>${tiles('eyes', AV2.eyes, 'head')}<div class="stLbl">Sourire</div>${tiles('mouth', AV2.mouth, 'head')}${G === 'm' ? `<div class="stLbl">Barbe</div>${tiles('beard', AV2.beard, 'head')}` : ''}<div class="stLbl">Sourcils</div>${tiles('brows', AV2.brows, 'head')}${named('lips', AV2.lips, 'Rouge à lèvres')}${named('shadow', AV2.shadow, 'Fard à paupières')}${toggle('liner', 'Eye-liner')}<div class="stLbl">Détails du visage <span class="stHint">plusieurs possibles</span></div>${tiles('faceAcc', AV2.faceAcc, 'head')}<div class="stLbl">Piercings <span class="stHint">plusieurs possibles</span></div>${tiles('piercing', AV2.piercing, 'head')}`,
       hair: () => `${colors('hairC', AV2.hairC, 'Couleur')}${tiles('hair', AV2.hair[G], 'hair')}<div class="stLbl">Mèches de couleur</div><div class="stChips"><button data-c="hairHL" data-i="-1" class="${L.hairHL == null || L.hairHL < 0 ? 'on' : ''}">Aucune</button></div>${colors('hairHL', AV2.accC, '')}`,
@@ -75,7 +117,7 @@ V.avatarPick = (onDone, step = true, init = null) => {
       bottom: () => one ? `<div class="tiny" style="padding:12px 0">Tu portes une tenue une pièce. Choisis « Haut + bas » dans l’onglet Haut pour changer le bas.</div>` : `${colors('bottomC', AV2.cloth, 'Couleur')}${motifs('bottomP', 'bottomPC', 'legs')}<div class="stLbl">Coupe</div>${tiles('bottom', AV2.bottom[G], 'legs')}`,
       shoes: () => { const bare = ['sandals', 'barefoot', 'heels'].includes(L.shoes), longP = (!L.outfit || L.outfit === 'none') && ['jeans', 'chinos', 'joggers', 'cargo'].includes(L.bottom);
         return `${colors('shoesC', AV2.cloth, 'Couleur')}${tiles('shoes', AV2.shoes, 'feet', { bottom: 'shorts', outfit: 'none' })}${L.shoes === 'boots' && longP ? toggle('tuck', 'Bas rentré dans les bottines') : ''}<div class="stLbl">Pieds <span class="stHint">${bare ? 'plusieurs possibles' : 'visibles en sandales, escarpins ou pieds nus'}</span></div>${tiles('feetAcc', AV2.feetAcc, 'feet', { bottom: 'shorts', outfit: 'none', shoes: bare ? L.shoes : 'barefoot' })}${Array.isArray(L.feetAcc) && L.feetAcc.includes('nails') ? colors('nailC', AV2.accC, 'Couleur du vernis') : ''}<div class="stLbl">Tatouages des jambes</div>${tiles('tattoo', AV2.tattoo.filter(t => ['calf', 'ankle'].includes(t[0])), 'legs', { bottom: 'shorts', outfit: 'none' })}`; },
-      cost: () => { const j = AV2.costume.filter(x => x[2] === 'job'), f = AV2.costume.filter(x => x[2] === 'fun');
+      cost: () => { const lab = x => [x[0], G === 'f' ? (x[3] || x[1]) : x[1]], j = AV2.costume.filter(x => x[2] === 'job').map(lab), f = AV2.costume.filter(x => x[2] === 'fun').map(lab);
         return `<div class="stHint" style="margin:2px 0 6px">Ton visage et ta coiffure restent les tiens. Touche une pièce dans Haut, Bas ou Pieds pour revenir à ta tenue.</div>${(L.costume || 'none') !== 'none' ? `<div class="stChips"><button data-k="costume" data-v="none">✕ Enlever le costume</button></div>` : ''}<div class="stLbl">Métiers</div>${tiles('costume', j, undefined, {}, 'stCos')}<div class="stLbl">Déguisements</div>${tiles('costume', f, undefined, {}, 'stCos')}${L.costume === 'heros' ? colors('costumeC', AV2.accC, 'Couleur du costume') : ''}`; },
       looks: () => { const mine = myLooks(), G = L.g, P = PRESETS[G] || PRESETS.m;
         return `<div class="stLbl">Mes looks <span class="stHint">${mine.length}/6 · ton visage et ton corps restent les mêmes</span></div>
@@ -107,7 +149,14 @@ V.avatarPick = (onDone, step = true, init = null) => {
   const push = () => { undo.push(JSON.stringify(L)); if (undo.length > 50) undo.shift(); };
   const pop = () => { big.classList.remove('pop'); void big.offsetWidth; big.classList.add('pop'); };
   $('#gd', el).onclick = e => { const b = e.target.closest('[data-g]'); if (!b || b.dataset.g === L.g) return; push(); const G = b.dataset.g; Object.assign(L, { g: G, hair: AV2.hair[G][G === 'f' ? 1 : 1][0], top: G === 'f' ? 'crop' : 'tee', bottom: G === 'f' ? 'cargo' : 'chinos', outfit: 'none', build: 'moyenne', beard: 'none' }); pop(); draw(); };
-  $('#tb', el).onclick = e => { const b = e.target.closest('[data-t]'); if (b) { tab = b.dataset.t; draw(); bd.scrollTop = 0; try { b.scrollIntoView({ inline: 'nearest', block: 'nearest', behavior: 'smooth' }); } catch (_) {} } };
+  const sq = $('#sq', el), sqx = $('#sqx', el); let sqT = 0;
+  sq.addEventListener('input', () => { clearTimeout(sqT); sqT = setTimeout(() => { SQ.q = sq.value.trim(); sqx.hidden = !SQ.q; el.classList.toggle('searching', !!SQ.q); draw(); bd.scrollTop = 0; }, 160); });
+  sq.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); sq.blur(); } });
+  sqx.onclick = () => { sq.value = ''; SQ.q = ''; sqx.hidden = true; el.classList.remove('searching'); draw(); };
+  bd.addEventListener('click', e => { const b = e.target.closest('[data-sr]'); if (!b || !SQ.q) return; const r = searchRun(SQ.q)[+b.dataset.sr]; if (!r) return; push();
+    if (MULTI.includes(r.key)) { const cur = Array.isArray(L[r.key]) ? L[r.key] : []; L[r.key] = cur.includes(r.v) ? cur.filter(x => x !== r.v) : [...cur, r.v]; } else Object.assign(L, applyCfg(r));
+    pop(); draw(); });
+  $('#tb', el).onclick = e => { const b = e.target.closest('[data-t]'); if (b) { if (SQ.q) { sq.value = ''; SQ.q = ''; sqx.hidden = true; el.classList.remove('searching'); } tab = b.dataset.t; draw(); bd.scrollTop = 0; try { b.scrollIntoView({ inline: 'nearest', block: 'nearest', behavior: 'smooth' }); } catch (_) {} } };
   bd.onclick = e => { const k = e.target.closest('[data-k]'), c = e.target.closest('[data-c]'), h = e.target.closest('[data-h]');
     if (k) { push(); const key = k.dataset.k, v = k.dataset.v;
       if (['outfit', 'top', 'bottom', 'shoes', 'hat', 'outfitC', 'topC', 'bottomC', 'shoesC'].includes(key) && L.costume && L.costume !== 'none') L.costume = 'none'; // toucher un vêtement = on enlève le costume
@@ -173,7 +222,7 @@ V.avatarPick = (onDone, step = true, init = null) => {
   el.addEventListener('pointerdown', () => { lastAct = Date.now(); }, true);
   $('#rd', el).addEventListener('click', () => { lastAct = Date.now(); setTimeout(() => say(pick(LINES.shuffle)), 900); });
   $('#un', el).addEventListener('click', () => { lastAct = Date.now(); say(pick(LINES.undo), 1800); });
-  const go0 = $('#go', el).onclick; $('#go', el).onclick = () => { clearInterval(idleI); say(pick(LINES.save), 1400); if (!reduce) { gesturing = false; gesture('wave', 900); } setTimeout(go0, reduce ? 0 : 750); };
+  const go0 = $('#go', el).onclick; $('#go', el).onclick = () => { clearInterval(idleI); clearTimeout(gestT); go0(); setTimeout(() => toast(pick(LINES.save), 2200), 120); }; // enregistrement immédiat (pas de double action possible), le merci s'affiche sur l'écran suivant
   // bonjour à l'ouverture
   setTimeout(() => { say(pick(LINES.hello), 3000); gesture('wave', 2200); }, 450);
   // impatience : bulle + pied qui tape, puis il danse en attendant ; et parfois un petit coucou
