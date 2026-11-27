@@ -10,7 +10,7 @@ const { chromium, devices } = require('playwright');
   ok(await p.evaluate(() => !!document.querySelector('#portal canvas')), 'ouverture : le portail démarre sur le logo (même image que l’écran de démarrage)');
   ok(await p.evaluate(() => SCREEN.classList.contains('pIn')), 'pendant l’entrée, l’interface de la carte est cachée');
   await p.waitForTimeout(3900);
-  ok(await p.evaluate(() => !document.querySelector('#portal')), 'le portail se termine seul (≈ 3,4 s) et disparaît');
+  ok(await p.evaluate(() => !document.querySelector('#portal')), 'le portail se termine seul (≈ 3 s) et disparaît');
   ok(await p.evaluate(() => !!document.querySelector('#mv') && getComputedStyle(document.querySelector('.mapTop')).opacity === '1'), 'on se pose sur la carte, interface révélée');
   await p.reload(); await p.waitForTimeout(400);
   ok(await p.evaluate(() => !document.querySelector('#portal')), 'une seule fois par lancement (pas à chaque rechargement d’écran)');
@@ -19,9 +19,11 @@ const { chromium, devices } = require('playwright');
   const t0 = Date.now(); await p.mouse.click(200, 400); await p.waitForTimeout(600);
   ok(await p.evaluate(() => !document.querySelector('#portal')) && Date.now() - t0 < 1500, 'un toucher passe l’animation immédiatement');
   // 3. changement de lieu : sortie (remontée) puis entrée (descente)
-  await p.evaluate(() => { const ch = document.querySelector('[data-ven]'); window.__leaveSeen = 0; const pl = PORTAL.play; PORTAL.play = (o) => { window.__leaveSeen++; window['__dir' + window.__leaveSeen] = o.dir + ':' + o.mode; return pl(o); }; FX.leave(() => { setVenue('selva'); quickSetup(); V.map(); }); });
-  await p.waitForTimeout(600); ok(await p.evaluate(() => window.__dir1 === 'out:sky'), 'changer de lieu : on remonte dans les nuages (sortie)');
-  await p.waitForTimeout(4500); ok(await p.evaluate(() => window.__dir2 === 'in:sky' && VENUE.id === 'selva' && !document.querySelector('#portal')), 'puis on redescend sur le nouveau lieu (entrée), même film dans l’autre sens');
+  await p.evaluate(() => { window.__ev = []; const cl = PORTAL.close, op = PORTAL.open; PORTAL.close = (o) => { window.__ev.push('close:' + VENUE.id); return cl(o); }; PORTAL.open = (o) => { window.__ev.push('open:' + VENUE.id); return op(o); }; FX.leave(() => { setVenue('selva'); quickSetup(); V.map(); }); });
+  await p.waitForTimeout(300); ok(await p.evaluate(() => window.__ev[0] === 'close:bdf' && PORTAL.st && PORTAL.st.c > 0), 'changer de lieu : les nuages se referment sur l’ancien lieu');
+  await p.waitForTimeout(800); ok(await p.evaluate(() => VENUE.id === 'selva' && PORTAL.st && PORTAL.st.c >= 1), 'le lieu change sous les nuages (écran entièrement couvert)');
+  await p.waitForTimeout(2500); ok(await p.evaluate(() => window.__ev.includes('open:selva') && !document.querySelector('#portal')), 'puis les nuages s’ouvrent sur le nouveau lieu');
+  ok(await p.evaluate(() => MV.minS >= Math.max(MV.vw / MV.W, MV.vh / MV.H)), 'la carte remplit toujours l’écran (zoom minimum = plein écran, jamais le bord)');
   // 4. mouvement réduit : jamais d'animation
   const q = await page({ reducedMotion: 'reduce' }); await q.goto('http://127.0.0.1:8090/local.html?nouveau&portal=1'); await q.waitForTimeout(300);
   ok(await q.evaluate(() => !document.querySelector('#portal')), 'réglage « réduire les animations » respecté : pas de portail');

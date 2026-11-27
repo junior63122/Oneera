@@ -645,3 +645,47 @@ details.phone{background:#F7F7F9;border-radius:14px;padding:12px 14px}details.ph
 .map .atmo{transition:opacity .45s}
 .map .atmo.busy{display:none}
 #portal img.pre{position:absolute;left:50%;top:50%;width:180px;height:180px;margin:-90px 0 0 -90px}
+
+/* Studio : les rangées (couleurs, modèles) ne sont jamais écrasées ; on peut toujours faire défiler jusqu'en bas */
+.st2 .stBody>*{flex-shrink:0}
+.st2 .stBody{padding-bottom:calc(40px + env(safe-area-inset-bottom,0px))}
+.st2 .stRow{min-height:52px;align-items:center}
+.st2 .stRow button,.st2 .stFree{flex:0 0 42px;width:42px;height:42px}
+
+/* studio : toutes les couleurs visibles (plusieurs lignes, plus de défilement caché), couleur libre en premier */
+.st2 .stRow{flex-wrap:wrap;overflow:visible;gap:9px 9px;min-height:0;padding:4px 2px 8px}
+.st2 .stRow button,.st2 .stFree{flex:0 0 38px;width:38px;height:38px}
+.st2 .stFree i{width:32px;height:32px}
+.st2 .stFree::after{content:'+';position:absolute;font:800 16px/1 system-ui;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.45);pointer-events:none}
+.st2 .stFree.on::after{content:''}
+.st2 .stMot{grid-template-columns:repeat(4,1fr);gap:8px}
+.st2 .stMot button b{position:static;width:auto;height:auto;clip:auto;overflow:visible;font-size:10.5px;padding:2px 0 5px}
+/* studio : looks enregistrés et idées de looks */
+.st2 .stLooks{grid-template-columns:repeat(3,1fr)}
+.st2 .stLook{position:relative}
+.st2 .stLook>button:first-child{width:100%;display:flex;flex-direction:column;align-items:center;padding:0 0 6px;border-radius:18px;background:linear-gradient(160deg,#F4F1FF,#ECE8FB)}
+.st2 .stLook .th{width:100%;aspect-ratio:3/4;display:block}
+.st2 .stLook b{font-size:11.5px;font-weight:800;color:#3B3F55}
+.st2 .stLookX{position:absolute;top:6px;right:6px;width:28px;height:28px;border-radius:50%;background:rgba(255,255,255,.92);box-shadow:0 1px 4px rgba(20,16,40,.2);font-size:12px;font-weight:800;color:#5B6075}
+.st2 .stLookAdd{aspect-ratio:3/4.4;border-radius:18px;border:2px dashed #C9C4EE;background:#FAF9FF;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;color:#4F45D6;padding:8px}
+.st2 .stLookAdd span{font-size:30px;font-weight:700;line-height:1}
+.st2 .stLookAdd b{font-size:11.5px;font-weight:800;text-align:center}
+.st2 .stTiles.stLooks .stLookX{position:absolute;top:6px;right:6px;left:auto;width:28px;height:28px;padding:0;border-radius:50%;background:rgba(255,255,255,.94);display:flex;align-items:center;justify-content:center;z-index:2}
+.st2 .stTiles.stLooks button b{position:static;width:auto;height:auto;clip:auto;overflow:visible;padding:2px 4px 0}
+.st2 .stTiles.stLooks .stLookAdd{background:#FAF9FF;border:2px dashed #C9C4EE;justify-content:center;gap:6px;padding:8px}
+
+/* portail nuages : calque transparent (les nuages couvrent), voile bleu nuit seulement avant le tout premier affichage */
+#portal{background:transparent}#portal.veil{background:#010922}
+#portal canvas{position:absolute;inset:0;z-index:2}
+#portal .pLg{position:absolute;left:0;right:0;top:46%;z-index:3;display:flex;flex-direction:column;align-items:center;transform:translateY(-75px);pointer-events:none;visibility:hidden}
+#portal .pLg::before{content:'';position:absolute;top:-60px;width:300px;height:300px;border-radius:50%;background:radial-gradient(closest-side,rgba(255,248,226,.6),rgba(255,255,255,0))}
+#portal .pLg.night::before{background:radial-gradient(closest-side,rgba(190,180,255,.35),rgba(255,255,255,0))}
+#portal .pLg img{position:relative;width:min(150px,36vw);height:min(150px,36vw);filter:drop-shadow(0 6px 10px rgba(40,30,110,.28));animation:pLgB 2.6s ease-in-out infinite}
+#portal .pLg b{position:relative;margin-top:-4px;font:900 30px/1 system-ui,-apple-system,sans-serif;letter-spacing:7px;padding-left:7px;color:#2C2F7A}
+#portal .pLg.night b{color:#2A2470}
+#portal .pLg i{position:relative;display:inline-block;width:9px;height:9px;border-radius:50%;background:#6C7AA6;margin:14px 4px 0;animation:pLgD 1.2s ease-in-out infinite}
+#portal .pLg.night i{background:#4B4590}
+#portal .pLg i:nth-of-type(2){animation-delay:.18s}#portal .pLg i:nth-of-type(3){animation-delay:.36s}
+#portal .pLg i{float:none}
+@keyframes pLgB{0%,100%{transform:scale(1)}50%{transform:scale(1.04)}}@keyframes pLgD{0%,100%{opacity:.35;transform:scale(.85)}50%{opacity:1;transform:scale(1.1)}}
+#screen.pCov #mv,#screen.pCov .map{visibility:hidden}

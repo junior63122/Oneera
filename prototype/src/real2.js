@@ -80,7 +80,7 @@ V.friendSheet = (id) => {
   if (!realOn()) return _friendSheetDemo(id);
   const f = rFriend(id); if (!f) return;
   const s = rStatus(id), pos = s.here ? rPos(id) : null, m = pos ? rDist(pos) : null;
-  const sb = openSheet(`<div style="display:flex;gap:14px;align-items:center"><img src="${av2URI(FRIEND_AV2[id] || { g: 'm' })}" alt="" style="height:118px;width:auto"><div style="flex:1;min-width:0"><h2 class="h2" style="overflow-wrap:anywhere">${esc(f.displayName)}</h2>
+  const sb = openSheet(`<div style="display:flex;gap:14px;align-items:center"><img src="${av2URI({ ...(FRIEND_AV2[id] || { g: 'm' }), _live: 1 })}" alt="" style="height:118px;width:auto"><div style="flex:1;min-width:0"><h2 class="h2" style="overflow-wrap:anywhere">${esc(f.displayName)}</h2>
       <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px"><span class="pill ${s.cls}">${s.t}</span>${m ? `<span class="pill gray">${m} m · ${walkMin(m)} min</span><span class="pill gray">${esc(zoneOf(pos))}</span>` : ''}</div></div></div>
     ${pos && !s.live ? `<div class="card" style="background:#FFF7E8"><b style="font-size:14px">Position ancienne</b><div class="small">Dernière position connue : ${esc(zoneOf(pos))}, il y a ${fmtAge(rAgeMin(id))}. On n’invente jamais une position.</div></div>` : ''}
     ${!pos ? `<div class="card" style="background:#F3F5FB"><div class="small">${esc(f.displayName)} ne partage pas sa position sur ce lieu en ce moment. Tu peux lui écrire ou lui envoyer la tienne.</div></div>` : ''}

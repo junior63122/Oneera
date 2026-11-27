@@ -1,0 +1,12 @@
+const { chromium, devices } = require('playwright');
+const OUT = process.argv[2], mode = process.argv[3] || 'day';
+(async () => { const b = await chromium.launch(); const errs = [];
+  const c0 = await b.newContext({ ...devices['iPhone 14'] }); const p0 = await c0.newPage(); await p0.goto('http://127.0.0.1:8090/local.html?nouveau'); await p0.waitForTimeout(400);
+  await p0.evaluate((mode) => { quickSetup(); ST.tourDone = true; ST.introSeen = { bdf: 1, bisous: 1, selva: 1 }; ST.mapMode = mode; V.map(); emit(); }, mode); await p0.waitForTimeout(1500);
+  const state = await c0.storageState(); await c0.close();
+  const vp = devices['iPhone 14'].viewport; const c = await b.newContext({ ...devices['iPhone 14'], storageState: state, recordVideo: { dir: OUT, size: { width: vp.width, height: vp.height } } }); const p = await c.newPage(); p.on('pageerror', e => errs.push(e.stack.split('\n').slice(0,3).join(' | ')));
+  await p.goto('http://127.0.0.1:8090/local.html?portal=1'); await p.waitForTimeout(5200);
+  await p.evaluate(() => document.querySelectorAll('.tour').forEach(e => e.remove()));
+  await p.evaluate(() => FX.leave(() => { setVenue('selva'); quickSetup(); V.map(); })); await p.waitForTimeout(4800);
+  console.log('erreurs', errs, 'minS couvre', await p.evaluate(() => MV.minS >= Math.max(MV.vw / MV.W, MV.vh / MV.H)));
+  await c.close(); await b.close(); })();

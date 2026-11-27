@@ -650,6 +650,50 @@ details.phone{background:#F7F7F9;border-radius:14px;padding:12px 14px}details.ph
 .map .atmo.busy{display:none}
 #portal img.pre{position:absolute;left:50%;top:50%;width:180px;height:180px;margin:-90px 0 0 -90px}
 
+/* Studio : les rangées (couleurs, modèles) ne sont jamais écrasées ; on peut toujours faire défiler jusqu'en bas */
+.st2 .stBody>*{flex-shrink:0}
+.st2 .stBody{padding-bottom:calc(40px + env(safe-area-inset-bottom,0px))}
+.st2 .stRow{min-height:52px;align-items:center}
+.st2 .stRow button,.st2 .stFree{flex:0 0 42px;width:42px;height:42px}
+
+/* studio : toutes les couleurs visibles (plusieurs lignes, plus de défilement caché), couleur libre en premier */
+.st2 .stRow{flex-wrap:wrap;overflow:visible;gap:9px 9px;min-height:0;padding:4px 2px 8px}
+.st2 .stRow button,.st2 .stFree{flex:0 0 38px;width:38px;height:38px}
+.st2 .stFree i{width:32px;height:32px}
+.st2 .stFree::after{content:'+';position:absolute;font:800 16px/1 system-ui;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.45);pointer-events:none}
+.st2 .stFree.on::after{content:''}
+.st2 .stMot{grid-template-columns:repeat(4,1fr);gap:8px}
+.st2 .stMot button b{position:static;width:auto;height:auto;clip:auto;overflow:visible;font-size:10.5px;padding:2px 0 5px}
+/* studio : looks enregistrés et idées de looks */
+.st2 .stLooks{grid-template-columns:repeat(3,1fr)}
+.st2 .stLook{position:relative}
+.st2 .stLook>button:first-child{width:100%;display:flex;flex-direction:column;align-items:center;padding:0 0 6px;border-radius:18px;background:linear-gradient(160deg,#F4F1FF,#ECE8FB)}
+.st2 .stLook .th{width:100%;aspect-ratio:3/4;display:block}
+.st2 .stLook b{font-size:11.5px;font-weight:800;color:#3B3F55}
+.st2 .stLookX{position:absolute;top:6px;right:6px;width:28px;height:28px;border-radius:50%;background:rgba(255,255,255,.92);box-shadow:0 1px 4px rgba(20,16,40,.2);font-size:12px;font-weight:800;color:#5B6075}
+.st2 .stLookAdd{aspect-ratio:3/4.4;border-radius:18px;border:2px dashed #C9C4EE;background:#FAF9FF;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;color:#4F45D6;padding:8px}
+.st2 .stLookAdd span{font-size:30px;font-weight:700;line-height:1}
+.st2 .stLookAdd b{font-size:11.5px;font-weight:800;text-align:center}
+.st2 .stTiles.stLooks .stLookX{position:absolute;top:6px;right:6px;left:auto;width:28px;height:28px;padding:0;border-radius:50%;background:rgba(255,255,255,.94);display:flex;align-items:center;justify-content:center;z-index:2}
+.st2 .stTiles.stLooks button b{position:static;width:auto;height:auto;clip:auto;overflow:visible;padding:2px 4px 0}
+.st2 .stTiles.stLooks .stLookAdd{background:#FAF9FF;border:2px dashed #C9C4EE;justify-content:center;gap:6px;padding:8px}
+
+/* portail nuages : calque transparent (les nuages couvrent), voile bleu nuit seulement avant le tout premier affichage */
+#portal{background:transparent}#portal.veil{background:#010922}
+#portal canvas{position:absolute;inset:0;z-index:2}
+#portal .pLg{position:absolute;left:0;right:0;top:46%;z-index:3;display:flex;flex-direction:column;align-items:center;transform:translateY(-75px);pointer-events:none;visibility:hidden}
+#portal .pLg::before{content:'';position:absolute;top:-60px;width:300px;height:300px;border-radius:50%;background:radial-gradient(closest-side,rgba(255,248,226,.6),rgba(255,255,255,0))}
+#portal .pLg.night::before{background:radial-gradient(closest-side,rgba(190,180,255,.35),rgba(255,255,255,0))}
+#portal .pLg img{position:relative;width:min(150px,36vw);height:min(150px,36vw);filter:drop-shadow(0 6px 10px rgba(40,30,110,.28));animation:pLgB 2.6s ease-in-out infinite}
+#portal .pLg b{position:relative;margin-top:-4px;font:900 30px/1 system-ui,-apple-system,sans-serif;letter-spacing:7px;padding-left:7px;color:#2C2F7A}
+#portal .pLg.night b{color:#2A2470}
+#portal .pLg i{position:relative;display:inline-block;width:9px;height:9px;border-radius:50%;background:#6C7AA6;margin:14px 4px 0;animation:pLgD 1.2s ease-in-out infinite}
+#portal .pLg.night i{background:#4B4590}
+#portal .pLg i:nth-of-type(2){animation-delay:.18s}#portal .pLg i:nth-of-type(3){animation-delay:.36s}
+#portal .pLg i{float:none}
+@keyframes pLgB{0%,100%{transform:scale(1)}50%{transform:scale(1.04)}}@keyframes pLgD{0%,100%{opacity:.35;transform:scale(.85)}50%{opacity:1;transform:scale(1.1)}}
+#screen.pCov #mv,#screen.pCov .map{visibility:hidden}
+
 </style></head><body><script>
 // ===== Données de démonstration (fictives) =====
 const A = 'a/';
@@ -1538,23 +1582,25 @@ FX.dispatch = r => { // l'équipe part vers l'alerte : trajet réel sur le graph
   FX.vehicles.push({ rid: r.id, pts, t0: performance.now(), dur: 9000, kind: r.cat === 'medical' ? 'amb' : 'agent' });
 };
 
-// ===== Portail ONEERA : on n'ouvre pas une carte, on entre dans un univers — et on en ressort par le même chemin =====
-// Ouverture de l'app : l'écran de démarrage (logo sur bleu nuit) s'ouvre comme un portail au centre du « O », on traverse
-// les nuages et on plonge sur le lieu, suspendu dans une mer de nuages, jusqu'à se poser exactement sur la carte.
-// Changement de lieu : même plongée depuis le ciel. Sortie : le même film à l'envers (remontée dans les nuages, puis le logo).
-// Variante « depuis le logo » réutilisable par les partenaires : window.ONEERA_PORTAL({ mode: 'logo' }).
-const PORTAL = { busy: false, pending: null };
+// ===== Portail ONEERA : transition « nuages » façon jeu de stratégie =====
+// La carte remplit toujours tout l'écran (on n'en voit jamais le bord). Pour entrer, sortir ou changer de lieu,
+// de gros nuages en relief arrivent de partout et recouvrent l'écran (≈0,5 s), dérivent pendant le chargement
+// (logo au centre), puis se déchirent depuis le centre vers les bords et dévoilent la carte déjà en place, avec
+// un léger zoom. Un seul canvas, sprites de nuages dessinés une fois (fluide sur téléphone).
+// API : PORTAL.close() / open() / enter() / exit() / reveal() / launch() ; window.ONEERA_PORTAL().
+const PORTAL = { busy: false, pending: null, el: null, st: null };
 const pLogo = new Image(); pLogo.src = A + 'logo.webp';
-const pImgs = {}; const pImg = (src) => pImgs[src] || (pImgs[src] = Object.assign(new Image(), { src, decoding: 'async' }));
-const pE = { io: k => k < .5 ? 4 * k * k * k : 1 - Math.pow(-2 * k + 2, 3) / 2, in: k => k * k * k, out: k => 1 - Math.pow(1 - k, 3), o2: k => 1 - (1 - k) * (1 - k) };
+const pE = { io: k => k < .5 ? 4 * k * k * k : 1 - Math.pow(-2 * k + 2, 3) / 2, in: k => k * k, out: k => 1 - Math.pow(1 - k, 3), o2: k => 1 - (1 - k) * (1 - k) };
+// le « O » du logo détouré (l'icône a un fond bleu nuit) et rempli aux couleurs de la marque
+let pMark = null; const pLogoMark = () => { if (pMark) return pMark; if (!pLogo.complete || !pLogo.naturalWidth) return null;
+  const n = 256, c = document.createElement('canvas'); c.width = c.height = n; const g = c.getContext('2d'); g.drawImage(pLogo, 0, 0, n, n); const d = g.getImageData(0, 0, n, n), px = d.data;
+  for (let i = 0; i < px.length; i += 4) { const l = px[i] * .3 + px[i + 1] * .59 + px[i + 2] * .11, a = Math.max(0, Math.min(1, (l - 34) / 70)); px[i + 3] = Math.round(a * 255); }
+  g.putImageData(d, 0, 0); g.globalCompositeOperation = 'source-in'; const gr = g.createLinearGradient(0, 0, n, n); gr.addColorStop(0, '#3A4FD8'); gr.addColorStop(.55, '#5B3FD0'); gr.addColorStop(1, '#C13FB8'); g.fillStyle = gr; g.fillRect(0, 0, n, n);
+  return (pMark = c); };
 const pClamp = (v, a = 0, b = 1) => Math.max(a, Math.min(b, v));
+const pSmooth = (a, b, v) => { const t = pClamp((v - a) / (b - a)); return t * t * (3 - 2 * t); };
 const portalAllowed = () => mapAnim() && !(navigator.webdriver && !/[?&]portal=1/.test(location.search));
-// nuages en 3D (profondeur z : 1 = loin, 0 = sur la caméra)
-const pCloud = Array.from({ length: 54 }, (_, i) => { const a = fxRnd(i * 3 + 1) * 6.283, r = .5 + fxRnd(i * 5 + 2) * 1.1; return { x: Math.cos(a) * r, y: Math.sin(a) * r * .85, z: fxRnd(i * 7 + 3), s: .7 + fxRnd(i * 11 + 4) * 1.1 }; });
-// logo détouré (fondu circulaire) : son fond carré ne se voit jamais en grand
-const pLogoM = (() => { const c = document.createElement('canvas'); c.width = c.height = 512; const done = () => { const g = c.getContext('2d'); g.clearRect(0, 0, 512, 512); g.drawImage(pLogo, 0, 0, 512, 512); g.globalCompositeOperation = 'destination-in'; const r = g.createRadialGradient(256, 256, 150, 256, 256, 256); r.addColorStop(0, '#000'); r.addColorStop(1, 'rgba(0,0,0,0)'); g.fillStyle = r; g.fillRect(0, 0, 512, 512); c.ok = true; };
-  if (pLogo.complete && pLogo.naturalWidth) done(); else pLogo.addEventListener('load', done); return c; })();
-// nuage du portail : volumes doux entièrement contenus dans l'image (aucun bord coupé)
+// petits nuages doux de l'atmosphère de la carte (utilisés par fx.js)
 const pCloudSpr = {}; function pSpr(kind) { if (pCloudSpr[kind]) return pCloudSpr[kind];
   const c = document.createElement('canvas'); c.width = 360; c.height = 220; const g = c.getContext('2d');
   const col = { day: ['255,255,255', '214,226,248'], dusk: ['255,226,236', '214,170,206'], night: ['150,140,220', '70,62,140'] }[kind];
@@ -1562,131 +1608,124 @@ const pCloudSpr = {}; function pSpr(kind) { if (pCloudSpr[kind]) return pCloudSp
   [[180, 132, 70], [120, 128, 54], [240, 126, 58], [150, 104, 58], [210, 98, 52], [92, 140, 40], [270, 140, 40]].forEach(([x, y, r]) => blob(x + 6, y + 14, r, col[1], .5));
   [[180, 124, 70], [120, 122, 54], [240, 118, 58], [150, 96, 58], [210, 90, 52], [92, 134, 40], [270, 134, 40], [182, 80, 44]].forEach(([x, y, r]) => blob(x, y, r, col[0], .95));
   return (pCloudSpr[kind] = c); }
-// plan aux bords fondus pendant la descente (les plans à fond transparent sont déjà détourés)
-const pFeather = {}; function pMapSoft(img, night = 0) { const key = img.src + '|' + Math.round(night * 10); if (pFeather[key]) return pFeather[key]; if (!img.complete || !img.naturalWidth) return null;
-  const c = document.createElement('canvas'), w = c.width = Math.min(1400, img.naturalWidth), h = c.height = Math.round(w * img.naturalHeight / img.naturalWidth), g = c.getContext('2d'); g.drawImage(img, 0, 0, w, h);
-  if (night > .05) { g.globalCompositeOperation = 'source-atop'; g.fillStyle = `rgba(16,12,52,${.5 * night})`; g.fillRect(0, 0, w, h); }
-  if (!VENUE.map.alpha) { g.globalCompositeOperation = 'destination-in'; const f = (x0, y0, x1, y1) => { const gr = g.createLinearGradient(x0, y0, x1, y1); gr.addColorStop(0, 'rgba(0,0,0,0)'); gr.addColorStop(.09, '#000'); gr.addColorStop(.91, '#000'); gr.addColorStop(1, 'rgba(0,0,0,0)'); g.fillStyle = gr; g.fillRect(0, 0, w, h); };
-    f(0, 0, w, 0); f(0, 0, 0, h); }
-  return (pFeather[key] = c); }
-const pStars = Array.from({ length: 90 }, (_, i) => [fxRnd(i * 17 + 1), fxRnd(i * 19 + 2), fxRnd(i * 23 + 3)]);
 
+// ---------- palette selon l'heure (jour / crépuscule / nuit)
 function portalPalette() {
   const nk = nightK((20 * 60 + nowMin()) % 1440), kind = nk > .5 ? 'night' : nk > .05 ? 'dusk' : 'day';
-  return { nk, kind, spr: pSpr(kind), sea: fxSeaURL(kind),
-    sky: kind === 'night' ? ['#0B0D2A', '#1E1A52', '#3A2C6E'] : kind === 'dusk' ? ['#5560B8', '#C98BC0', '#F6C2A6'] : ['#5D8DE8', '#A9C6F6', '#EAF1FD'],
-    ray: kind === 'night' ? '170,180,255' : kind === 'dusk' ? '255,200,214' : '255,246,220' };
+  return { kind, P: {
+    day: { top: '#FFFFFF', mid: '#F2F5FB', low: '#D3DDEE', sh: '#A9BBD8', fill: ['#EEF3FB', '#DDE6F4'], glow: 'rgba(255,248,226,.55)', dot: '#6C7AA6' },
+    dusk: { top: '#FFF8F4', mid: '#F8E8EE', low: '#DDBFD6', sh: '#B293BF', fill: ['#F6E7EE', '#E4CCDD'], glow: 'rgba(255,214,190,.5)', dot: '#8E6A9A' },
+    night: { top: '#E9E8FF', mid: '#C9C6F0', low: '#8F8AC8', sh: '#5B5598', fill: ['#BDB9EA', '#9C97D4'], glow: 'rgba(190,180,255,.35)', dot: '#4B4590' } }[kind] };
 }
-// Une image du film « entrée » à l'instant u (0 → 1). Le film « sortie » est le même, joué à l'envers.
-function portalFrame(ctx, W, H, u, o) {
-  const P = o.pal, logoMode = o.mode === 'logo', A0 = logoMode ? .26 : 0; // part du film consacrée au logo
-  const now = performance.now() / 1000;
-  // --- ciel (fond de toute la scène hors logo)
-  const drawSky = (k) => {
-    const g = ctx.createLinearGradient(0, 0, 0, H); g.addColorStop(0, P.sky[0]); g.addColorStop(.55, P.sky[1]); g.addColorStop(1, P.sky[2]); ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
-    if (P.kind === 'night') { ctx.fillStyle = '#fff'; pStars.forEach(([x, y, r], i) => { ctx.globalAlpha = (.35 + .65 * Math.abs(Math.sin(now * (1 + r) + i))) * (1 - k * .8); ctx.fillRect(x * W, y * H * .7, 1 + r * 1.4, 1 + r * 1.4); }); ctx.globalAlpha = 1; }
-    // soleil / lune et rayons divins
-    const sx = W * .22, sy = H * .1; ctx.globalCompositeOperation = 'lighter';
-    const sg = ctx.createRadialGradient(sx, sy, 0, sx, sy, W * .7); sg.addColorStop(0, `rgba(${P.ray},.55)`); sg.addColorStop(.25, `rgba(${P.ray},.16)`); sg.addColorStop(1, `rgba(${P.ray},0)`); ctx.fillStyle = sg; ctx.fillRect(0, 0, W, H);
-    for (let i = 0; i < 6; i++) { const a = .9 + i * .16 + Math.sin(now * .3 + i) * .03, L = H * 1.6, wd = .035 + fxRnd(i + 3) * .05;
-      const lg = ctx.createLinearGradient(sx, sy, sx + Math.cos(a) * L, sy + Math.sin(a) * L); lg.addColorStop(0, `rgba(${P.ray},${.22 - i * .02})`); lg.addColorStop(1, `rgba(${P.ray},0)`);
-      ctx.fillStyle = lg; ctx.beginPath(); ctx.moveTo(sx, sy); ctx.lineTo(sx + Math.cos(a - wd) * L, sy + Math.sin(a - wd) * L); ctx.lineTo(sx + Math.cos(a + wd) * L, sy + Math.sin(a + wd) * L); ctx.closePath(); ctx.fill(); }
-    ctx.globalCompositeOperation = 'source-over';
-  };
-  // --- l'île : le lieu suspendu dans la mer de nuages, qui grandit jusqu'à la position exacte de la carte
-  const drawIsland = (k) => {
-    const img = o.map; const R = o.rect; const fw = R ? R.w : W * .9, fh = R ? R.h : fw * (img.naturalHeight / img.naturalWidth || .63);
-    const fx0 = R ? R.x : (W - fw) / 2, fy0 = R ? R.y : (H - fh) / 2;
-    const e = pE.in(pClamp(k)), sc = .07 + .93 * e, w = fw * sc, h = fh * sc;
-    const cx = W / 2 + ((fx0 + fw / 2) - W / 2) * e, cy = H * .54 + ((fy0 + fh / 2) - H * .54) * e, x = cx - w / 2, y = cy - h / 2;
-    // mer de nuages autour de l'île (même matière que sous la carte)
-    if (o.seaImg && o.seaImg.complete && e > .02) { ctx.save(); ctx.globalAlpha = pClamp((e - .02) * 2.2) * (P.kind === 'night' ? .55 : 1); const ts = 600 * (.35 + .65 * e), pat = ctx.createPattern(o.seaImg, 'repeat'); const m = new DOMMatrix([ts / 600, 0, 0, ts / 600, cx, cy]); pat.setTransform && pat.setTransform(m); ctx.fillStyle = pat; ctx.fillRect(0, 0, W, H); ctx.restore(); }
-    const soft = pMapSoft(img, P.nk); if (soft) { ctx.save(); ctx.globalAlpha = pClamp(k * 4); ctx.shadowColor = 'rgba(10,14,40,.35)'; ctx.shadowBlur = 40 * sc; ctx.shadowOffsetY = 18 * sc; ctx.drawImage(soft, x, y, w, h); ctx.restore(); }
-  };
-  // --- traversée des nuages (ils foncent vers la caméra), plus dense au milieu du film
-  const drawClouds = (k, dens) => {
-    const travel = k * 2.4; pCloud.forEach((c) => { let z = ((c.z - travel) % 1 + 1) % 1; z = .06 + z * .94; const sc = 1 / z;
-      const px = W / 2 + c.x * W * .42 * sc, py = H * .54 + c.y * H * .34 * sc, S = W * .3 * c.s * sc;
-      const a = .9 * pClamp((1 - z) * 2.4) * pClamp((z - .06) * 4) * dens; if (a < .02 || px + S < 0 || px - S > W || py + S < 0 || py - S > H) return;
-      ctx.globalAlpha = a; ctx.drawImage(P.spr, px - S / 2, py - S * .3, S, S * .6); }); ctx.globalAlpha = 1;
-    if (dens > .3) { ctx.globalCompositeOperation = 'lighter'; ctx.strokeStyle = `rgba(${P.ray},${(P.kind === 'night' ? .07 : .18) * dens})`; ctx.lineWidth = 1.4; // traînées de vitesse
-      for (let i = 0; i < 26; i++) { const a = fxRnd(i * 9) * 6.283, ph = ((k * 3 + fxRnd(i * 4)) % 1), r0 = W * (.15 + ph * .9), r1 = r0 + W * .12 * ph; ctx.beginPath(); ctx.moveTo(W / 2 + Math.cos(a) * r0, H * .54 + Math.sin(a) * r0); ctx.lineTo(W / 2 + Math.cos(a) * r1, H * .54 + Math.sin(a) * r1); ctx.stroke(); }
-      ctx.globalCompositeOperation = 'source-over'; }
-  };
-  if (logoMode && u < A0) { // ---------- 1. le portail s'ouvre au centre du logo
-    const k = u / A0; ctx.fillStyle = '#010922'; ctx.fillRect(0, 0, W, H);
-    const r = pE.in(pClamp((k - .25) / .75)) * Math.hypot(W, H) * .62;
-    if (r > 1) { ctx.save(); ctx.beginPath(); ctx.ellipse(W / 2, H / 2, r * .78, r, -.35, 0, 7); ctx.clip(); drawSky(0); drawIsland(0); drawClouds(0, 1); ctx.restore();
-      ctx.globalCompositeOperation = 'lighter'; const gr = ctx.createRadialGradient(W / 2, H / 2, r * .7, W / 2, H / 2, r * 1.15); gr.addColorStop(0, 'rgba(120,170,255,0)'); gr.addColorStop(.5, 'rgba(150,190,255,.55)'); gr.addColorStop(1, 'rgba(120,170,255,0)'); ctx.fillStyle = gr; ctx.fillRect(0, 0, W, H); ctx.globalCompositeOperation = 'source-over'; }
-    // le logo, identique à l'écran de démarrage, qui s'agrandit en traversant l'écran
-    const L0 = 180, sl = 1 + pE.in(pClamp((k - .12) / .88)) * 9, ls = L0 * sl, breathe = 1 + Math.sin(now * 3) * .012 * (1 - k);
-    if (pLogo.complete) { ctx.globalAlpha = pClamp(1 - (k - .55) / .45); ctx.drawImage(sl > 1.15 && pLogoM.ok ? pLogoM : pLogo, W / 2 - ls * breathe / 2, H / 2 - ls * breathe / 2, ls * breathe, ls * breathe); ctx.globalAlpha = 1; }
-    return;
-  }
-  // ---------- 2. descente : ciel, rayons, nuages, l'île qui approche ; 3. on se pose sur la carte
-  const k = logoMode ? (u - A0) / (1 - A0) : u;
-  drawSky(k);
-  drawIsland(pClamp((k - .08) / .92));
-  drawClouds(k, k < .7 ? 1 : pClamp(1 - (k - .7) / .3));
-  // voile final : la mer de nuages se dissipe et laisse place à la vraie carte
-  if (logoMode && k < .08) { ctx.fillStyle = `rgba(150,190,255,${(1 - k / .08) * .5})`; ctx.fillRect(0, 0, W, H); }
+// ---------- sprites : cumulus stylisés, chaque lobe ombré (relief), base aplatie plus sombre, ombre portée bleutée
+const pSprCache = {};
+function pPuff(kind, v, P) { const key = kind + v; if (pSprCache[key]) return pSprCache[key];
+  const W = 460, H = 300, c = document.createElement('canvas'); c.width = W; c.height = H; const g = c.getContext('2d'); const R = i => fxRnd(v * 97 + i * 13 + 5);
+  const lobes = [], base = 222;
+  const n0 = 5 + Math.floor(R(1) * 2); for (let i = 0; i < n0; i++) { const t = (i + .5) / n0, e = Math.sin(t * Math.PI); lobes.push([66 + t * 328 + (R(i + 2) - .5) * 18, base - 14 - e * 10 + (R(i + 9) - .5) * 12, 40 + e * 22 + R(i + 20) * 18, 0]); }
+  const n1 = 2 + Math.floor(R(3) * 2); for (let i = 0; i < n1; i++) { const t = (i + .5) / n1; lobes.push([130 + t * 200 + (R(i + 30) - .5) * 30, 150 + (R(i + 40) - .5) * 20, 70 + R(i + 50) * 24, 1]); }
+  if (R(4) > .3) lobes.push([190 + R(60) * 80, 96 + R(61) * 16, 56 + R(62) * 18, 2]);
+  const order = lobes.slice().sort((a, b) => b[3] - a[3] || a[1] - b[1]); // sommets (fond) d'abord, rangée du bas (devant) ensuite
+  g.save(); g.translate(8, 16); g.fillStyle = P.sh; g.globalAlpha = .38; g.filter = 'blur(6px)'; order.forEach(([x, y, r]) => { g.beginPath(); g.arc(x, y, r * .96, 0, 7); g.fill(); }); g.filter = 'none'; g.restore();
+  const hexA = (h, a) => { const n = parseInt(h.slice(1), 16); return `rgba(${n >> 16},${(n >> 8) & 255},${n & 255},${a})`; };
+  const sil = () => { g.beginPath(); order.forEach(([x, y, r]) => { g.moveTo(x + r, y); g.arc(x, y, r, 0, 7); }); };
+  // une seule masse (les lobes se fondent, pas de contour entre eux), teinte d'ombre ; puis la lumière vient du haut
+  sil(); g.fillStyle = P.low; g.fill(); g.save(); sil(); g.clip();
+  const vg = g.createLinearGradient(0, 60, 0, base + 60); vg.addColorStop(0, P.mid); vg.addColorStop(.6, P.low); vg.addColorStop(1, P.sh); g.fillStyle = vg; g.fillRect(0, 0, W, H);
+  order.forEach(([x, y, r]) => { const lx = x - r * .18, ly = y - r * .34, gr = g.createRadialGradient(lx, ly, 0, lx, ly, r * 1.02); gr.addColorStop(0, hexA(P.top, 1)); gr.addColorStop(.45, hexA(P.top, .92)); gr.addColorStop(.75, hexA(P.mid, .55)); gr.addColorStop(1, hexA(P.mid, 0));
+    g.fillStyle = gr; g.fillRect(lx - r * 1.1, ly - r * 1.1, r * 2.2, r * 2.2); });
+  const bg = g.createLinearGradient(0, base - 40, 0, base + 60); bg.addColorStop(0, hexA(P.sh, 0)); bg.addColorStop(1, hexA(P.sh, .55)); g.fillStyle = bg; g.fillRect(0, base - 40, W, 120);
+  g.restore();
+  return (pSprCache[key] = c); }
+
+// ---------- champ de nuages (grille décalée qui déborde de l'écran)
+function pField(W, H) { const cols = Math.ceil(W / 150) + 2, rows = Math.ceil(H / 118) + 2, out = []; let i = 0;
+  for (let r = 0; r < rows; r++) for (let q = 0; q < cols; q++, i++) { const x = (q - .5 + (r % 2) * .5) * (W + 300) / (cols - 1) - 150 + (fxRnd(i * 3 + 1) - .5) * 70, y = (r - .5) * (H + 240) / (rows - 1) - 120 + (fxRnd(i * 5 + 2) - .5) * 60;
+    const z = fxRnd(i * 7 + 3); out.push({ x, y, z, s: .62 + z * .55 + fxRnd(i * 11 + 4) * .18, v: i % 6, a: fxRnd(i * 13 + 5) * 6.283 }); }
+  return out.sort((a, b) => a.z - b.z); }
+
+// Une image : c = fermeture (0 → 1 : les nuages arrivent), o = ouverture (0 → 1 : ils se déchirent depuis le centre)
+function portalFrame(ctx, W, H, st, now) {
+  const { pal, field } = st, P = pal.P, cx = W / 2, cy = H * .46, diag = Math.hypot(W, H) / 2, c = st.c, o = st.o, t = (now - st.t0) / 1000;
+  ctx.clearRect(0, 0, W, H);
+  const fa = pSmooth(.35, .9, c) * (1 - pSmooth(0, .6, o)); // fond de nuages : garantit une couverture totale
+  if (fa > .002) { ctx.save(); ctx.globalAlpha = fa; const lg = ctx.createLinearGradient(0, 0, W * .4, H); lg.addColorStop(0, P.fill[0]); lg.addColorStop(1, P.fill[1]); ctx.fillStyle = lg; ctx.fillRect(0, 0, W, H);
+    if (o > 0) { ctx.globalCompositeOperation = 'destination-out'; const r0 = pE.in(o) * diag * 1.3, rg = ctx.createRadialGradient(cx, cy, r0, cx, cy, r0 + 220); rg.addColorStop(0, 'rgba(0,0,0,1)'); rg.addColorStop(1, 'rgba(0,0,0,0)'); ctx.fillStyle = rg; ctx.fillRect(0, 0, W, H); }
+    ctx.restore(); }
+  const Wf = W + 360, Hf = H + 300, dx = t * 26, dy = -t * 11; // dérive en diagonale, parallaxe selon la profondeur
+  for (const p of field) {
+    let x = ((p.x + dx * (.6 + p.z * .8)) % Wf + Wf) % Wf - 180, y = ((p.y + dy * (.6 + p.z * .8)) % Hf + Hf) % Hf - 150;
+    let vx = x - cx, vy = y - cy; const d = Math.hypot(vx, vy) || 1; if (d < 40) { vx = Math.cos(p.a); vy = Math.sin(p.a); } else { vx /= d; vy /= d; } const dn = Math.min(1, d / diag);
+    const ki = pE.out(pClamp((c - dn * .28) / .72)), kj = pE.in(pClamp(o * 1.35 - dn * .3 - p.z * .05));
+    const push = (1 - ki) * (diag * .9 + 160) + kj * (diag * 1.1 + 200);
+    x += vx * push; y += vy * push * .9;
+    const al = Math.min(1, ki * 1.6) * (1 - pSmooth(.55, 1, kj)); if (al <= .01) continue;
+    const sc = p.s * (1 + (1 - ki) * .35 + kj * .45), img = pPuff(pal.kind, p.v, P), w = img.width * sc * .78, h = img.height * sc * .78;
+    ctx.globalAlpha = al; ctx.drawImage(img, x - w / 2, y - h / 2, w, h); }
+  ctx.globalAlpha = 1;
+  const la = pSmooth(.75, 1, c) * (1 - pSmooth(0, .18, o)) * (st.logo ? 1 : 0); // logo + chargement pendant que tout est couvert
+  if (st.lg) { const v = la.toFixed(3); if (st.lgA !== v) { st.lgA = v; st.lg.style.opacity = v; st.lg.style.visibility = la > .01 ? 'visible' : 'hidden'; }
+    if (la > .01 && !st.lgImg) { const mk = pLogoMark(); if (mk) { st.lgImg = true; st.lg.querySelector('img').src = mk.toDataURL('image/png'); } } }
 }
 
-// Lecture du film (entrée : 0 → 1, sortie : 1 → 0). Le dernier quart de l'entrée s'efface sur la vraie carte.
-PORTAL.play = (o) => new Promise((resolve) => {
-  if (!portalAllowed() || !SCREEN) { resolve(); return; }
-  PORTAL.busy = true; const pre = document.getElementById('portal'); const el = pre || document.createElement('div'); el.id = 'portal'; el.setAttribute('aria-hidden', 'true');
-  const cv = document.createElement('canvas'); el.append(cv); if (!pre) SCREEN.append(el); setTimeout(() => { const im = el.querySelector('img.pre'); im && im.remove(); }, 60);
-  const W = SCREEN.clientWidth, H = SCREEN.clientHeight, dpr = Math.min(2, devicePixelRatio || 1); cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr); cv.style.width = W + 'px'; cv.style.height = H + 'px';
+// ---------- calque unique, réutilisé entre fermeture et ouverture
+function pLayer() {
+  if (PORTAL.el && document.body.contains(PORTAL.el)) return PORTAL.st;
+  const el = document.getElementById('portal') || document.createElement('div'); el.id = 'portal'; el.setAttribute('aria-hidden', 'true'); el.classList.add('clouds');
+  const cv = document.createElement('canvas'); el.append(cv); if (!el.parentNode) SCREEN.append(el);
+  const W = SCREEN.clientWidth, H = SCREEN.clientHeight, dpr = 1; // nuages doux : résolution standard (4× moins de pixels) ; logo net en HTML par-dessus cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr); cv.style.width = W + 'px'; cv.style.height = H + 'px';
   const ctx = cv.getContext('2d'); ctx.scale(dpr, dpr);
-  const pal = portalPalette(), seaImg = pal.sea ? pImg(pal.sea) : null, map = pImg(VENUE.map.src);
-  const dur = o.dur || (o.dir === 'out' ? (o.mode === 'logo' ? 1700 : 1300) : (o.mode === 'logo' ? 3400 : 2500));
-  let t0 = null, stop = false, raf = 0;
-  const finish = () => { if (stop) return; stop = true; cancelAnimationFrame(raf); PORTAL.busy = false;
-    if (o.dir === 'in') { el.classList.add('fade'); setTimeout(() => el.remove(), 420); } else setTimeout(() => el.remove(), 40);
-    resolve(); };
-  const step = (ts) => { if (stop) return; if (t0 == null) t0 = ts; const p = pClamp((ts - t0) / dur), u = o.dir === 'out' ? 1 - pE.io(p) : pE.o2(p);
-    const rect = o.rect ? o.rect() : null; ctx.clearRect(0, 0, W, H); try { portalFrame(ctx, W, H, u, { mode: o.mode, pal, map, seaImg, rect }); } catch (_) {}
-    if (o.dir === 'in' && p > .78 && !el.classList.contains('fade')) { el.classList.add('fade'); o.onReveal && o.onReveal(); }
-    if (p >= 1) { finish(); return; } raf = requestAnimationFrame(step); };
-  // toucher l'écran = passer (on garde la continuité : fondu rapide)
-  el.addEventListener('pointerdown', () => { o.onReveal && !el.classList.contains('fade') && o.onReveal(); finish(); }, { once: true });
-  raf = requestAnimationFrame(step);
-});
-// rectangle exact de la carte à l'écran (pour se poser dessus sans saut)
-const portalMapRect = () => { if (!MV || !MV.alive) return null; const a = MV.proj([0, 0]), b = MV.proj([100, 100]); return { x: a[0], y: a[1], w: b[0] - a[0], h: b[1] - a[1] }; };
+  el.addEventListener('pointerdown', () => { const s = PORTAL.st; if (!s) return; s.skip = true; if (s.anim) s.anim.dur = Math.min(s.anim.dur, performance.now() - s.anim.t0 + 160); });
+  const lg = document.createElement('div'); lg.className = 'pLg ' + portalPalette().kind; lg.innerHTML = '<img alt=""><b>ONEERA</b><i></i><i></i><i></i>'; lg.style.opacity = '0'; el.append(lg);
+  const st = { el, ctx, lg, W, H, c: 0, o: 0, logo: false, pal: portalPalette(), field: pField(W, H), t0: performance.now(), raf: 0, anim: null };
+  const loop = (now) => { if (!document.body.contains(el)) { SCREEN.classList.remove('pCov'); if (PORTAL.st === st) { PORTAL.el = PORTAL.st = null; PORTAL.busy = false; } return; }
+    if (st.anim) { const a = st.anim, k = pClamp((now - a.t0) / a.dur); st[a.key] = a.from + (a.to - a.from) * k; if (k >= 1) { st.anim = null; a.done(); } }
+    const cov = st.c >= 1 && !st.o; if (cov !== st.cov) { st.cov = cov; SCREEN.classList.toggle('pCov', cov); } // écran couvert : la carte dessous ne se dessine plus
+    try { portalFrame(ctx, W, H, st, now); } catch (_) {} st.raf = requestAnimationFrame(loop); };
+  st.raf = requestAnimationFrame(loop); PORTAL.el = el; PORTAL.st = st; return st; }
+const pTween = (st, key, to, dur) => new Promise(r => { if (st.anim) st.anim.done(); st.anim = { key, from: st[key], to, dur, t0: performance.now(), done: r }; });
+function pDrop() { SCREEN && SCREEN.classList.remove('pCov'); const st = PORTAL.st; if (st) cancelAnimationFrame(st.raf); PORTAL.el && PORTAL.el.remove(); PORTAL.el = PORTAL.st = null; PORTAL.busy = false; }
+const pWait = ms => new Promise(r => { const t0 = performance.now(), tick = () => (PORTAL.st && PORTAL.st.skip) || performance.now() - t0 >= ms ? r() : setTimeout(tick, 40); tick(); });
+const pClosed = () => !!(PORTAL.st && PORTAL.st.c >= 1 && !PORTAL.st.o);
 
-// Entrée sur la carte (ouverture de l'app ou nouveau lieu) puis descente sur sa position
-PORTAL.enter = (mode = 'sky') => {
-  if (!portalAllowed() || !MV) return Promise.resolve();
-  const mv = MV, at = [ST.me.pos[0], ST.me.pos[1] - 8], zoom = VENUE.zoom; mv.center([50, 50], mv.minS); mv.intro = null;
+// Fermer : les nuages recouvrent l'écran (résout quand tout est couvert)
+PORTAL.close = (o = {}) => { if (!portalAllowed() || !SCREEN) return Promise.resolve(); PORTAL.busy = true; const st = pLayer(); st.logo = !!o.logo; st.o = 0;
+  if (o.instant || st.c >= 1) { st.c = 1; return Promise.resolve(); } return pTween(st, 'c', 1, o.dur || 480); };
+// Ouvrir : les nuages se déchirent depuis le centre ; toucher l'écran accélère
+PORTAL.open = (o = {}) => { const st = PORTAL.st; if (!st) { PORTAL.busy = false; return Promise.resolve(); } st.c = 1; o.onStart && o.onStart();
+  return pTween(st, 'o', 1, st.skip ? 320 : (o.dur || 1150)).then(() => { if (PORTAL.st === st) pDrop(); }); };
+
+// Entrée sur la carte : la carte est déjà en place (un peu plus large) sous les nuages ; ils s'ouvrent et on zoome doucement
+PORTAL.enter = (mode = 'sky', hold = 420) => {
+  if (!portalAllowed() || !MV) return PORTAL.st ? PORTAL.open() : Promise.resolve();
+  if (PORTAL.st && PORTAL.st.entering) return Promise.resolve();
+  const mv = MV, at = [ST.me.pos[0], ST.me.pos[1] - 8], zoom = VENUE.zoom; mv.intro = null;
   SCREEN.classList.add('pIn');
-  return PORTAL.play({ mode, dir: 'in', rect: portalMapRect, onReveal: () => { SCREEN.classList.remove('pIn'); SCREEN.classList.add('pShow'); setTimeout(() => SCREEN.classList.remove('pShow'), 1400); setTimeout(() => mv.alive && mv.flyTo(at, zoom, 1500), 120); } })
+  return PORTAL.close({ logo: mode === 'logo' }).then(() => { PORTAL.st.entering = true; mv.alive && mv.center(at, Math.max(mv.minS, zoom * .84)); return pWait(hold); })
+    .then(() => PORTAL.open({ onStart: () => { setTimeout(() => mv.alive && mv.flyTo(at, zoom, 1300), 60); setTimeout(() => { SCREEN.classList.remove('pIn'); SCREEN.classList.add('pShow'); setTimeout(() => SCREEN.classList.remove('pShow'), 1400); }, 380); } }))
     .then(() => SCREEN.classList.remove('pIn'));
 };
-// Sortie : on remonte dans les nuages (et jusqu'au logo pour quitter l'univers)
-PORTAL.exit = (mode = 'sky') => {
-  if (!portalAllowed() || !MV || !MV.alive || !document.body.contains(MV.host)) return Promise.resolve();
-  MV.ov.style.opacity = '0'; MV.flyTo(MV.centerPct(), MV.minS, 380);
-  return new Promise(r => setTimeout(r, 380)).then(() => PORTAL.play({ mode, dir: 'out', rect: portalMapRect }));
-};
-// Ouverture d'un écran sans carte (accueil) : le portail s'ouvre puis se dissipe
-PORTAL.reveal = () => portalAllowed() ? PORTAL.play({ mode: 'logo', dir: 'in', dur: 2600 }) : Promise.resolve();
-window.ONEERA_PORTAL = (o = {}) => PORTAL.play({ mode: o.mode || 'logo', dir: o.dir || 'in', dur: o.dur, rect: portalMapRect });
+// Sortie : les nuages se referment sur la carte (le logo apparaît quand on quitte l'univers)
+PORTAL.exit = (mode = 'sky') => { if (!portalAllowed() || !SCREEN) return Promise.resolve(); MV && MV.ov && (MV.ov.style.opacity = '0');
+  return PORTAL.close({ logo: mode === 'logo' }).then(() => pWait(mode === 'logo' ? 650 : 120)); };
+// Écran sans carte (accueil) : les nuages s'ouvrent sur l'écran
+PORTAL.reveal = () => { if (!portalAllowed() || !SCREEN) return Promise.resolve(); return PORTAL.close({ logo: true, instant: !PORTAL.st }).then(() => pWait(500)).then(() => PORTAL.open()); };
+PORTAL.play = (o = {}) => o.dir === 'out' ? PORTAL.exit(o.mode || 'sky') : PORTAL.reveal(); // compatibilité
+window.ONEERA_PORTAL = (o = {}) => o.dir === 'out' ? PORTAL.exit(o.mode || 'logo') : PORTAL.reveal();
 
 // ---------- branchements ----------
-// 1. ouverture de l'app : une fois par lancement
+// 1. ouverture de l'app : écran de démarrage, les nuages arrivent sur le logo, puis s'ouvrent sur la carte
 PORTAL.launch = () => { let seen = false; try { seen = sessionStorage.getItem('oneera.portal') === '1'; sessionStorage.setItem('oneera.portal', '1'); } catch (_) {}
   if (seen || !portalAllowed() || !SCREEN) return;
-  // voile immédiat (avant le premier affichage) : exactement l'écran de démarrage, aucun flash de la carte
-  const v = document.createElement('div'); v.id = 'portal'; v.setAttribute('aria-hidden', 'true'); v.innerHTML = `<img class="pre" src="${A}logo.webp" alt="">`; SCREEN.append(v); PORTAL.busy = true;
-  setTimeout(() => { PORTAL.busy = false; if ($('#mv') && MV) PORTAL.enter('logo'); else PORTAL.reveal(); }, 30); };
-// 2. première visite d'un lieu : la descente « vue des Dieux » devient le portail complet
+  const v = document.createElement('div'); v.id = 'portal'; v.className = 'veil'; v.setAttribute('aria-hidden', 'true'); v.innerHTML = `<img class="pre" src="${A}logo.webp" alt="">`; SCREEN.append(v); PORTAL.busy = true; $('#mv') && SCREEN.classList.add('pIn'); // voile immédiat : aucun flash
+  setTimeout(() => PORTAL.close({ logo: true, dur: 560 }).then(() => { const im = v.querySelector('img.pre'); im && im.remove(); v.classList.remove('veil');
+    return ($('#mv') && MV) ? PORTAL.enter('logo', 650) : pWait(650).then(() => PORTAL.open()); }), 40); };
+// 2. première visite d'un lieu (la carte vient d'être montée)
 const _fxIntro = FX.intro, _fxLeave = FX.leave;
-FX.intro = (mv, at, zoom) => { if (PORTAL.busy) return; if (!portalAllowed()) return _fxIntro(mv, at, zoom); PORTAL.enter(PORTAL.pending || 'sky'); PORTAL.pending = null; };
-// 3. changer de lieu : on remonte dans les nuages, on change de monde, on redescend
-FX.leave = (cb) => { if (!portalAllowed()) return _fxLeave(cb); if (!MV || !MV.alive || !document.body.contains(MV.host)) { cb(); return; }
-  PORTAL.exit('sky').then(() => { const id0 = VENUE.id; cb(); if ((VENUE.id !== id0 || $('#mv')) && !PORTAL.busy && MV && $('#mv')) PORTAL.enter('sky'); }); };
+FX.intro = (mv, at, zoom) => { if (!portalAllowed()) return _fxIntro(mv, at, zoom); if (PORTAL.busy && !pClosed()) return; PORTAL.enter(PORTAL.pending || 'sky'); PORTAL.pending = null; };
+// 3. changer de lieu : les nuages se ferment, on change de monde dessous, puis ils s'ouvrent sur le nouveau lieu
+FX.leave = (cb) => { if (!portalAllowed()) return _fxLeave(cb);
+  PORTAL.close({}).then(() => { cb(); setTimeout(() => { if (!PORTAL.st || PORTAL.st.entering) return; if (MV && MV.alive && $('#mv')) PORTAL.enter('sky'); else PORTAL.open(); }, 80); }); };
 
 // ===== Moteur d'avatar ONEERA (rendu illustré SVG piloté par paramètres) =====
 // Le même objet de paramètres pilotera le rendu 3D de l'app finale.
@@ -1918,6 +1957,7 @@ const AV2 = {
   mood: [['none', 'Naturel'], ['laugh', 'Fou rire'], ['wink', 'Clin d’œil'], ['love', 'Amoureux'], ['wow', 'Waouh'], ['cool', 'Cool'], ['yawn', 'Fatigué'], ['sleep', 'Endormi']],
   paint: [['none', 'Aucun'], ['glitter', 'Paillettes'], ['gems', 'Strass'], ['bolt', 'Éclair'], ['stars', 'Étoiles'], ['stripes', 'Traits'], ['heart', 'Cœur']],
   patches: [['bolt', 'Éclair'], ['heart', 'Cœur'], ['smile', 'Smiley'], ['star', 'Étoile'], ['flame', 'Flamme'], ['peace', 'Paix']],
+  motif: [['none', 'Uni'], ['stripes', 'Rayures'], ['check', 'Carreaux'], ['dots', 'Pois'], ['damier', 'Damier'], ['camo', 'Camouflage'], ['leopard', 'Léopard'], ['tiedye', 'Tie-dye'], ['flames', 'Flammes']],
   neon: ['#FF4FD8', '#22F5FF', '#7CFF6B', '#FFE14D', '#FF7A3D', '#9B7BFF', '#FFFFFF', '#FF3B5C']
 };
 const AV2_DEFAULT = { g: 'm', build: 'moyenne', height: 'moyenne', skin: 3, hair: 'messy', hairC: 2, eyes: 'open', eyeC: 0, mouth: 'smile', beard: 'none', outfit: 'none', top: 'tee', topC: 0, bottom: 'cargo', bottomC: 2, shoes: 'sneakers', shoesC: 0, glasses: 'none', hat: 'none', hatC: 1, jewel: ['bracelets'], pose: 'pocket' };
@@ -2147,7 +2187,9 @@ function avatar2SVG(c0, opt = {}) {
   const lin = (id, a, b, x2 = 1, y2 = 0) => `<linearGradient id="${u}${id}" x1="0" y1="0" x2="${x2}" y2="${y2}"><stop offset="0" stop-color="${a}"/><stop offset="1" stop-color="${b}"/></linearGradient>`;
   const skL = shd(sk, .12), skD = shd(sk, -.16), skDD = shd(sk, -.3), hcD = shd(hc, -.38), hcL = shd(hc, dark(hc) ? .32 : .26), hcM = shd(hc, -.16);
   const tcD = shd(tc, -.22), tcL = shd(tc, .14), bcD = shd(bc, -.24), bcL = shd(bc, .12), scD = shd(sc, -.25), scL = shd(sc, .2);
-  const defs = [lin('sk', skL, skD), lin('tp', tcL, tcD), lin('bt', bcL, bcD), lin('sh', scL, scD, 0, 1), lin('hr', hcL, hcD, .3, 1), lin('hb', hcM, hcD, 0, 1),
+  const cyl = (id, x0, x1, c, cL, cD) => `<linearGradient id="${u}${id}" gradientUnits="userSpaceOnUse" x1="${f1(x0)}" y1="0" x2="${f1(x1)}" y2="0" spreadMethod="reflect"><stop offset="0" stop-color="${shd(cD, -.08)}"/><stop offset=".22" stop-color="${c}"/><stop offset=".5" stop-color="${cL}"/><stop offset=".78" stop-color="${c}"/><stop offset="1" stop-color="${cD}"/></linearGradient>`;
+  const defs = [lin('sk', skL, skD), cyl('tp', 100 - 44, 100 + 44, tc, tcL, tcD), cyl('bt', 100 - 34, 100, bc, bcL, bcD),
+    `<radialGradient id="${u}cs"><stop offset="0" stop-color="#140c1e" stop-opacity=".42"/><stop offset="1" stop-color="#140c1e" stop-opacity="0"/></radialGradient>`, lin('sh', scL, scD, 0, 1), lin('hr', hcL, hcD, .3, 1), lin('hb', hcM, hcD, 0, 1),
     `<radialGradient id="${u}fc" cx="44%" cy="36%" r="72%"><stop offset="0" stop-color="${shd(sk, .16)}"/><stop offset=".62" stop-color="${sk}"/><stop offset="1" stop-color="${skD}"/></radialGradient>`,
     `<radialGradient id="${u}ir" cx="50%" cy="36%" r="64%"><stop offset="0" stop-color="${shd(ec, .55)}"/><stop offset=".5" stop-color="${shd(ec, .1)}"/><stop offset="1" stop-color="${shd(ec, -.5)}"/></radialGradient>`,
     `<radialGradient id="${u}bl" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#F0717F" stop-opacity="${F ? .34 : .2}"/><stop offset="1" stop-color="#F0717F" stop-opacity="0"/></radialGradient>`,
@@ -2158,6 +2200,8 @@ function avatar2SVG(c0, opt = {}) {
     `<radialGradient id="${u}au" cx="50%" cy="45%" r="50%"><stop offset="0" stop-color="#FFD84D" stop-opacity=".75"/><stop offset=".55" stop-color="#FFB84D" stop-opacity=".28"/><stop offset="1" stop-color="#FFB84D" stop-opacity="0"/></radialGradient>`,
     `<pattern id="${u}dn" width="4" height="4" patternUnits="userSpaceOnUse"><rect width="4" height="4" fill="none"/><path d="M0 4 L4 0" stroke="#FFFFFF" stroke-width=".5" opacity=".14"/></pattern>`].join('');
   const SK = `url(#${u}sk)`, TP = `url(#${u}tp)`, BT = `url(#${u}bt)`, HR = `url(#${u}hr)`, HB = `url(#${u}hb)`;
+  const CS = `url(#${u}cs)`, contact = (cx, cy, rx, ry, k = 1) => `<ellipse cx="${f1(cx)}" cy="${f1(cy)}" rx="${f1(rx)}" ry="${f1(ry)}" fill="${CS}" opacity="${k}"/>`;
+  const ink = (col) => `stroke="${shd(col, -.5)}" stroke-width=".9" stroke-opacity=".5" stroke-linejoin="round"`;
   // ---------- largeur du corps selon la hauteur
   const wAt = y => y <= yS ? sh - 2 : y <= yW ? sh + (wa - sh) * Math.pow((y - yS) / (yW - yS), 1.2) : y <= yH ? wa + (hp - wa) * (y - yW) / (yH - yW) : hp + (y - yH) * .05;
   // ---------- cheveux
@@ -2172,7 +2216,8 @@ function avatar2SVG(c0, opt = {}) {
   add(`<path d="${LL.path}" fill="${SK}"/><path d="${LR.path}" fill="${SK}"/><path d="M${100 - 11.5 + 4} ${yK - 6} q-3 4 0 8 M${100 + 11.5 - 4} ${yK - 6} q3 4 0 8" stroke="${skD}" stroke-width="1" fill="none" opacity=".6"/>`);
   // ---------- chaussures (3/4, pointes légèrement vers l'extérieur)
   const longHem = (['cargo', 'flare', 'maxi', 'joggers'].includes(c.bottom) && !out) || c.outfit === 'jumpsuit';
-  add(shoes(c.shoes, { yA, yG, sc, scD, scL, u, F, sk, skD }));
+  const legX = (s, y) => { const kx = 100 + s * 11.5, ax = 100 + s * 10.5, cw = 9.6 + lw * .6, aw = 5.6, y0 = yK + 22, t = Math.max(-.3, Math.min(1, (y - y0) / (yA - y0))); const oX = (kx + s * (cw + .5)) + ((ax + s * aw) - (kx + s * (cw + .5))) * t, iX = (kx - s * (cw - 2.5)) + ((ax - s * aw) - (kx - s * (cw - 2.5))) * t; return [oX, iX]; };
+  add(shoes(c.shoes, { yA, yG, sc, scD, scL, u, F, sk, skD, legX, covered: longHem || ['jeans', 'chinos'].includes(c.bottom) && !out }));
   // ---------- torse (peau) et cou
   const torsoSkin = A3.sm([[100 - 9, yN + 9], [100 - sh + 11, yS + 1], [100 - sh + 4, yS + 10], [100 - wAt(170), 170], [100 - wa, yW], [100 - hp, yH], [100 + hp, yH], [100 + wa, yW], [100 + wAt(170), 170], [100 + sh - 4, yS + 10], [100 + sh - 11, yS + 1], [100 + 9, yN + 9]]);
   add(`<path d="${torsoSkin}" fill="${SK}"/>`);
@@ -2191,7 +2236,10 @@ function avatar2SVG(c0, opt = {}) {
   const waistband = (y = yH - 16) => `<path d="M${100 - wAt(y) - 1.5} ${y} Q100 ${y + 3} ${100 + wAt(y) + 1.5} ${y} L${100 + wAt(y + 7) + 1.5} ${y + 7} Q100 ${y + 10} ${100 - wAt(y + 7) - 1.5} ${y + 7} Z" fill="${bcD}" opacity=".55"/>`;
   const fold = (x, y, s, k = 1) => `<path d="M${x} ${y} q${s * 4} 5 ${s * 1} 11" stroke="${bcD}" stroke-width="1.1" fill="none" opacity="${.5 * k}" stroke-linecap="round"/>`;
   const legsOn = !dress && !['suit', 'overalls', 'jumpsuit'].includes(c.outfit);
-  if (legsOn) add({
+  const hemOf = { cargo: yA + 4, jeans: yA - 2, flare: yA + 8, chinos: yA - 6, joggers: yA - 1 }[c.bottom], hemOut = out ? ({ suit: yA - 4, jumpsuit: yA + 6, overalls: yA - 4 }[c.outfit]) : hemOf;
+  if (hemOut) add([-1, 1].map(s2 => contact(100 + s2 * 11.5, hemOut + 3, 13, 3.4, .9)).join('')); // ombre de l'ourlet sur la chaussure
+  const brk = (hy) => [-1, 1].map(s2 => `<path d="M${100 + s2 * 4} ${hy - 7} q${s2 * 6} 3.5 ${s2 * 13} 0 M${100 + s2 * 6} ${hy - 13} q${s2 * 5} 2.5 ${s2 * 10} -.5" stroke="${bcD}" stroke-width="1.1" fill="none" opacity=".55" stroke-linecap="round"/>`).join('');
+  if (legsOn) add(`<g ${ink(bc)}>` + ({
     cargo: () => `<path d="${pants({ hemY: yA + 4, hemW: F ? 15 : 13, kneeW: F ? 16 : 14, thighW: 3 })}" fill="${BT}"/>${waistband()}${seams()}${sidePocket(yK - 50, F ? 16 : 14, 3)}${fold(100 - 20, yK + 10, -1)}${fold(100 + 20, yK + 18, 1)}${[-1, 1].map(s => `<path d="M${100 + s * 2} ${yA - 8} q${s * 12} 5 ${s * 26} 0" stroke="${bcD}" stroke-width="1.3" fill="none" opacity=".55"/>`).join('')}`,
     jeans: () => `<path d="${pants({ hemY: yA - 2, hemW: 10.5, kneeW: 11.5 })}" fill="${BT}"/><path d="${pants({ hemY: yA - 2, hemW: 10.5, kneeW: 11.5 })}" fill="url(#${u}dn)"/>${waistband()}${seams(yA)}<path d="M${100 - hp + 6} ${yH - 8} q6 10 16 9" stroke="#E8C26A" stroke-width=".9" fill="none" opacity=".7"/><path d="M${100 + hp - 6} ${yH - 8} q-6 10 -16 9" stroke="#E8C26A" stroke-width=".9" fill="none" opacity=".7"/>${fold(100 - 18, yK - 6, -1)}${fold(100 + 18, yK, 1)}`,
     flare: () => `<path d="${pants({ hemY: yA + 8, hemW: 17, kneeW: 9.5, hemIn: 8 })}" fill="${BT}"/><path d="${pants({ hemY: yA + 8, hemW: 17, kneeW: 9.5, hemIn: 8 })}" fill="url(#${u}dn)"/>${waistband()}${seams(yA)}`,
@@ -2201,11 +2249,11 @@ function avatar2SVG(c0, opt = {}) {
     skirt: () => `<path d="M${100 - wAt(yH - 16) - 1} ${yH - 16} L${100 + wAt(yH - 16) + 1} ${yH - 16} L${100 + hp + 14} ${yH + 40} Q100 ${yH + 46} ${100 - hp - 14} ${yH + 40} Z" fill="${BT}"/>${waistband()}<path d="M${100 - 10} ${yH} l-6 40 M${100 + 10} ${yH} l6 40 M100 ${yH - 6} l0 44" stroke="${bcD}" stroke-width="1" opacity=".4"/>`,
     maxi: () => `<path d="M${100 - wAt(yH - 16) - 1} ${yH - 16} L${100 + wAt(yH - 16) + 1} ${yH - 16} C${100 + hp + 6} ${yH + 40} ${100 + hp + 16} ${yA - 40} ${100 + hp + 22} ${yA - 4} Q${100 + 14} ${yA + 4} 100 ${yA - 2} Q${100 - 14} ${yA + 4} ${100 - hp - 22} ${yA - 4} C${100 - hp - 16} ${yA - 40} ${100 - hp - 6} ${yH + 40} ${100 - wAt(yH - 16) - 1} ${yH - 16} Z" fill="${BT}"/>${waistband()}${[[-14, -4], [0, 2], [14, 6]].map(([x, d]) => `<path d="M${100 + x * .6} ${yH} Q${100 + x + d} ${(yH + yA) / 2} ${100 + x * 1.6} ${yA - 4}" stroke="${bcD}" stroke-width="1.2" fill="none" opacity=".45"/>`).join('')}`,
     joggers: () => `<path d="${pants({ hemY: yA - 1, hemW: 8.5, kneeW: 14, thighW: 2, hemX: 10.5 })}" fill="${BT}"/>${waistband()}${[-1, 1].map(s => `<path d="M${100 + s * (hp + 1)} ${yH - 8} Q${100 + s * (hp - 1)} ${yK} ${100 + s * 19} ${yA - 6}" stroke="${tcL}" stroke-width="2.6" fill="none" opacity=".9"/><rect x="${s < 0 ? 100 - 19 : 100 + 6.4}" y="${yA - 8}" width="12.6" height="8" rx="3.5" fill="${bcD}" opacity=".55"/>`).join('')}<path d="M96 ${yH - 12} l-2 12 M104 ${yH - 12} l2 12" stroke="#F4F1EA" stroke-width="1.3" stroke-linecap="round"/>${fold(100 - 20, yK - 14, -1)}${fold(100 + 20, yK - 8, 1)}`
-  }[c.bottom]?.() || '');
+  }[c.bottom]?.() || '') + (hemOf && hemOf >= yA - 8 ? brk(hemOf) : '') + '</g>');
   // ---------- tenues une pièce (partie basse)
   if (c.outfit === 'suit' || c.outfit === 'overalls' || c.outfit === 'jumpsuit') {
     const P = pants({ hemY: c.outfit === 'jumpsuit' ? yA + 6 : yA - 4, hemW: c.outfit === 'jumpsuit' ? 18 : 11, kneeW: c.outfit === 'jumpsuit' ? 17 : 12.5, hemIn: c.outfit === 'jumpsuit' ? 8 : undefined, waistY: yW - 4 });
-    add(`<path d="${P}" fill="${BT}"/>${c.outfit === 'suit' ? `<path d="M${100 - 12} ${yH} L${100 - 12} ${yA - 6} M${100 + 12} ${yH} L${100 + 12} ${yA - 6}" stroke="${bcL}" stroke-width="1" opacity=".5"/>` : ''}${c.outfit === 'overalls' ? [-1, 1].map(s => `<path d="M${100 + s * 4} ${yA - 12} L${100 + s * 23} ${yA - 12}" stroke="${bcD}" stroke-width="5" opacity=".4"/>`).join('') : ''}`);
+    add(`<g ${ink(bc)}><path d="${P}" fill="${BT}"/>${brk(c.outfit === 'jumpsuit' ? yA + 6 : yA - 4)}</g>${c.outfit === 'suit' ? `<path d="M${100 - 12} ${yH} L${100 - 12} ${yA - 6} M${100 + 12} ${yH} L${100 + 12} ${yA - 6}" stroke="${bcL}" stroke-width="1" opacity=".5"/>` : ''}${c.outfit === 'overalls' ? [-1, 1].map(s => `<path d="M${100 + s * 4} ${yA - 12} L${100 + s * 23} ${yA - 12}" stroke="${bcD}" stroke-width="5" opacity=".4"/>`).join('') : ''}`);
   }
   if (dress) add(c.outfit === 'slip'
     ? `<path d="M${100 - wAt(160) + 1} 160 C${100 - wa - 2} ${yW} ${100 - hp - 2} ${yH} ${100 - hp - 10} ${yK - 2} Q100 ${yK + 8} ${100 + hp + 10} ${yK - 2} C${100 + hp + 2} ${yH} ${100 + wa + 2} ${yW} ${100 + wAt(160) - 1} 160 Q100 150 ${100 - wAt(160) + 1} 160 Z" fill="${TP}"/><path d="M${100 - 6} ${yH - 10} Q${100 - 10} ${yH + 40} ${100 - 18} ${yK - 2} M${100 + 10} ${yH} Q${100 + 14} ${yH + 40} ${100 + 22} ${yK}" stroke="#FFFFFF" stroke-width="2.4" fill="none" opacity=".22" stroke-linecap="round"/>`
@@ -2216,7 +2264,7 @@ function avatar2SVG(c0, opt = {}) {
     const side = s => [[100 + s * (sh + ext), yS + 8], [100 + s * (wAt(175) + ext), 175], [100 + s * (wAt(Math.min(hemY, yW)) + ext), Math.min(hemY, yW)], ...(hemY > yW ? [[100 + s * (wAt(hemY) + ext + 1), hemY]] : [])];
     const R = side(1), Lf = side(-1).reverse();
     return `M${nk[2].map(f1).join(' ')} L${f1(100 - sh + 8 - ext)} ${yS - 3} Q${f1(100 - sh - ext - 1)} ${yS - 1} ${Lf[Lf.length - 1].map(f1).join(' ')}` + A3.cr(Lf.slice().reverse()) + ` Q100 ${f1(hemY + 4)} ${R[R.length - 1].map(f1).join(' ')}` + A3.cr(R.slice().reverse()) + ` Q${f1(100 + sh + ext + 1)} ${yS - 1} ${f1(100 + sh - 8 + ext)} ${yS - 3} L${nk[0].map(f1).join(' ')}` + A3.cr(nk) + 'Z'; };
-  const shade = (hemY, ext = 0) => `<path d="M${100 + wAt(170) + ext - 7} ${yS + 14} Q${100 + wAt(185) + ext - 3} 190 ${100 + wAt(Math.min(hemY, yH)) + ext - 4} ${hemY - 2} L${100 + wAt(Math.min(hemY, yH)) + ext} ${hemY} Q${100 + wAt(185) + ext + 1} 190 ${100 + sh + ext} ${yS + 10} Z" fill="${tcD}" opacity=".45"/>`;
+  const shade = (hemY, ext = 0) => `<path stroke="none" d="M${100 + wAt(170) + ext - 7} ${yS + 14} Q${100 + wAt(185) + ext - 3} 190 ${100 + wAt(Math.min(hemY, yH)) + ext - 4} ${hemY - 2} L${100 + wAt(Math.min(hemY, yH)) + ext} ${hemY} Q${100 + wAt(185) + ext + 1} 190 ${100 + sh + ext} ${yS + 10} Z" fill="${tcD}" opacity=".45"/>`;
   const sleeveLen = { tee: 30, oversize: 40, crop: 26, shirt: 100, openshirt: 62, blouse: 34, polo: 30, hoodie: 100, jacket: 100, suit: 100, midi: 26, jumpsuit: 0, tank: 0, bandeau: 0, slip: 0, overalls: 30 }[top] ?? 0;
   const inner = (y2, col = '#F4F1EA') => `<path d="${torsoCloth(y2, 0, 'crew')}" fill="${col}"/><path d="${torsoCloth(y2, 0, 'crew')}" fill="url(#${u}tp)" opacity="0"/>`;
   const collar = (col) => `<path d="M${100 - 11} ${yN + 6} L${100 - 3} ${yN + 22} L100 ${yN + 14} L${100 + 3} ${yN + 22} L${100 + 11} ${yN + 6} L${100 + 13} ${yN + 3} L100 ${yN + 9} L${100 - 13} ${yN + 3} Z" fill="${col}"/>`;
@@ -2256,8 +2304,12 @@ function avatar2SVG(c0, opt = {}) {
     return `<path d="${a.d}" stroke="${SK}" stroke-width="${aw}" stroke-linecap="round" stroke-linejoin="round" fill="none" pathLength="100" stroke-dasharray="${pocketCut} 200"/>`
       + (sl ? `<path d="${a.d}" stroke="${cl}" stroke-width="${aw + (sl > 60 ? 3.5 : 4.5)}" stroke-linecap="butt" stroke-linejoin="round" fill="none" pathLength="100" stroke-dasharray="${sl > 90 ? pocketCut - 4 : sl} 200"/>` : '')
       + (sl > 90 && a.mode !== 'pocket' ? `<circle cx="${f1(a.W[0])}" cy="${f1(a.W[1] - 2)}" r="${aw / 2 + 2}" fill="${tcD}"/>` : '') + hand(a); };
-  add(A.map(armSVG).join(''));
-  add(T[top] ? T[top]() : T.tee());
+  const live = !!(opt.live || c._live);
+  add(A.map(a => live && (a.mode === 'relax' || a.mode === 'wave' || a.mode === 'up') ? `<g class="avA${a.s < 0 ? 'l' : 'r'}${a.mode === 'up' ? ' up' : ''}" style="transform-origin:${f1(100 + a.s * (sh - 6))}px ${yS + 10}px">${armSVG(a)}</g>` : armSVG(a)).join(''));
+  const hemTop = { tee: yH - 6, oversize: yH + 6, crop: 186, tank: yH - 6, shirt: yH, polo: yH - 4, hoodie: yH + 4, blouse: yW + 6, jumpsuit: yW + 2, midi: yW + 2 }[top];
+  if (hemTop && !dress) add(contact(100, hemTop + 3, wAt(Math.min(hemTop, yH)) + 6, 4.5, .85));
+  add(`<g ${ink(tc)}>` + (T[top] ? T[top]() : T.tee()) + '</g>');
+  add(contact(100, yN + 12, 13, 4, .6)); // ombre du col sur le cou / le haut
   const chestOK = !['bandeau', 'slip', 'midi', 'suit', 'jacket', 'openshirt', 'overalls'].includes(top);
   if (c.text && chestOK) { const t = String(c.text).slice(0, 14), n = [...t].length, fs = n <= 6 ? 11 : n <= 10 ? 8.6 : 7;
     add(`<text x="100" y="${top === 'crop' ? 172 : 180}" text-anchor="middle" font-family="Figtree,system-ui,sans-serif" font-weight="900" font-size="${fs}" letter-spacing=".4" fill="${dark(tc) || tc === '#6F1F2D' ? '#FFFFFF' : '#1C1C21'}" opacity=".92">${esc(t)}</text>`); }
@@ -2304,7 +2356,8 @@ function avatar2SVG(c0, opt = {}) {
     if (st === 'shut' || st === 'happy') return `<path d="M${x - w} ${y + 1} Q${x} ${y - h - 1} ${x + w} ${y + 1}" stroke="${lash}" stroke-width="2.4" fill="none" stroke-linecap="round"/>${F ? `<path d="M${x + s * w} ${y + .6} Q${x + s * (w + 2)} ${y - .6} ${x + s * (w + 3)} ${y - 2.6}" stroke="${lash}" stroke-width="1.8" fill="none" stroke-linecap="round"/>` : ''}`;
     const top = st === 'soft' ? y - h * .45 : y - h; const eyeP = `M${x - w} ${y} C${x - w * .6} ${top - 1} ${x + w * .5} ${top - 1.4} ${x + w} ${y - .5} C${x + w * .5} ${y + h * .8} ${x - w * .6} ${y + h * .8} ${x - w} ${y} Z`;
     const id = `${u}e${s > 0 ? 'r' : 'l'}`;
-    return `<clipPath id="${id}"><path d="${eyeP}"/></clipPath><path d="${eyeP}" fill="#FFFFFF"/><g clip-path="url(#${id})"><circle cx="${x + s * .4}" cy="${y + .2}" r="${F ? 5.4 : 5}" fill="url(#${u}ir)"/><circle cx="${x + s * .4}" cy="${y + .2}" r="2.5" fill="#120C0A"/><circle cx="${x - 1.6}" cy="${y - 2}" r="1.6" fill="#FFFFFF"/><circle cx="${x + 1.8}" cy="${y + 2.2}" r=".7" fill="#FFFFFF" opacity=".8"/><path d="M${x - w} ${top - 2} L${x + w} ${top - 2} L${x + w} ${top + 2.6} Q${x} ${top + .5} ${x - w} ${top + 2.6} Z" fill="${lid}" opacity=".18"/></g>`
+    return `<clipPath id="${id}"><path d="${eyeP}"/></clipPath><path d="${eyeP}" fill="#FFFFFF"/><g clip-path="url(#${id})">${live ? '<g class="avE">' : ''}<circle cx="${x + s * .4}" cy="${y + .2}" r="${F ? 5.4 : 5}" fill="url(#${u}ir)"/><circle cx="${x + s * .4}" cy="${y + .2}" r="2.5" fill="#120C0A"/><circle cx="${x - 1.6}" cy="${y - 2}" r="1.6" fill="#FFFFFF"/><circle cx="${x + 1.8}" cy="${y + 2.2}" r=".7" fill="#FFFFFF" opacity=".8"/>${live ? '</g>' : ''}<path d="M${x - w} ${top - 2} L${x + w} ${top - 2} L${x + w} ${top + 2.6} Q${x} ${top + .5} ${x - w} ${top + 2.6} Z" fill="${lid}" opacity=".18"/></g>`
+      + (live ? `<path class="avL" d="${eyeP}" fill="${shd(sk, -.06)}"/><path class="avL" d="M${x - w} ${y + 1} Q${x} ${y + h * .78} ${x + w} ${y + .5}" stroke="${lash}" stroke-width="1.8" fill="none" stroke-linecap="round"/>` : '')
       + `<path d="M${x - w - .6} ${y + .6} C${x - w * .6} ${top - 1.2} ${x + w * .5} ${top - 1.6} ${x + w + .6} ${y - .6}" stroke="${lash}" stroke-width="${F ? 2.6 : 2.2}" fill="none" stroke-linecap="round"/>`
       + (F ? `<path d="M${x + s * (w - 1)} ${y - 1.2} Q${x + s * (w + 2)} ${y - 2.6} ${x + s * (w + 3.6)} ${y - 5}" stroke="${lash}" stroke-width="2" fill="none" stroke-linecap="round"/>` : '')
       + `<path d="M${x - w * .7} ${y + h * .62} Q${x} ${y + h * .95} ${x + w * .7} ${y + h * .6}" stroke="${skD}" stroke-width=".9" fill="none" opacity=".7"/>`
@@ -2313,7 +2366,7 @@ function avatar2SVG(c0, opt = {}) {
   // sourcils (pleins, effilés, couleur des cheveux)
   const bc2 = shd(hc, dark(hc) ? .05 : -.25), bw = F ? 2.6 : 3.6;
   const brow = s => { const x0 = 100 + s * 6.5, x1 = 100 + s * 24; return `<path d="M${x0} ${66 + (F ? 1 : 0)} C${x0 + s * 4} ${62 - bw * .3} ${x1 - s * 6} ${60 - bw * .4} ${x1} ${64} C${x1 - s * 6} ${62 + bw * .1} ${x0 + s * 5} ${62 + bw} ${x0} ${66 + (F ? 1 : 0) + bw * .6} Z" fill="${bc2}"/>`; };
-  add(brow(-1) + brow(1));
+  add(live ? `<g class="avBw">${brow(-1) + brow(1)}</g>` : brow(-1) + brow(1));
   // nez
   add(`<path d="M${100 + 3} 80 C${100 + 4} 86 ${100 + 6} 90 ${100 + 5} 93" stroke="${skD}" stroke-width="1.4" fill="none" stroke-linecap="round" opacity=".8"/><path d="M${100 - 5.5} 92.5 Q${100 - 3} 95.6 100 94.6 Q${100 + 3} 95.6 ${100 + 5.5} 92.5" stroke="${skDD}" stroke-width="1.5" fill="none" stroke-linecap="round" opacity=".75"/><ellipse cx="${100 - 1}" cy="90" rx="2.4" ry="1.6" fill="#FFFFFF" opacity=".22"/>`);
   // bouche
@@ -2348,9 +2401,36 @@ function avatar2SVG(c0, opt = {}) {
     beanie: `<path d="M66 62 C62 28 82 16 100 16 C118 16 138 28 134 62 Z" fill="${hcol}"/>${Array.from({ length: 9 }, (_, i) => `<path d="M${72 + i * 7} 22 L${71 + i * 7.2} 54" stroke="${hD}" stroke-width="1" opacity=".35"/>`).join('')}<rect x="63" y="52" width="74" height="14" rx="7" fill="${hD}"/><path d="M66 58 h68" stroke="${hcol}" stroke-width="1" opacity=".5" stroke-dasharray="2 3"/>` }[c.hat] || '');
   if (big) { const hz = (x) => `<g transform="translate(100 ${HP}) scale(${HK}) translate(-100 -${HP})">${x}</g>`;
     S.splice(iHead0, S.length - iHead0, hz(S.slice(iHead0).join(''))); hIdx.forEach(i => { S[i] = hz(S[i]); }); }
+  if (live) { const hd = S.splice(iHead0, S.length - iHead0).join(''); S.push(`<g class="avH" style="transform-origin:100px ${yN}px">${hd}</g>`); }
   // ---------- socle et cadrage
   const fx = c._fx || '';
   let body = S.join('');
+  // ---------- motifs de tissu (haut / bas) : imprimés dans la forme du vêtement, sous les plis et les ombres
+  const motif = (kind, base, mc, id) => { if (!kind || kind === 'none') return '';
+    const L1 = shd(base, .22), D1 = shd(base, -.28), D2 = shd(base, -.45), P = (w, h, inner, tr = '') => `<pattern id="${u}${id}" width="${w}" height="${h}" patternUnits="userSpaceOnUse"${tr ? ` patternTransform="${tr}"` : ''}>${inner}</pattern>`;
+    return ({
+      stripes: () => P(10, 10, `<rect y="0" width="10" height="4" fill="${mc}" opacity=".9"/>`),
+      check: () => P(16, 16, `<rect width="16" height="6" fill="${mc}" opacity=".45"/><rect width="6" height="16" fill="${mc}" opacity=".45"/><path d="M0 11 H16 M11 0 V16" stroke="${mc}" stroke-width=".7" opacity=".7"/>`),
+      dots: () => P(12, 12, `<circle cx="3" cy="3" r="2" fill="${mc}"/><circle cx="9" cy="9" r="2" fill="${mc}"/>`),
+      damier: () => P(14, 14, `<rect width="7" height="7" fill="${mc}" opacity=".9"/><rect x="7" y="7" width="7" height="7" fill="${mc}" opacity=".9"/>`),
+      camo: () => P(44, 40, `<path d="M2 6 C8 0 18 2 20 8 C22 14 12 18 6 16 C0 14 -2 10 2 6Z M26 2 C34 -2 44 4 40 12 C36 18 28 14 26 9Z" fill="${D1}" opacity=".85"/><path d="M14 22 C22 16 32 20 32 28 C32 36 20 38 14 32 C10 28 10 25 14 22Z M38 26 C44 24 46 34 40 36 C36 37 34 30 38 26Z" fill="${mc}" opacity=".8"/><path d="M0 30 C4 26 10 30 8 36 C6 40 0 38 0 30Z M22 10 C26 8 30 12 27 15 C24 17 20 14 22 10Z" fill="${D2}" opacity=".85"/>`),
+      leopard: () => P(26, 24, `${[[6, 6, 0], [19, 9, 40], [11, 18, -30], [23, 21, 15], [1, 16, 70]].map(([x, y, r]) => `<g transform="translate(${x} ${y}) rotate(${r})"><ellipse rx="3.2" ry="2.4" fill="${L1}" opacity=".7"/><path d="M-3.6 -1 A3.8 3 0 0 1 1 -3.2 M3.6 .6 A3.8 3 0 0 1 -.6 3.2" stroke="${mc}" stroke-width="1.5" fill="none" stroke-linecap="round"/></g>`).join('')}`),
+      tiedye: () => { const cy = yW - 22, arm = (a0, colr) => { let d = ''; for (let k = 0; k <= 60; k++) { const t = k / 60, a = a0 + t * 15, r = 1 + t * 78; d += `${k ? 'L' : 'M'}${f1(100 + Math.cos(a) * r)} ${f1(cy + Math.sin(a) * r * .9)} `; } return `<path d="${d}" stroke="${colr}" stroke-width="7.5" fill="none" stroke-linecap="round" opacity=".7"/>`; };
+        return `<pattern id="${u}${id}" x="0" y="0" width="300" height="600" patternUnits="userSpaceOnUse">${[0, 1.57, 3.14, 4.71].map((a, k) => arm(a, [AV2.neon[0], AV2.neon[1], AV2.neon[3], mc][k])).join('')}</pattern>`; },
+      flames: () => P(30, 34, `<path d="M15 34 C6 30 4 22 9 15 C10 21 13 21 13 17 C12 11 15 5 19 2 C18 9 25 13 24 22 C23 28 20 32 15 34Z" fill="${mc}" opacity=".85"/><path d="M15 33 C11 31 11 26 14 23 C15 26 17 26 17 24 C19 27 19 31 15 33Z" fill="${AV2.neon[3]}" opacity=".8"/>`)
+    })[kind]?.() || ''; };
+  const mcOf = (k, base) => col(AV2.cloth, k, dark(base) ? shd(base, .62) : shd(base, -.5));
+  const mT = motif(c.topP, tc, mcOf(c.topPC, tc), 'tpP'), mB = motif(out ? c.topP : c.bottomP, bc, mcOf(out ? c.topPC : c.bottomPC, bc), 'btP');
+  const over = (str, fillId, pid) => str.replace(new RegExp(`<path d="([^"]*)"([^>]*?)fill="url\\(#${u}${fillId}\\)"([^>]*)/>`, 'g'), (m, d) => `${m}<path d="${d}" fill="url(#${u}${pid})" stroke="none"/>`);
+  if (mT) { body = over(body, 'tp', 'tpP'); body = `<defs>${mT}</defs>` + body; }
+  if (mB) { body = over(body, 'bt', 'btP'); body = `<defs>${mB}</defs>` + body; }
+  if (live) { // l'avatar vit : respiration, tête, clignements, balancement des bras ; rythme propre à chacun
+    const seed = [...JSON.stringify(c0 || {})].reduce((a, ch) => (a * 31 + ch.charCodeAt(0)) >>> 0, 7), ph = (k) => -((seed % (97 + k)) / (97 + k) * 6).toFixed(2);
+    const css = `.avB{transform-origin:100px ${yG}px;animation:avBr 3.9s ${ph(1)}s ease-in-out infinite}.avW{transform-origin:100px ${yG}px;animation:avWt 9.4s ${ph(6)}s ease-in-out infinite}.avE{animation:avEy ${(6.2 + (seed % 13) / 10).toFixed(1)}s ${ph(7)}s infinite}.avBw{animation:avBw 11.3s ${ph(8)}s ease-in-out infinite}.avH{animation:avHd 7.3s ${ph(2)}s ease-in-out infinite}.avL{transform-box:fill-box;transform-origin:50% 0;transform:scaleY(0);animation:avBl ${(4.6 + (seed % 17) / 10).toFixed(1)}s ${ph(3)}s infinite}.avAl{animation:avAl 5.1s ${ph(4)}s ease-in-out infinite}.avAr{animation:avAr 5.6s ${ph(5)}s ease-in-out infinite}.avAl.up,.avAr.up{animation-duration:1.1s}
+@keyframes avBr{0%,100%{transform:scale(1,1)}42%{transform:scale(1.006,1.017)}}@keyframes avWt{0%,100%{transform:rotate(0) translateX(0)}22%,40%{transform:rotate(.7deg) translateX(.8px)}62%,80%{transform:rotate(-.6deg) translateX(-.7px)}}@keyframes avEy{0%,28%{transform:translate(0,0)}30%,48%{transform:translate(1.7px,.2px)}50%,66%{transform:translate(0,0)}68%,84%{transform:translate(-1.6px,.4px)}86%,100%{transform:translate(0,-.3px)}}@keyframes avBw{0%,38%,52%,100%{transform:translateY(0)}42%,47%{transform:translateY(-1.6px)}}@keyframes avHd{0%,100%{transform:rotate(0) translateY(0)}28%{transform:rotate(1.8deg) translateY(-.5px)}60%{transform:rotate(-1.4deg) translateY(.3px)}82%{transform:rotate(.6deg)}}
+@keyframes avBl{0%,55%,59.5%,91%,97%,100%{transform:scaleY(0)}57%{transform:scaleY(1)}93.5%,94.5%{transform:scaleY(1)}96%{transform:scaleY(0)}96.6%{transform:scaleY(.9)}}@keyframes avAl{0%,100%{transform:rotate(0)}50%{transform:rotate(2.2deg)}}@keyframes avAr{0%,100%{transform:rotate(0)}50%{transform:rotate(-2deg)}}
+@media (prefers-reduced-motion:reduce){.avB,.avW,.avE,.avBw,.avH,.avL,.avAl,.avAr{animation:none}}`;
+    body = `<style>${css}</style><g class="avW"><g class="avB">${body}</g></g>`; }
   if (fx.includes('neon')) body = `<g filter="url(#${u}nf)">${body}</g>`;
   const aura = fx.includes('glow') ? `<ellipse cx="100" cy="${big ? 170 : 190}" rx="84" ry="205" fill="url(#${u}au)"/>` : '';
   const ped = opt.pedestal ? `<ellipse cx="100" cy="${yG + 7}" rx="74" ry="15" fill="#E792C6"/><ellipse cx="100" cy="${yG + 4}" rx="74" ry="14" fill="url(#${u}pd)"/>` : `<ellipse cx="100" cy="${yG + 1}" rx="40" ry="6" fill="#1B1430" opacity=".18"/>`;
@@ -2365,14 +2445,23 @@ function shoes(kind, o) {
     const dome = (ry = 8, col = SH) => `<ellipse cx="${s * 1.5}" cy="-6.5" rx="13" ry="${ry}" fill="${col}"/>`;
     const P = {
       sneakers: `<path d="M-10 -5 C-11 -13 -8 -21 -5.5 -25 L5.5 -25 C8 -21 11 -13 10 -5 Z" fill="${SH}"/>${dome()}<path d="M-4.2 -25 L4.2 -25 L3.6 -11 L-3.6 -11 Z" fill="${scL}"/><path d="M-3.6 -21.5 L3.6 -19.5 M3.6 -21.5 L-3.6 -19.5 M-3.6 -17 L3.6 -15 M3.6 -17 L-3.6 -15" stroke="#FFFFFF" stroke-width="1.3" stroke-linecap="round"/><path d="M${s * -11} -9 Q${s * 0} -14 ${s * 11} -12" stroke="${scD}" stroke-width="2.2" fill="none" stroke-linecap="round" opacity=".8"/><path d="M-13.5 -5.5 Q0 -1 13.5 -5.5 L13.5 -1.5 Q0 3 -13.5 -1.5 Z" fill="#FFFFFF"/><path d="M-13 -3 Q0 1.4 13 -3" stroke="#D5D1C8" stroke-width=".9" fill="none"/><ellipse cx="${s * -2}" cy="-9.5" rx="5" ry="2.2" fill="#FFFFFF" opacity=".35"/>`,
-      canvas: `<path d="M-10 -5 C-11 -16 -9 -28 -6 -33 L6 -33 C9 -28 11 -16 10 -5 Z" fill="${SH}"/><path d="M-4 -33 L4 -33 L3.4 -12 L-3.4 -12 Z" fill="${scL}"/><path d="M-3.4 -29 L3.4 -27 M3.4 -29 L-3.4 -27 M-3.4 -24 L3.4 -22 M3.4 -24 L-3.4 -22 M-3.4 -19 L3.4 -17 M3.4 -19 L-3.4 -17" stroke="#FFFFFF" stroke-width="1.2" stroke-linecap="round"/><circle cx="${s * 8}" cy="-24" r="2.6" fill="#FFFFFF" stroke="${scD}" stroke-width=".8"/>${dome(7.4, '#F4F1EA')}<path d="M-12 -7 Q0 -12 12 -7" stroke="#D5D1C8" stroke-width="1" fill="none"/><path d="M-13.5 -5 Q0 -1 13.5 -5 L13.5 -1.5 Q0 3 -13.5 -1.5 Z" fill="#F4F1EA"/><path d="M-13.5 -3.4 Q0 1 13.5 -3.4" stroke="#1C1C21" stroke-width=".9" fill="none" opacity=".6"/>`,
+      canvas: `<path d="M-10 -5 C-10.4 -10 -8.4 -14 -7 -17 L7 -17 C8.4 -14 10.4 -10 10 -5 Z" fill="${SH}"/><path d="M-3.6 -17 L3.6 -17 L3.4 -12 L-3.4 -12 Z" fill="${scL}"/><path d="M-3.4 -16 L3.4 -14 M3.4 -16 L-3.4 -14" stroke="#FFFFFF" stroke-width="1.2" stroke-linecap="round"/>${dome(7.4, '#F4F1EA')}<path d="M-12 -7 Q0 -12 12 -7" stroke="#D5D1C8" stroke-width="1" fill="none"/><path d="M-13.5 -5 Q0 -1 13.5 -5 L13.5 -1.5 Q0 3 -13.5 -1.5 Z" fill="#F4F1EA"/><path d="M-13.5 -3.4 Q0 1 13.5 -3.4" stroke="#1C1C21" stroke-width=".9" fill="none" opacity=".6"/>`,
       chunky: `<path d="M-10 -8 C-11 -15 -8 -22 -5.5 -26 L5.5 -26 C8 -22 11 -15 10 -8 Z" fill="${SH}"/>${dome(8, SH).replace('cy="-6.5"', 'cy="-10"')}<path d="M-4.2 -26 L4.2 -26 L3.6 -14 L-3.6 -14 Z" fill="${scL}"/><path d="M-3.6 -22.5 L3.6 -20.5 M3.6 -22.5 L-3.6 -20.5 M-3.6 -18 L3.6 -16 M3.6 -18 L-3.6 -16" stroke="#FFFFFF" stroke-width="1.3" stroke-linecap="round"/><path d="M-14.5 -9 Q0 -4 14.5 -9 L14.5 -1.5 Q0 3.4 -14.5 -1.5 Z" fill="#FFFFFF"/><path d="M-14 -5 Q-7 -2 0 -3.6 Q7 -2 14 -5" stroke="#D5D1C8" stroke-width="1.2" fill="none"/><path d="M${s * -12} -12 Q0 -16 ${s * 12} -14" stroke="${scD}" stroke-width="2.4" fill="none" opacity=".7"/>`,
-      sandals: `<path d="M-8 -4 C-9 -10 -6 -15 -4 -18 L4 -18 C6 -15 9 -10 8 -4 Z" fill="${sk}"/><ellipse cx="${s * 1.5}" cy="-5" rx="12" ry="5.6" fill="${sk}"/>${[-9, -4, 1, 6].map((t, k) => `<ellipse cx="${f1(s * (1.5 + t))}" cy="-2.6" rx="2.2" ry="1.7" fill="${skD}" opacity="${k ? .45 : .6}"/>`).join('')}<path d="M-10 -9 Q0 -4 11 -9" stroke="${sc}" stroke-width="3.2" fill="none" stroke-linecap="round"/><path d="M-6 -15 Q0 -12 6 -15" stroke="${sc}" stroke-width="2.6" fill="none" stroke-linecap="round"/><path d="M-13.5 -1.6 Q0 2 13.5 -1.6 L13.5 .6 Q0 3.6 -13.5 .6 Z" fill="${scD}"/>`,
-      boots: `<path d="M-10 -5 C-11 -18 -10 -32 -8 -38 L8 -38 C10 -32 11 -18 10 -5 Z" fill="${SH}"/><path d="M-8 -36 L8 -36" stroke="${scD}" stroke-width="2.2"/><path d="M${s * 6} -34 L${s * 6} -14" stroke="${scD}" stroke-width="1" opacity=".6"/>${dome(7.6)}<path d="M-7 -30 Q-8 -20 -7 -12" stroke="${scL}" stroke-width="1.8" fill="none" opacity=".6" stroke-linecap="round"/><path d="M-13.5 -4.6 Q0 -1 13.5 -4.6 L13.5 -.6 Q0 3.2 -13.5 -.6 Z" fill="#2B231E"/><ellipse cx="${s * -1}" cy="-9" rx="5" ry="2" fill="#FFFFFF" opacity=".2"/>`,
+      sandals: `<path d="M-13.6 -3 Q0 -7 13.6 -3 L13.8 .9 Q0 4.4 -13.8 .9 Z" fill="${scD}"/><ellipse cx="${s * 1}" cy="-2.8" rx="13" ry="3.2" fill="${scL}" stroke="none"/><path d="M-5.6 -19 C-6.4 -13 -10.6 -10 -11.4 -6 Q-11.6 -3.2 -8.6 -3.4 L8.6 -3.4 Q11.8 -3.2 11.6 -6 C11 -10 6.4 -13 5.6 -19 Z" fill="${sk}" stroke="${skD}" stroke-width=".7" stroke-opacity=".7"/><path d="M${s * 4} -17 C${s * 6} -12 ${s * 9} -9 ${s * 10} -5.6" stroke="${skD}" stroke-width="1.6" fill="none" opacity=".35" stroke-linecap="round"/>${[[-7.4, 2.7], [-3, 2.2], [.8, 2], [4.3, 1.8], [7.6, 1.6]].map(([t, r]) => { const x = f1(s * t), y = f1(-3.4 - r * .55); return `<ellipse cx="${x}" cy="${y}" rx="${r}" ry="${f1(r * 1.1)}" fill="${sk}" stroke="${skD}" stroke-width=".6" stroke-opacity=".8"/><ellipse cx="${x}" cy="${f1(-3.4 - r * .85)}" rx="${f1(r * .55)}" ry="${f1(r * .42)}" fill="#FFFFFF" opacity=".55" stroke="none"/>`; }).join('')}<path d="M-11.4 -8.6 Q0 -13.4 11.6 -8.6" stroke="${sc}" stroke-width="3.6" fill="none" stroke-linecap="round"/><path d="M-11.4 -8.6 Q0 -13.4 11.6 -8.6" stroke="${scL}" stroke-width="1" fill="none" stroke-linecap="round" opacity=".6" transform="translate(0 -.9)"/><path d="M-6.6 -15.6 Q0 -12.6 6.6 -15.6" stroke="${sc}" stroke-width="2.4" fill="none" stroke-linecap="round"/><rect x="${s * 6.2 - 1.6}" y="-17.2" width="3.2" height="3" rx=".8" fill="#E8C26A" stroke="#9A7A2E" stroke-width=".5"/>`,
+      boots: `<path d="M-9 -12 C-10.5 -10 -12 -8 -12 -5 L12 -5 C12 -8 10.5 -10 9 -12 Z" fill="${sc}" stroke="none"/>${dome(7.6)}<path d="M${s * -9} -9.5 Q${s * 1} -14.5 ${s * 11} -10.5" stroke="${scD}" stroke-width="1.1" fill="none" opacity=".7"/><path d="M-13.5 -4.6 Q0 -1 13.5 -4.6 L13.5 -.6 Q0 3.2 -13.5 -.6 Z" fill="#2B231E"/><path d="M-13 -3.2 Q0 .4 13 -3.2" stroke="#5A4A3E" stroke-width=".6" fill="none" stroke-dasharray="1.2 1.2"/><ellipse cx="${s * -1.6}" cy="-8.4" rx="5" ry="2" fill="#FFFFFF" opacity=".25" stroke="none"/>`,
       loafers: `<path d="M-9 -5 C-10 -9 -8 -14 -6 -15 L6 -15 C8 -14 10 -9 9 -5 Z" fill="${sk}"/>${dome(7.4)}<path d="M-9 -9 Q0 -14 9 -9" stroke="${scD}" stroke-width="2" fill="none"/><path d="M-6 -10.6 Q0 -13 6 -10.6" stroke="${scD}" stroke-width="2.6" fill="none"/><rect x="-2.2" y="-12.6" width="4.4" height="2.2" rx="1" fill="#E8C26A"/><path d="M-13 -3.6 Q0 -.4 13 -3.6 L13 -1 Q0 2.6 -13 -1 Z" fill="${scD}"/><ellipse cx="${s * -2}" cy="-8" rx="4.6" ry="1.8" fill="#FFFFFF" opacity=".3"/>`
     }[kind] || '';
-    return `<g transform="translate(${x} ${yG}) rotate(${s * 8}) scale(1.05)">${P}</g>`; };
-  return `<ellipse cx="100" cy="${yG + 1.5}" rx="34" ry="4.4" fill="#1B1430" opacity=".18"/>` + one(-1) + one(1);
+    return `<g transform="translate(${x} ${yG}) rotate(${s * 8}) scale(1.05)" stroke="${scD}" stroke-width=".8" stroke-opacity=".55" stroke-linejoin="round">${P}</g>`; };
+  const shaft = s => { if (!['boots', 'canvas'].includes(kind) || !o.legX) return ''; const bt = kind === 'boots', yT = o.yA - (bt ? 30 : 17), yB = o.yG - 9, m = 1.9, at = y => { const [a, b] = o.legX(s, y); return [a + s * m, b - s * m]; };
+    const [oT, iT] = at(yT), [oM, iM] = at(yT + 14), [oB, iB] = at(o.yA), x2 = 100 + s * 12, cx = (oT + iT) / 2, rx = Math.abs(oT - iT) / 2;
+    const P = `M${f1(iT)} ${yT} L${f1(oT)} ${yT} C${f1(oT + s * .4)} ${yT + 8} ${f1(oM)} ${yT + 14} ${f1(oB)} ${o.yA} L${f1(x2 + s * 10.5)} ${yB} L${f1(x2 - s * 10.5)} ${yB} L${f1(iB)} ${o.yA} C${f1(iM)} ${yT + 14} ${f1(iT - s * .4)} ${yT + 8} ${f1(iT)} ${yT} Z`;
+    const g = `${o.u}bs${s < 0 ? 'l' : 'r'}`;
+    return `<defs><linearGradient id="${g}" gradientUnits="userSpaceOnUse" x1="${f1(Math.min(iT, oT) - 1)}" x2="${f1(Math.max(iT, oT) + 1)}" y1="0" y2="0"><stop offset="0" stop-color="${o.scD}"/><stop offset=".32" stop-color="${o.scL}"/><stop offset=".55" stop-color="${o.sc}"/><stop offset="1" stop-color="${o.scD}"/></linearGradient></defs>`
+      + `<path d="${P}" fill="url(#${g})" stroke="${o.scD}" stroke-width=".8" stroke-opacity=".6" stroke-linejoin="round"/>`
+      + `<ellipse cx="${f1(cx)}" cy="${yT + .4}" rx="${f1(rx)}" ry="1.9" fill="#1E1712"/><path d="M${f1(cx - rx)} ${yT + .4} A${f1(rx)} 1.9 0 0 0 ${f1(cx + rx)} ${yT + .4}" stroke="${o.scL}" stroke-width="1.1" fill="none"/>`
+      + (bt ? `<path d="M${f1(oT - s * 2.6)} ${yT + 3} C${f1(oM - s * 2.4)} ${yT + 14} ${f1(oB - s * 2.6)} ${o.yA - 4} ${f1(oB - s * 3)} ${o.yA + 2}" stroke="${o.scD}" stroke-width="3.2" fill="none" opacity=".45" stroke-linecap="round"/>`
+      + `<path d="M${f1(cx + s * .5)} ${yT - 2.6} l${s * 1.2} 5" stroke="${o.scD}" stroke-width="2.2" stroke-linecap="round"/>` : `<path d="M${f1(cx - 3.4)} ${yT + 1} L${f1(cx + 3.4)} ${yT + 1} L${f1(cx + 3.2)} ${o.yA + 5} L${f1(cx - 3.2)} ${o.yA + 5} Z" fill="${o.scL}"/>${[0, 1, 2].map(k => { const y = yT + 3.4 + k * 5; return `<path d="M${f1(cx - 3)} ${y} L${f1(cx + 3)} ${y + 2} M${f1(cx + 3)} ${y} L${f1(cx - 3)} ${y + 2}" stroke="#FFFFFF" stroke-width="1.2" stroke-linecap="round"/>`; }).join('')}<circle cx="${f1(oB - s * 2.6)}" cy="${o.yA - 4}" r="2" fill="#FFFFFF" stroke="${o.scD}" stroke-width=".7"/>`); };
+  return `<ellipse cx="100" cy="${yG + 1.5}" rx="34" ry="4.4" fill="#1B1430" opacity=".18"/>` + shaft(-1) + shaft(1) + one(-1) + one(1);
 }
 
 // ---------- cheveux : masse arrière (back), mèches devant les épaules (mid), avant / frange (front)
@@ -2746,7 +2835,7 @@ V.map = (opts = {}) => {
     <div class="livebar" id="lb"></div>${navBar('map')}`);
   wireNav(el);
   if (MV) MV.destroy();
-  MV = new MapView($('#mv', el), { at: opts.at || [ST.me.pos[0], ST.me.pos[1] - 8], zoom: opts.zoom || VENUE.zoom, rotate: true, strict: false, markers: mapMarkers, onLong: at => V.rdvSheet(at), onTapEmpty: () => {}, fx: () => ({ crowd: !showCrowd }) }); wireViewCtl(el, MV);
+  MV = new MapView($('#mv', el), { at: opts.at || [ST.me.pos[0], ST.me.pos[1] - 8], zoom: opts.zoom || VENUE.zoom, rotate: true, strict: true, markers: mapMarkers, onLong: at => V.rdvSheet(at), onTapEmpty: () => {}, fx: () => ({ crowd: !showCrowd }) }); wireViewCtl(el, MV);
   ST.introSeen = ST.introSeen || {}; if (!opts.at && !ST.introSeen[VENUE.id]) { ST.introSeen[VENUE.id] = 1; FX.intro(MV, [ST.me.pos[0], ST.me.pos[1] - 8], VENUE.zoom); }
   $('#flt', el).onclick = e => { const b = e.target.closest('[data-f]'); if (!b) return; mapFilter = b.dataset.f; $$('#flt .chip', el).forEach(c => c.classList.toggle('on', c === b)); if (mapFilter === 'friends' && myFriends().length) { const p = myFriends().map(f => friendPos(f.id)); MV.flyTo([p.reduce((a, q) => a + q[0], 0) / p.length, p.reduce((a, q) => a + q[1], 0) / p.length], .45); } };
   $('#floors', el) && ($('#floors', el).onclick = e => { const b = e.target.closest('[data-fl]'); if (!b) return; if (b.dataset.fl !== 'club') { toast('Tes amis au casino apparaissent à l’escalier avec « au RDC (Casino) ↑ ». Itinéraire par l’escalier de l’entrée.'); return; } });
@@ -4497,6 +4586,7 @@ V.avatarPick = (onDone, step = true, init = null) => {
     ['bottom', 'Bas', ic('<path d="M7 3h10l1 18h-4.2L12 10l-1.8 11H6z"/>')],
     ['shoes', 'Pieds', ic('<path d="M3 15.5V9h4l1.5 2.5c2 .5 6 1 9 2.3 1.6.7 2.5 1.6 2.5 2.7v.5H3z"/><path d="M3 18.5h18"/>')],
     ['acc', 'Style', ic('<circle cx="7" cy="13" r="3.4"/><circle cx="17" cy="13" r="3.4"/><path d="M10.4 13h3.2M3.6 12 2.5 9.5M20.4 12l1.1-2.5"/>')],
+    ['looks', 'Looks', ic('<path d="M9 3h6l1 3-4 2-4-2z"/><path d="M8 6 4.5 8 6 12l2-.6V21h8v-9.6l2 .6 1.5-4L16 6"/><path d="M12 8v4"/>')],
     ['fun', 'Fête', ic('<path d="M12 2.5l1.8 4.6 4.7.4-3.6 3.1 1.1 4.7L12 12.8l-4 2.5 1.1-4.7-3.6-3.1 4.7-.4z"/><path d="M5 20l2-3M19 20l-2-3M12 21.5v-3"/>')],
   ];
   const el = mount(`<div class="studio st2">
@@ -4516,17 +4606,36 @@ V.avatarPick = (onDone, step = true, init = null) => {
   const big = $('#big', el), bd = $('#bd', el);
   const tiles = (key, list, view, extra = {}) => `<div class="stTiles">${list.map(([k, n]) => { const on = Array.isArray(L[key]) ? L[key].includes(k) : L[key] === k; return `<button data-k="${key}" data-v="${k}" class="${on ? 'on' : ''}" aria-pressed="${on}" aria-label="${n}" title="${n}"><span class="th">${avatar2SVG({ ...L, ...extra, [key]: Array.isArray(L[key]) ? (L[key].includes(k) ? L[key] : [...L[key], k]) : k }, { view, style: 'width:100%;height:100%' })}</span><b>${n}</b></button>`; }).join('')}</div>`;
   const colors = (key, pal, label) => { const free = typeof L[key] === 'string' && /^#[0-9a-fA-F]{6}$/.test(L[key]);
-    return `<div class="stLbl">${label}</div><div class="stSw small stRow">${pal.map((h, i) => `<button data-c="${key}" data-i="${i}" class="${L[key] === i ? 'on' : ''}" aria-label="Couleur ${i + 1}"><i style="background:${h}"></i></button>`).join('')}<label class="stFree ${free ? 'on' : ''}" aria-label="Couleur libre"><i style="background:${free ? L[key] : 'conic-gradient(#FF4F4F,#FFD43B,#4CFF7A,#22D3FF,#6A5CFF,#FF4FD8,#FF4F4F)'}"></i><input type="color" data-cc="${key}" value="${free ? L[key] : '#FF4FD8'}"></label></div>`; };
+    return `<div class="stLbl">${label}</div><div class="stSw small stRow"><label class="stFree ${free ? 'on' : ''}" aria-label="Couleur libre"><i style="background:${free ? L[key] : 'conic-gradient(#FF4F4F,#FFD43B,#4CFF7A,#22D3FF,#6A5CFF,#FF4FD8,#FF4F4F)'}"></i><input type="color" data-cc="${key}" value="${free ? L[key] : '#FF4FD8'}"></label>${pal.map((h, i) => `<button data-c="${key}" data-i="${i}" class="${L[key] === i ? 'on' : ''}" aria-label="Couleur ${i + 1}"><i style="background:${h}"></i></button>`).join('')}</div>`; };
+  const LOOK_BASE = { outfit: 'none', topP: 'none', bottomP: 'none', glasses: 'none', hat: 'none', paint: 'none', patches: [], text: '' };
+  const PRESETS = { f: [['Festival', { top: 'crop', topC: 12, bottom: 'shorts', bottomC: 6, shoes: 'boots', shoesC: 2, hat: 'bucket', hatC: 0, glasses: 'sun', jewel: ['bracelets', 'hoops'], paint: 'glitter', paintC: 0 }],
+      ['Club', { outfit: 'slip', outfitC: 1, shoes: 'loafers', shoesC: 1, jewel: ['hoops', 'necklace'] }], ['Chill', { top: 'hoodie', topC: 11, bottom: 'joggers', bottomC: 14, shoes: 'sneakers', shoesC: 0, hat: 'beanie', hatC: 3, jewel: ['bracelets'] }],
+      ['Rave', { top: 'crop', topC: 1, topP: 'flames', topPC: 15, bottom: 'flare', bottomC: 1, shoes: 'chunky', shoesC: 1, glasses: 'led', jewel: ['glowstick', 'bracelets'], paint: 'stars', paintC: 1 }],
+      ['Été', { top: 'tank', topC: 7, topP: 'dots', topPC: 0, bottom: 'skirt', bottomC: 0, shoes: 'sandals', shoesC: 2, glasses: 'round', jewel: ['hoops'] }], ['Hiver', { top: 'jacket', topC: 3, bottom: 'jeans', bottomC: 1, shoes: 'boots', shoesC: 1, hat: 'beanie', hatC: 5, jewel: ['necklace'] }]],
+    m: [['Festival', { top: 'tank', topC: 0, topP: 'tiedye', bottom: 'bermuda', bottomC: 4, shoes: 'canvas', shoesC: 0, hat: 'bucket', hatC: 12, glasses: 'sun', jewel: ['bracelets'] }],
+      ['Club', { top: 'shirt', topC: 1, bottom: 'jeans', bottomC: 1, shoes: 'chunky', shoesC: 1, jewel: ['watch', 'necklace'] }], ['Chill', { top: 'hoodie', topC: 14, bottom: 'joggers', bottomC: 1, shoes: 'sneakers', shoesC: 0, hat: 'cap', hatC: 3, jewel: ['bracelets'] }],
+      ['Rave', { top: 'tee', topC: 1, topP: 'tiedye', topPC: 0, bottom: 'cargo', bottomC: 1, shoes: 'chunky', shoesC: 1, glasses: 'led', jewel: ['glowstick'], paint: 'bolt', paintC: 1 }],
+      ['Été', { top: 'polo', topC: 6, bottom: 'shorts', bottomC: 2, bottomP: 'none', shoes: 'sandals', shoesC: 2, hat: 'cap', hatC: 0, glasses: 'sun', jewel: ['bracelets'] }], ['Hiver', { top: 'jacket', topC: 4, bottom: 'chinos', bottomC: 1, shoes: 'boots', shoesC: 9, hat: 'beanie', hatC: 15, jewel: ['watch'] }]] };
+  const lookOf = cfg => Object.fromEntries(LOOK_KEYS.filter(k => cfg[k] !== undefined).map(k => [k, JSON.parse(JSON.stringify(cfg[k]))]).concat(cfg.text ? [['text', cfg.text]] : []));
+  const myLooks = () => { if (!Array.isArray(ST.me.looks)) { let v = []; try { v = JSON.parse(localStorage.getItem('oneera.looks') || '[]'); } catch (_) {} ST.me.looks = Array.isArray(v) ? v.filter(x => x && x.cfg && typeof x.name === 'string').slice(0, 6) : []; } return ST.me.looks; };
+  const saveLooks = () => { try { localStorage.setItem('oneera.looks', JSON.stringify(myLooks())); } catch (_) {} };
+  const applyLook = lk => { push(); Object.assign(L, JSON.parse(JSON.stringify({ ...LOOK_BASE, ...lk }))); if (!L.text) delete L.text; pop(); draw(); try { navigator.vibrate && navigator.vibrate(12); } catch (_) {} };
+  const lookTile = (lk, label, i, mine) => `<div class="stLook"><button data-look="${i}" data-mine="${mine ? 1 : 0}" aria-label="Mettre le look ${esc(label)}"><span class="th">${avatar2SVG({ ...L, ...LOOK_BASE, ...lk }, { view: undefined, style: 'width:100%;height:100%' })}</span><b>${esc(label)}</b></button>${mine ? `<button class="stLookX" data-lookx="${i}" aria-label="Supprimer ${esc(label)}">✕</button>` : ''}</div>`;
+  const motifs = (key, ckey, view) => `<div class="stLbl">Motif</div><div class="stTiles stMot">${AV2.motif.map(([k, n]) => { const on = (L[key] || 'none') === k; return `<button data-k="${key}" data-v="${k}" class="${on ? 'on' : ''}" aria-pressed="${on}" aria-label="${n}" title="${n}"><span class="th">${avatar2SVG({ ...L, [key]: k }, { view, style: 'width:100%;height:100%' })}</span><b>${n}</b></button>`; }).join('')}</div>${L[key] && L[key] !== 'none' ? colors(ckey, AV2.cloth, 'Couleur du motif') : ''}`;
   const draw = () => {
     $$('#gd button', el).forEach(b => b.classList.toggle('on', b.dataset.g === L.g)); $$('#tb button', el).forEach(b => b.classList.toggle('on', b.dataset.t === tab));
     const G = L.g, one = L.outfit && L.outfit !== 'none';
     bd.innerHTML = ({
-      body: () => `<div class="stLbl">Silhouette</div>${tiles('build', AV2.build[G], undefined)}<div class="stLbl">Taille</div><div class="seg small" id="ht">${AV2.height.map(([k, n]) => `<button data-h="${k}" class="${L.height === k ? 'on' : ''}">${n}</button>`).join('')}</div>${colors('skin', AV2.skin, 'Teint')}<div class="stLbl">Posture</div>${tiles('pose', AV2.pose, undefined)}`,
-      face: () => `<div class="stLbl">Yeux</div>${tiles('eyes', AV2.eyes, 'head')}${colors('eyeC', AV2.eyeC, 'Couleur des yeux')}<div class="stLbl">Sourire</div>${tiles('mouth', AV2.mouth, 'head')}${G === 'm' ? `<div class="stLbl">Barbe</div>${tiles('beard', AV2.beard, 'head')}` : ''}`,
-      hair: () => `${tiles('hair', AV2.hair[G], 'hair')}${colors('hairC', AV2.hairC, 'Couleur')}`,
-      top: () => `<div class="stLbl">Tenue une pièce</div>${tiles('outfit', AV2.outfit[G], undefined)}${one ? colors('outfitC', AV2.cloth, 'Couleur de la tenue') : `<div class="stLbl">Haut</div>${tiles('top', AV2.top[G], 'torso')}${colors('topC', AV2.cloth, 'Couleur du haut')}`}`,
-      bottom: () => one ? `<div class="tiny" style="padding:12px 0">Tu portes une tenue une pièce. Choisis « Haut + bas » dans l’onglet Haut pour changer le bas.</div>` : `${tiles('bottom', AV2.bottom[G], 'legs')}${colors('bottomC', AV2.cloth, 'Couleur')}`,
-      shoes: () => `${tiles('shoes', AV2.shoes, 'feet', { bottom: 'shorts', outfit: 'none' })}${colors('shoesC', AV2.cloth, 'Couleur')}`,
+      body: () => `${colors('skin', AV2.skin, 'Teint')}<div class="stLbl">Silhouette</div>${tiles('build', AV2.build[G], undefined)}<div class="stLbl">Taille</div><div class="seg small" id="ht">${AV2.height.map(([k, n]) => `<button data-h="${k}" class="${L.height === k ? 'on' : ''}">${n}</button>`).join('')}</div><div class="stLbl">Posture</div>${tiles('pose', AV2.pose, undefined)}`,
+      face: () => `${colors('eyeC', AV2.eyeC, 'Couleur des yeux')}<div class="stLbl">Yeux</div>${tiles('eyes', AV2.eyes, 'head')}<div class="stLbl">Sourire</div>${tiles('mouth', AV2.mouth, 'head')}${G === 'm' ? `<div class="stLbl">Barbe</div>${tiles('beard', AV2.beard, 'head')}` : ''}`,
+      hair: () => `${colors('hairC', AV2.hairC, 'Couleur')}${tiles('hair', AV2.hair[G], 'hair')}`,
+      top: () => `${one ? colors('outfitC', AV2.cloth, 'Couleur de la tenue') : colors('topC', AV2.cloth, 'Couleur du haut')}${L.outfit === 'midi' ? '' : motifs('topP', 'topPC', one ? undefined : 'torso')}${one ? '' : `<div class="stLbl">Haut</div>${tiles('top', AV2.top[G], 'torso')}`}<div class="stLbl">Tenue une pièce</div>${tiles('outfit', AV2.outfit[G], undefined)}`,
+      bottom: () => one ? `<div class="tiny" style="padding:12px 0">Tu portes une tenue une pièce. Choisis « Haut + bas » dans l’onglet Haut pour changer le bas.</div>` : `${colors('bottomC', AV2.cloth, 'Couleur')}${motifs('bottomP', 'bottomPC', 'legs')}<div class="stLbl">Coupe</div>${tiles('bottom', AV2.bottom[G], 'legs')}`,
+      shoes: () => `${colors('shoesC', AV2.cloth, 'Couleur')}${tiles('shoes', AV2.shoes, 'feet', { bottom: 'shorts', outfit: 'none' })}`,
+      looks: () => { const mine = myLooks(), G = L.g, P = PRESETS[G] || PRESETS.m;
+        return `<div class="stLbl">Mes looks <span class="stHint">${mine.length}/6 · ton visage et ton corps restent les mêmes</span></div>
+        <div class="stTiles stLooks">${mine.map((lk, i) => lookTile(lk.cfg, lk.name, i, true)).join('')}${mine.length < 6 ? `<button class="stLookAdd" id="lkadd" aria-label="Enregistrer ma tenue actuelle comme look"><span>+</span><b>Enregistrer ma tenue</b></button>` : ''}</div>
+        <div class="stLbl">Idées de looks</div><div class="stTiles stLooks">${P.map(([n, lk], i) => lookTile(lk, n, i, false)).join('')}</div>`; },
       fun: () => { const chest = !['bandeau', 'slip', 'midi', 'suit', 'jacket', 'openshirt', 'overalls'].includes(one ? L.outfit : L.top);
         return `<div class="stLbl">Humeur</div>${tiles('mood', AV2.mood, 'head')}
         <div class="stLbl">Maquillage festival</div>${tiles('paint', AV2.paint, 'head')}${L.paint && L.paint !== 'none' ? colors('paintC', AV2.neon, 'Couleur du maquillage') : ''}
@@ -4534,12 +4643,12 @@ V.avatarPick = (onDone, step = true, init = null) => {
         <div class="stTxt"><input class="inp" id="tx" maxlength="14" placeholder="TEAM LÉA, ton surnom…" value="${esc(L.text || '')}" autocomplete="off" autocapitalize="characters" enterkeyhint="done"><button class="btn sm" id="txok" style="width:auto;padding:0 16px">OK</button></div><div class="small" id="txm" style="min-height:18px"></div>
         <div class="stLbl">Patchs <span class="stHint">3 maximum</span></div>${tiles('patches', AV2.patches, 'torso', { top: chest ? (one ? 'tee' : L.top) : 'tee', outfit: chest ? L.outfit : 'none' })}
         <div class="stLbl">Lumières <span class="stHint">bâton lumineux et lunettes LED dans « Style »</span></div>${colors('glowC', AV2.neon, 'Couleur néon')}`; },
-      acc: () => `<div class="stLbl">Lunettes</div>${tiles('glasses', AV2.glasses, 'head')}<div class="stLbl">Couvre-chef</div>${tiles('hat', AV2.hat, 'hair')}${L.hat !== 'none' ? colors('hatC', AV2.cloth, 'Couleur') : ''}<div class="stLbl">Bijoux (plusieurs possibles)</div>${tiles('jewel', AV2.jewel, 'torso', { pose: 'relax' })}`
+      acc: () => `<div class="stLbl">Lunettes</div>${tiles('glasses', AV2.glasses, 'head')}<div class="stLbl">Couvre-chef</div>${L.hat !== 'none' ? colors('hatC', AV2.cloth, 'Couleur du couvre-chef') : ''}${tiles('hat', AV2.hat, 'hair')}<div class="stLbl">Bijoux (plusieurs possibles)</div>${tiles('jewel', AV2.jewel, 'torso', { pose: 'relax' })}`
     })[tab]();
-    big.innerHTML = avatar2SVG(L, { pedestal: false, style: 'width:100%;height:100%' }); cam(); $('#un', el).disabled = !undo.length; $('#mpi', el).src = av2URI(L);
+    big.innerHTML = avatar2SVG(L, { pedestal: false, live: true, style: 'width:100%;height:100%' }); cam(); $('#un', el).disabled = !undo.length; $('#mpi', el).src = av2URI(L);
   };
   // caméra du studio : zoom sur le visage pour cheveux / visage / accessoires, sur le buste pour le haut, sur les pieds pour les chaussures
-  const CAM = { fun: [0, -56, 200, 290], face: [22, -52, 156, 200], hair: [16, -60, 168, 214], acc: [16, -60, 168, 214], top: [0, -30, 200, 300], bottom: [4, 120, 192, 292], shoes: [52, 318, 96, 92] }, FULL = [14, -26, 172, 450]; // cadrages pour la tête agrandie (×1,2 autour du menton)
+  const CAM = { fun: [0, -56, 200, 290], face: [22, -52, 156, 200], hair: [16, -60, 168, 214], acc: [16, -60, 168, 214], top: [0, -30, 200, 300], bottom: [4, 120, 192, 292], shoes: [22, 292, 156, 172] }, FULL = [14, -26, 172, 450]; // cadrages pour la tête agrandie (×1,2 autour du menton)
   let camV = FULL.slice(), camT = 0;
   // Vue en pied : cadrage calculé sur la vraie taille de la scène, pour que la tête passe sous la barre du haut (Femme / Homme)
   const fullCam = () => { const st = el.querySelector('.stStage'), tp = el.querySelector('.stTop'); if (!st || !tp) return FULL;
@@ -4559,21 +4668,24 @@ V.avatarPick = (onDone, step = true, init = null) => {
       if (key === 'jewel' || key === 'patches') { const cur = Array.isArray(L[key]) ? L[key] : []; if (cur.includes(v)) L[key] = cur.filter(x => x !== v); else if (key === 'patches' && cur.length >= 3) { toast('3 patchs maximum : retire-en un d’abord'); undo.pop(); return; } else L[key] = [...cur, v]; }
       else L[key] = v; pop(); draw(); }
     if (c) { push(); L[c.dataset.c] = +c.dataset.i; pop(); draw(); } if (h) { push(); L.height = h.dataset.h; pop(); draw(); } };
-  bd.addEventListener('input', e => { const cc = e.target.closest('[data-cc]'); if (!cc) return; if (!bd._colPushed) { push(); bd._colPushed = true; } L[cc.dataset.cc] = cc.value.toUpperCase(); big.innerHTML = avatar2SVG(L, { pedestal: false, style: 'width:100%;height:100%' }); const sv = big.querySelector('svg'); sv && sv.setAttribute('viewBox', camV.join(' ')); const i = cc.previousElementSibling; if (i) i.style.background = cc.value; });
+  bd.addEventListener('input', e => { const cc = e.target.closest('[data-cc]'); if (!cc) return; if (!bd._colPushed) { push(); bd._colPushed = true; } L[cc.dataset.cc] = cc.value.toUpperCase(); big.innerHTML = avatar2SVG(L, { pedestal: false, live: true, style: 'width:100%;height:100%' }); const sv = big.querySelector('svg'); sv && sv.setAttribute('viewBox', camV.join(' ')); const i = cc.previousElementSibling; if (i) i.style.background = cc.value; });
   bd.addEventListener('change', e => { if (e.target.closest('[data-cc]')) { bd._colPushed = false; pop(); draw(); } });
   const setText = () => { const inp = $('#tx', el), m = $('#txm', el); if (!inp) return; const v = inp.value.normalize('NFC').replace(/[<>"&`\\]/g, '').trim().replace(/\s+/g, ' ').slice(0, 14);
     if (v && isOffensiveText(v)) { m.style.color = '#C0392B'; m.textContent = 'Ce texte n’est pas autorisé : tes amis le verront.'; return; }
     push(); L.text = v; m.style.color = '#1E8E5A'; m.textContent = v ? 'Texte ajouté ✓' : 'Texte retiré';
     const noChest = ['bandeau', 'slip', 'midi', 'suit', 'jacket', 'openshirt', 'overalls'];
     if (v && (L.outfit && L.outfit !== 'none' ? noChest.includes(L.outfit) : noChest.includes(L.top))) { L.outfit = 'none'; L.top = L.g === 'f' ? 'tee' : 'tee'; m.textContent = 'Texte ajouté ✓ · haut changé en tee-shirt pour l’afficher'; } pop(); const keep = m.textContent; draw(); const m2 = $('#txm', el); if (m2) { m2.style.color = '#1E8E5A'; m2.textContent = keep; } };
-  bd.addEventListener('click', e => { if (e.target.closest('#txok')) setText(); });
+  bd.addEventListener('click', e => { if (e.target.closest('#txok')) setText();
+    const x = e.target.closest('[data-lookx]'); if (x) { const mine = myLooks(), i = +x.dataset.lookx, n = mine[i]?.name; mine.splice(i, 1); saveLooks(); draw(); toast(`Look « ${n} » supprimé`); return; }
+    const b = e.target.closest('[data-look]'); if (b) { const i = +b.dataset.look; const lk = b.dataset.mine === '1' ? myLooks()[i]?.cfg : (PRESETS[L.g] || PRESETS.m)[i]?.[1]; if (lk) applyLook(lk); return; }
+    if (e.target.closest('#lkadd')) { const mine = myLooks(); if (mine.length >= 6) return; const n = `Look ${mine.length + 1}`; mine.push({ name: n, cfg: lookOf(L) }); saveLooks(); draw(); toast(`Tenue enregistrée dans « Mes looks »`); } });
   bd.addEventListener('keydown', e => { if (e.target.id === 'tx' && e.key === 'Enter') { e.preventDefault(); setText(); e.target.blur(); } });
   $('#un', el).onclick = () => { const p = undo.pop(); if (p) { Object.keys(L).forEach(k => delete L[k]); Object.assign(L, JSON.parse(p)); draw(); } };
   let spinning = false;
   const shuffle = () => { const G = L.g, r = a => a[Math.floor(Math.random() * a.length)]; const one = Math.random() < (G === 'f' ? .25 : .1);
     Object.assign(L, { mood: Math.random() < .5 ? r(AV2.mood)[0] : 'none', paint: Math.random() < .3 ? r(AV2.paint.slice(1))[0] : 'none', paintC: Math.floor(Math.random() * AV2.neon.length), patches: Math.random() < .25 ? [r(AV2.patches)[0]] : [], build: r(AV2.build[G])[0], skin: Math.floor(Math.random() * AV2.skin.length), hair: r(AV2.hair[G])[0], hairC: Math.floor(Math.random() * 10), eyes: r(AV2.eyes)[0], mouth: r(AV2.mouth)[0], outfit: one ? r(AV2.outfit[G].slice(1))[0] : 'none', outfitC: Math.floor(Math.random() * AV2.cloth.length), top: r(AV2.top[G])[0], topC: Math.floor(Math.random() * AV2.cloth.length), bottom: r(AV2.bottom[G])[0], bottomC: Math.floor(Math.random() * AV2.cloth.length), shoes: r(AV2.shoes)[0], shoesC: Math.floor(Math.random() * AV2.cloth.length), pose: r(AV2.pose)[0], beard: G === 'm' ? r(AV2.beard)[0] : 'none', glasses: Math.random() < .25 ? r(AV2.glasses.slice(1))[0] : 'none', hat: 'none' }); };
   $('#rd', el).onclick = () => { if (spinning) return; spinning = true; push(); big.classList.add('spin'); let n = 0; const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const tick = () => { shuffle(); big.innerHTML = avatar2SVG(L, { pedestal: false, style: 'width:100%;height:100%' }); const sv = big.querySelector('svg'); sv && sv.setAttribute('viewBox', camV.join(' '));
+    const tick = () => { shuffle(); big.innerHTML = avatar2SVG(L, { pedestal: false, live: true, style: 'width:100%;height:100%' }); const sv = big.querySelector('svg'); sv && sv.setAttribute('viewBox', camV.join(' '));
       if (++n < (reduce ? 1 : 10)) setTimeout(tick, 60 + n * 14); else { big.classList.remove('spin'); spinning = false; pop(); draw(); try { navigator.vibrate && navigator.vibrate(20); } catch (_) {} } };
     tick(); };
   $('#pv', el).onclick = () => { const mp = $('#mp', el); mp.hidden = !mp.hidden; $('#pv', el).textContent = mp.hidden ? 'Voir sur la carte' : 'Voir en grand'; };
@@ -4584,16 +4696,16 @@ V.avatarPick = (onDone, step = true, init = null) => {
   draw();
 };
 V.avatarQuick = () => V.avatarPick(null, true);
-const LOOK_KEYS = ['outfit', 'outfitC', 'top', 'topC', 'bottom', 'bottomC', 'shoes', 'shoesC', 'glasses', 'hat', 'hatC', 'jewel', 'paint', 'paintC', 'patches', 'glowC'];
+const LOOK_KEYS = ['outfit', 'outfitC', 'top', 'topC', 'topP', 'topPC', 'bottom', 'bottomC', 'bottomP', 'bottomPC', 'shoes', 'shoesC', 'glasses', 'hat', 'hatC', 'jewel', 'paint', 'paintC', 'patches', 'glowC'];
 V.copyLook = (cfg, name) => { if (!cfg) return; closeSheet(true); const mine = JSON.parse(JSON.stringify(myAv2())); LOOK_KEYS.forEach(k => { if (cfg[k] !== undefined) mine[k] = JSON.parse(JSON.stringify(cfg[k])); else delete mine[k]; });
   V.avatarPick(() => { V.settings(); toast(`Look de ${esc(name)} copié ✨`); }, false, mine); setTimeout(() => toast(`Le look de ${esc(name)} est appliqué : ajuste-le puis enregistre`), 300); };
 const copyLookBtn = () => `<button class="link" id="cpl" style="justify-content:flex-start;gap:8px">✨ Copier son look</button>`;
 V.avatarEditor = (onDone) => V.avatarPick(onDone || (() => V.settings()), false);
 // profils et réglages : nouveau rendu
 const _settings8 = V.settings;
-V.settings = () => { _settings8(); const im = $('.scr .body .card img'); if (im) { im.src = av2URI(myAv2()); im.style.height = '120px'; } const b = $('#av'); if (b) b.onclick = () => V.avatarPick(() => V.settings(), false); };
+V.settings = () => { _settings8(); const im = $('.scr .body .card img'); if (im) { im.src = av2URI({ ...myAv2(), _live: 1 }); im.style.height = '120px'; } const b = $('#av'); if (b) b.onclick = () => V.avatarPick(() => V.settings(), false); };
 const _friendSheet8 = V.friendSheet;
-V.friendSheet = (id) => { _friendSheet8(id); const sb = $('.sheet .sbody'); const im = $('.sheet .sbody img'); if (im && FRIEND_AV2[id]) im.src = av2URI(FRIEND_AV2[id]);
+V.friendSheet = (id) => { _friendSheet8(id); const sb = $('.sheet .sbody'); const im = $('.sheet .sbody img'); if (im && FRIEND_AV2[id]) im.src = av2URI({ ...FRIEND_AV2[id], _live: 1 });
   if (sb && FRIEND_AV2[id] && !$('#cpl', sb)) { const more = $('#more', sb); (more || sb.lastElementChild).insertAdjacentHTML('beforebegin', copyLookBtn()); const f = FRIENDS.find(x => x.id === id); $('#cpl', sb).onclick = () => V.copyLook(FRIEND_AV2[id], f ? f.n : 'ton ami'); } };
 
 // ===== Version réelle : comptes, amis et positions via le serveur ONEERA (+ mode test de la carte) =====
@@ -5107,7 +5219,7 @@ V.friendSheet = (id) => {
   if (!realOn()) return _friendSheetDemo(id);
   const f = rFriend(id); if (!f) return;
   const s = rStatus(id), pos = s.here ? rPos(id) : null, m = pos ? rDist(pos) : null;
-  const sb = openSheet(`<div style="display:flex;gap:14px;align-items:center"><img src="${av2URI(FRIEND_AV2[id] || { g: 'm' })}" alt="" style="height:118px;width:auto"><div style="flex:1;min-width:0"><h2 class="h2" style="overflow-wrap:anywhere">${esc(f.displayName)}</h2>
+  const sb = openSheet(`<div style="display:flex;gap:14px;align-items:center"><img src="${av2URI({ ...(FRIEND_AV2[id] || { g: 'm' }), _live: 1 })}" alt="" style="height:118px;width:auto"><div style="flex:1;min-width:0"><h2 class="h2" style="overflow-wrap:anywhere">${esc(f.displayName)}</h2>
       <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px"><span class="pill ${s.cls}">${s.t}</span>${m ? `<span class="pill gray">${m} m · ${walkMin(m)} min</span><span class="pill gray">${esc(zoneOf(pos))}</span>` : ''}</div></div></div>
     ${pos && !s.live ? `<div class="card" style="background:#FFF7E8"><b style="font-size:14px">Position ancienne</b><div class="small">Dernière position connue : ${esc(zoneOf(pos))}, il y a ${fmtAge(rAgeMin(id))}. On n’invente jamais une position.</div></div>` : ''}
     ${!pos ? `<div class="card" style="background:#F3F5FB"><div class="small">${esc(f.displayName)} ne partage pas sa position sur ce lieu en ce moment. Tu peux lui écrire ou lui envoyer la tienne.</div></div>` : ''}

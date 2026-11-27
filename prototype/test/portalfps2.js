@@ -1,0 +1,11 @@
+const { chromium, devices } = require('playwright');
+(async () => { const b = await chromium.launch(); const c = await b.newContext({ ...devices['iPhone 14'] }); const p = await c.newPage();
+  await p.goto('http://127.0.0.1:8090/local.html?nouveau'); await p.waitForTimeout(400);
+  await p.evaluate(() => { quickSetup(); ST.tourDone = true; ST.introSeen = { bdf: 1 }; V.map(); emit(); }); await p.waitForTimeout(1500);
+  const cdp = await c.newCDPSession(p); await cdp.send('Emulation.setCPUThrottlingRate', { rate: 4 });
+  const m = (label, fn, ms) => p.evaluate(([fn, ms]) => new Promise(res => { const ts = []; let on = true; const f = t => { ts.push(t); if (on) requestAnimationFrame(f); }; requestAnimationFrame(f); eval(fn);
+      setTimeout(() => { on = false; res(Math.round((ts.length - 1) / ((ts[ts.length - 1] - ts[0]) / 1000))); }, ms); }), [fn, ms]).then(v => console.log(label.padEnd(36), v, 'img/s'));
+  await m('carte seule (référence)', '0', 2000);
+  await m('nuages qui se ferment + écran couvert', 'PORTAL.close({ logo: true })', 2000);
+  await m('nuages qui s’ouvrent sur la carte', 'PORTAL.open()', 1300);
+  await b.close(); })();

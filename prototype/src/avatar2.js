@@ -32,6 +32,7 @@ const AV2 = {
   mood: [['none', 'Naturel'], ['laugh', 'Fou rire'], ['wink', 'Clin d’œil'], ['love', 'Amoureux'], ['wow', 'Waouh'], ['cool', 'Cool'], ['yawn', 'Fatigué'], ['sleep', 'Endormi']],
   paint: [['none', 'Aucun'], ['glitter', 'Paillettes'], ['gems', 'Strass'], ['bolt', 'Éclair'], ['stars', 'Étoiles'], ['stripes', 'Traits'], ['heart', 'Cœur']],
   patches: [['bolt', 'Éclair'], ['heart', 'Cœur'], ['smile', 'Smiley'], ['star', 'Étoile'], ['flame', 'Flamme'], ['peace', 'Paix']],
+  motif: [['none', 'Uni'], ['stripes', 'Rayures'], ['check', 'Carreaux'], ['dots', 'Pois'], ['damier', 'Damier'], ['camo', 'Camouflage'], ['leopard', 'Léopard'], ['tiedye', 'Tie-dye'], ['flames', 'Flammes']],
   neon: ['#FF4FD8', '#22F5FF', '#7CFF6B', '#FFE14D', '#FF7A3D', '#9B7BFF', '#FFFFFF', '#FF3B5C']
 };
 const AV2_DEFAULT = { g: 'm', build: 'moyenne', height: 'moyenne', skin: 3, hair: 'messy', hairC: 2, eyes: 'open', eyeC: 0, mouth: 'smile', beard: 'none', outfit: 'none', top: 'tee', topC: 0, bottom: 'cargo', bottomC: 2, shoes: 'sneakers', shoesC: 0, glasses: 'none', hat: 'none', hatC: 1, jewel: ['bracelets'], pose: 'pocket' };
