@@ -91,6 +91,17 @@ describe('avatar vivant et personnalisation (serveur)', () => {
     expect((await call('PATCH', '/v1/me', { avatar: { topC: 'red;background:url(x)' } }, a.tok)).json.avatar.topC).toBeUndefined();
   });
 
+  it('avatar très personnalisé (costume, accessoires, piercings, tatouages, pieds…) : accepté en entier ; au-delà de 80 réglages, refusé', async () => {
+    const a = await signup('full@m.fr', 'Full');
+    const big: Record<string, unknown> = { g: 'f', costume: 'pompier', costumeC: 2, headAcc: 'flowers', accC: 3, acc: ['lanyard', 'bumbag', 'scarf'], piercing: ['nose', 'ears'], tattoo: ['stars', 'ankle'], feetAcc: ['toering', 'anklet', 'nails'], nailC: 0, faceAcc: ['freckles'], lips: 'rouge', shadow: 'or', liner: true, brows: 'arched', hairHL: 1, tuck: true, topP: 'leopard', topPC: '#E35D6A' };
+    for (let i = 0; i < 40; i++) big['k' + i] = i;
+    const r = await call('PATCH', '/v1/me', { avatar: big }, a.tok);
+    expect(r.status).toBe(200);
+    expect(r.json.avatar).toMatchObject({ costume: 'pompier', acc: ['lanyard', 'bumbag', 'scarf'], feetAcc: ['toering', 'anklet', 'nails'], liner: true, hairHL: 1, tuck: true });
+    for (let i = 40; i < 70; i++) big['k' + i] = i;
+    expect((await call('PATCH', '/v1/me', { avatar: big }, a.tok)).json.error).toBe('invalid_avatar');
+  });
+
   it('stickers : identifiants autorisés seulement ; activité et batterie relayées aux amis', async () => {
     const a = await signup('st1@m.fr', 'S1'), b = await signup('st2@m.fr', 'S2');
     await befriend(a, b, a.id);

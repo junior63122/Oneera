@@ -1,0 +1,12 @@
+const { chromium, devices } = require('playwright');
+const DIR = process.argv[2];
+(async () => { const b = await chromium.launch(); const c = await b.newContext({ ...devices['iPhone 13'], recordVideo: { dir: DIR, size: { width: 390, height: 664 } } }); const p = await c.newPage(); const errs = []; p.on('pageerror', e => errs.push(e.message));
+  await p.goto('http://127.0.0.1:8090/local.html?nouveau'); await p.waitForTimeout(1000);
+  await p.evaluate(() => { ST.me.name = 'Léa'; V.avatarPick(() => {}, false); }); await p.waitForTimeout(3600);
+  await p.screenshot({ path: DIR + '/a_hello.png' });
+  await p.click('#tb button[data-t="cost"]'); await p.waitForTimeout(800); await p.click('[data-k="costume"][data-v="pompier"]'); await p.waitForTimeout(900); await p.screenshot({ path: DIR + '/b_costume.png' }); await p.waitForTimeout(1800);
+  await p.click('[data-k="costume"][data-v="licorne"]'); await p.waitForTimeout(2600);
+  await p.click('#tb button[data-t="face"]'); await p.waitForTimeout(12500); await p.screenshot({ path: DIR + '/c_idle.png' });
+  await p.waitForTimeout(13000); await p.screenshot({ path: DIR + '/d_dance.png' }); await p.waitForTimeout(3000);
+  await p.click('#go'); await p.waitForTimeout(300); await p.screenshot({ path: DIR + '/e_save.png' }); await p.waitForTimeout(1200);
+  console.log('erreurs', errs); await c.close(); await b.close(); })();

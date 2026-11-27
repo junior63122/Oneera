@@ -141,6 +141,48 @@ V.avatarPick = (onDone, step = true, init = null) => {
   $('#later', el) && ($('#later', el).onclick = () => { if (step) markStep('avatar'); onDone ? onDone() : V.perms(); });
   $('#bk', el) && ($('#bk', el).onclick = () => onDone ? onDone() : V.settings());
   draw();
+  // ---------- l'avatar est vivant : il dit bonjour, réagit à ce qu'on lui met, s'impatiente si on traîne, danse en attendant
+  const stage = el.querySelector('.stStage'), bub = document.createElement('div'); bub.className = 'stSay'; bub.setAttribute('aria-live', 'polite'); bub.hidden = true; stage.append(bub);
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches, pick = a => a[Math.floor(Math.random() * a.length)], nm = (ST.me && ST.me.name) ? String(ST.me.name).split(' ')[0] : '';
+  let sayT = 0, gestT = 0, lastAct = Date.now(), lastSay = 0, idleN = 0, gesturing = false;
+  const say = (txt, ms = 2600) => { if (!document.body.contains(el)) return; clearTimeout(sayT); bub.textContent = txt; bub.hidden = false; bub.classList.remove('in'); void bub.offsetWidth; bub.classList.add('in'); lastSay = Date.now(); sayT = setTimeout(() => { bub.classList.remove('in'); setTimeout(() => { if (!bub.classList.contains('in')) bub.hidden = true; }, 260); }, ms); };
+  const renderAs = (cfg) => { big.innerHTML = avatar2SVG(cfg, { pedestal: false, live: true, style: 'width:100%;height:100%' }); const sv = big.querySelector('svg'); sv && sv.setAttribute('viewBox', camV.join(' ')); };
+  const gesture = (kind, ms = 2400) => { if (reduce || gesturing || spinning) return; gesturing = true; clearTimeout(gestT); const pose = kind === 'dance' ? 'dance' : 'wave';
+    renderAs({ ...L, pose, mood: kind === 'dance' ? 'laugh' : L.mood }); big.classList.add(kind === 'dance' ? 'dancing' : 'waving');
+    gestT = setTimeout(() => { big.classList.remove('waving', 'dancing'); gesturing = false; if (document.body.contains(el)) renderAs(L); }, ms); };
+  const tapFoot = () => { if (reduce) return; big.classList.remove('tapping'); void big.offsetWidth; big.classList.add('tapping'); setTimeout(() => big.classList.remove('tapping'), 1800); };
+  const LINES = {
+    hello: [`Coucou${nm ? ' ' + nm : ''} ! On me rend encore plus stylé ? 😎`, 'Hey ! Fais-moi beau, la soirée m’attend ✨', 'Salut toi ! Je suis prêt pour un relooking 💅'],
+    idle: ['Allez, dépêche-toi, je veux retourner dans la soirée ! 🎶', 'Tu choisis ? Mes potes m’attendent au bar 🍹', 'Psst… essaie les déguisements, je rêve d’être pompier 🚒', 'Je commence à avoir des fourmis dans les jambes…', 'Tu sais que tu peux mettre une couleur libre ? 🌈', 'Le DJ va commencer sans moi 😩'],
+    dance: ['Bon, je danse en t’attendant 💃', 'Ce son est trop bien, je peux pas rester immobile 🕺'],
+    like: ['Stylé !', 'Ça me va trop bien ✨', 'J’adore 😍', 'Validé ✅', 'Trop frais 🔥', 'On se croirait sur un podium'],
+    shuffle: ['Waouh, c’est moi ?!', 'Surprise ! J’aime bien 😄', 'Encore, encore ! 🎰'], undo: ['Ah oui, c’était mieux avant 😅', 'Retour en arrière !'],
+    save: [`Merci${nm ? ' ' + nm : ''} ! On retourne faire la fête 🎉`, 'Parfait ! Direction la piste 🪩', 'Je suis prêt, on y va ! 🚀']
+  };
+  const BY = {
+    costume: { pompier: 'Au feu ! Je m’en occupe 🚒', police: 'Police ! Personne ne bouge… sauf pour danser 😎', medecin: 'Docteur de garde, tout le monde respire 🩺', chef: 'Ce soir, c’est moi qui cuisine 👨‍🍳', pilote: 'Ici votre commandant de bord ✈️', astronaute: 'Un petit pas pour moi, un grand pas pour la soirée 🚀', chantier: 'Attention, chantier de la fête en cours 🚧', dj: 'Lâchez les watts ! 🎧', squelette: 'Ouh ouh… on se fait peur ? 💀', heros: 'Pas de panique, je suis là ! 🦸', vampire: 'Je ne bois que des cocktails, promis 🧛', ange: 'Je veille sur toi ce soir 😇', diable: 'Un peu de piment dans la soirée 😈', pirate: 'À l’abordage ! 🏴‍☠️', chat: 'Miaou 🐱', abeille: 'Bzzz, je butine de stand en stand 🐝', noel: 'Ho ho ho ! 🎅', sorciere: 'Abracadabra, la fête commence 🪄', licorne: 'Je suis magique 🦄✨', none: 'Ah, ça fait du bien d’être soi-même' },
+    shoes: { heels: 'Je vais souffrir mais je serai belle 💃', barefoot: 'Les pieds dans l’herbe 🌿', sandals: 'Mode été activé ☀️', boots: 'Prêt pour la boue du festival 🥾' },
+    piercing: 'Aïe ! Mais ça vaut le coup 😬', tattoo: 'Ça pique un peu… mais j’adore 🖤', headAcc: 'Ça c’est un accessoire !', hairHL: 'Mèches validées 🌈', lips: 'Bisou ! 💋', liner: 'Regard de star ✨', feetAcc: 'Même mes orteils sont stylés 💅', mood: 'C’est tout moi ça', motif: 'Ce motif, quelle audace !'
+  };
+  const react = (key, v) => { lastAct = Date.now(); idleN = 0; if (Date.now() - lastSay < 1200 && key !== 'costume') return;
+    let t = BY[key]; if (t && typeof t === 'object') t = t[v]; if (!t && /P$/.test(key)) t = BY.motif;
+    if (!t && Math.random() < .45) t = pick(LINES.like); if (!t) return;
+    say(t); if (key === 'costume' && v !== 'none') gesture('wave', 2000); };
+  bd.addEventListener('click', e => { const k = e.target.closest('[data-k]'), tg = e.target.closest('[data-tog]'), c2 = e.target.closest('[data-c]');
+    if (k) setTimeout(() => react(k.dataset.k, k.dataset.v), 60); else if (tg && tg.dataset.val === '1') setTimeout(() => react(tg.dataset.tog, 1), 60); else if (c2) { lastAct = Date.now(); idleN = 0; if (c2.dataset.c === 'hairHL') setTimeout(() => react('hairHL'), 60); } });
+  el.addEventListener('pointerdown', () => { lastAct = Date.now(); }, true);
+  $('#rd', el).addEventListener('click', () => { lastAct = Date.now(); setTimeout(() => say(pick(LINES.shuffle)), 900); });
+  $('#un', el).addEventListener('click', () => { lastAct = Date.now(); say(pick(LINES.undo), 1800); });
+  const go0 = $('#go', el).onclick; $('#go', el).onclick = () => { clearInterval(idleI); say(pick(LINES.save), 1400); if (!reduce) { gesturing = false; gesture('wave', 900); } setTimeout(go0, reduce ? 0 : 750); };
+  // bonjour à l'ouverture
+  setTimeout(() => { say(pick(LINES.hello), 3000); gesture('wave', 2200); }, 450);
+  // impatience : bulle + pied qui tape, puis il danse en attendant ; et parfois un petit coucou
+  const idleI = setInterval(() => { if (!document.body.contains(el)) { clearInterval(idleI); return; } if (document.hidden || spinning) return;
+    const idle = Date.now() - lastAct;
+    if (idle > 11000 && idleN === 0) { idleN = 1; say(pick(LINES.idle), 3200); tapFoot(); }
+    else if (idle > 24000 && idleN === 1) { idleN = 2; say(pick(LINES.dance), 3000); gesture('dance', 4200); }
+    else if (idle > 40000 && idleN === 2) { idleN = 3; say(pick(LINES.idle), 3200); tapFoot(); }
+    else if (idle > 6000 && idleN === 0 && Math.random() < .04) { gesture('wave', 1800); } }, 1000);
 };
 V.avatarQuick = () => V.avatarPick(null, true);
 const LOOK_KEYS = ['costume', 'costumeC', 'headAcc', 'accC', 'acc', 'tuck', 'outfit', 'outfitC', 'top', 'topC', 'topP', 'topPC', 'bottom', 'bottomC', 'bottomP', 'bottomPC', 'shoes', 'shoesC', 'glasses', 'hat', 'hatC', 'jewel', 'paint', 'paintC', 'patches', 'glowC'];

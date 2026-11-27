@@ -151,7 +151,7 @@ export function createApi(opts: ApiOptions) {
     if (v === null || typeof v !== 'object' || Array.isArray(v)) throw new HttpError(400, 'invalid_avatar', 'Avatar invalide.');
     const out: Record<string, unknown> = {};
     const entries = Object.entries(v as Record<string, unknown>);
-    if (entries.length > 40) throw new HttpError(400, 'invalid_avatar', 'Avatar invalide.');
+    if (entries.length > 80) throw new HttpError(400, 'invalid_avatar', 'Avatar invalide.');
     for (const [k, x] of entries) {
       if (!TOKEN.test(k) || !k) continue;
       if (k === 'text') { if (typeof x !== 'string') continue; // texte sur le haut de l'avatar : court, propre, sans insulte

@@ -33,7 +33,7 @@ const COSTUME = {
   medecin: F => ({ outfit: 'none', top: 'tee', topC: '#3E9C94', bottom: 'chinos', bottomC: '#3E9C94', shoes: 'sneakers', shoesC: '#F4F1EA', _noPocket: 1 }),
   chef: F => ({ outfit: 'none', top: 'tee', topC: '#F7F5EF', bottom: 'chinos', bottomC: '#2B2B33', bottomP: 'check', bottomPC: '#F4F1EA', shoes: 'sneakers', shoesC: '#1C1C21', _hatOn: 1 }),
   pilote: F => ({ outfit: 'none', top: 'shirt', topC: '#F7F7F5', bottom: 'chinos', bottomC: '#1B2440', shoes: 'loafers', shoesC: '#1C1C21', _hatOn: 1 }),
-  astronaute: F => ({ outfit: 'jumpsuit', outfitC: '#ECEDF1', shoes: 'boots', shoesC: '#E2E4EA', _sleeve: 100, _sleeveC: '#ECEDF1', _handC: '#F4F5F8', _hatOn: 1 }),
+  astronaute: F => ({ outfit: 'jumpsuit', outfitC: '#ECEDF1', shoes: 'boots', shoesC: '#E2E4EA', _sleeve: 100, _sleeveC: '#ECEDF1', _handC: '#F4F5F8', _hatOn: 1, _hood: 1, hair: F ? 'pixie' : 'crop' }), // cheveux rentrés dans le casque
   chantier: F => ({ outfit: 'none', top: 'tee', topC: '#3E4A5C', bottom: 'jeans', bottomC: '#4F6E95', shoes: 'boots', shoesC: '#8A5A2B', tuck: true, _hatOn: 1, _handC: '#C9A23A' }),
   dj: F => ({ outfit: 'none', top: 'hoodie', topC: '#1C1C21', bottom: 'cargo', bottomC: '#1C1C21', shoes: 'chunky', shoesC: '#FFFFFF', glasses: 'sun', pose: 'wave' }),
   squelette: F => ({ outfit: 'jumpsuit', outfitC: '#141416', shoes: 'sneakers', shoesC: '#141416', _sleeve: 100, _sleeveC: '#141416', _handC: '#141416', paint: 'none' }),
@@ -146,7 +146,8 @@ function avX(st, G) { const c = G.c, F = G.F, k = c.costume, out = [];
     if (has(c, 'tattoo', 'neckstar')) push(avStar(100 - 7, yN - 6, 2.4, '#2D3A5A', 'opacity=".75"'));
   }
   // =================== visage (avant les yeux)
-  if (st === 'face') {
+  if (st === 'face') { // modelé du visage : ombre sous la ligne des cheveux, lumière douce sur la joue, narines
+    push(`<defs><radialGradient id="${G.u}hs"><stop offset="0" stop-color="#3A1E10" stop-opacity=".22"/><stop offset="1" stop-color="#3A1E10" stop-opacity="0"/></radialGradient><radialGradient id="${G.u}rl"><stop offset="0" stop-color="#FFFFFF" stop-opacity=".2"/><stop offset="1" stop-color="#FFFFFF" stop-opacity="0"/></radialGradient></defs><ellipse cx="100" cy="50" rx="30" ry="9" fill="url(#${G.u}hs)"/><ellipse cx="80" cy="84" rx="11" ry="9" fill="url(#${G.u}rl)"/><ellipse cx="${100 - 3.4}" cy="92.6" rx="1.6" ry="1" fill="#3A1E10" opacity=".22"/><ellipse cx="${100 + 3.4}" cy="92.6" rx="1.6" ry="1" fill="#3A1E10" opacity=".22"/>`);
     if (k === 'squelette') push(`<path d="M68 70 C68 46 82 36 100 36 C118 36 132 46 132 70 C132 86 126 98 116 104 L84 104 C74 98 68 86 68 70 Z" fill="#F2EFE6" opacity=".96"/>${[-1, 1].map(s => `<ellipse cx="${100 + s * 15}" cy="79" rx="12" ry="10.5" fill="#141416"/>`).join('')}<path d="M100 86 l-4 8 h8 Z" fill="#141416"/>`);
     if (has(c, 'faceAcc', 'freckles')) push([[-24, 88], [-20, 91], [-27, 92], [-17, 89], [-22, 95], [24, 88], [20, 91], [27, 92], [17, 89], [22, 95], [-6, 86], [6, 86]].map(([x, y], i) => `<circle cx="${100 + x}" cy="${y}" r="${i % 3 ? .9 : 1.15}" fill="${shd(G.sk, -.38)}" opacity=".7"/>`).join(''));
     if (has(c, 'faceAcc', 'mole')) push(`<circle cx="${100 + 13}" cy="99" r="1.3" fill="${shd(G.sk, -.6)}"/>`);
