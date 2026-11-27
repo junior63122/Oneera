@@ -1,5 +1,5 @@
 // Généré par scripts/sync-web.mjs — ne pas modifier à la main.
-export const WEB_VERSION = "1795780764610";
+export const WEB_VERSION = "1795804564521";
 export const WEB_FILES: [string, number][] = [
   ["a/av/2_happy.webp", require("./web/a/av/2_happy.webp")],
   ["a/av/3_happy.webp", require("./web/a/av/3_happy.webp")],

@@ -727,3 +727,6 @@ details.phone{background:#F7F7F9;border-radius:14px;padding:12px 14px}details.ph
 .st2 .stDot{display:inline-block;width:10px;height:10px;border-radius:50%;vertical-align:-1px;box-shadow:inset 0 0 0 1px rgba(0,0,0,.2)}
 .st2 .stRes button .th{aspect-ratio:1}
 .searching .stTabs button.on,.searching.st2 .stTabs button.on{color:#9196AA!important;border-bottom-color:transparent!important}
+#portal .pLg.night b{color:#EDEBFF}#portal .pLg.night i{background:#B9B4F0}
+#portal .pLg .dots{display:flex;gap:2px;position:relative}
+#screen.pIn .toast,#screen.pCov .toast{visibility:hidden}

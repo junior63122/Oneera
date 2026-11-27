@@ -731,6 +731,9 @@ details.phone{background:#F7F7F9;border-radius:14px;padding:12px 14px}details.ph
 .st2 .stDot{display:inline-block;width:10px;height:10px;border-radius:50%;vertical-align:-1px;box-shadow:inset 0 0 0 1px rgba(0,0,0,.2)}
 .st2 .stRes button .th{aspect-ratio:1}
 .searching .stTabs button.on,.searching.st2 .stTabs button.on{color:#9196AA!important;border-bottom-color:transparent!important}
+#portal .pLg.night b{color:#EDEBFF}#portal .pLg.night i{background:#B9B4F0}
+#portal .pLg .dots{display:flex;gap:2px;position:relative}
+#screen.pIn .toast,#screen.pCov .toast{visibility:hidden}
 
 </style></head><body><script>
 // ===== Données de démonstration (fictives) =====
@@ -1651,57 +1654,37 @@ const pCloudSpr = {}; function pSpr(kind) { if (pCloudSpr[kind]) return pCloudSp
 function portalPalette() {
   const nk = nightK((20 * 60 + nowMin()) % 1440), kind = nk > .5 ? 'night' : nk > .05 ? 'dusk' : 'day';
   return { kind, P: {
-    day: { top: '#FFFFFF', mid: '#F2F5FB', low: '#D3DDEE', sh: '#A9BBD8', fill: ['#EEF3FB', '#DDE6F4'], glow: 'rgba(255,248,226,.55)', dot: '#6C7AA6' },
-    dusk: { top: '#FFF8F4', mid: '#F8E8EE', low: '#DDBFD6', sh: '#B293BF', fill: ['#F6E7EE', '#E4CCDD'], glow: 'rgba(255,214,190,.5)', dot: '#8E6A9A' },
-    night: { top: '#E9E8FF', mid: '#C9C6F0', low: '#8F8AC8', sh: '#5B5598', fill: ['#BDB9EA', '#9C97D4'], glow: 'rgba(190,180,255,.35)', dot: '#4B4590' } }[kind] };
+    day: { veil: ['#CBD5E3', '#AAB8CC'], fog: '255,255,255', deep: '150,166,190', glow: 'rgba(255,248,226,.55)' },
+    dusk: { veil: ['#DCC6D4', '#B99CB4'], fog: '255,246,250', deep: '170,130,160', glow: 'rgba(255,214,190,.5)' },
+    night: { veil: ['#262646', '#15152C'], fog: '178,174,230', deep: '70,66,128', glow: 'rgba(190,180,255,.3)' } }[kind] };
 }
-// ---------- sprites : cumulus stylisés, chaque lobe ombré (relief), base aplatie plus sombre, ombre portée bleutée
-const pSprCache = {};
-function pPuff(kind, v, P) { const key = kind + v; if (pSprCache[key]) return pSprCache[key];
-  const W = 460, H = 300, c = document.createElement('canvas'); c.width = W; c.height = H; const g = c.getContext('2d'); const R = i => fxRnd(v * 97 + i * 13 + 5);
-  const lobes = [], base = 222;
-  const n0 = 5 + Math.floor(R(1) * 2); for (let i = 0; i < n0; i++) { const t = (i + .5) / n0, e = Math.sin(t * Math.PI); lobes.push([66 + t * 328 + (R(i + 2) - .5) * 18, base - 14 - e * 10 + (R(i + 9) - .5) * 12, 40 + e * 22 + R(i + 20) * 18, 0]); }
-  const n1 = 2 + Math.floor(R(3) * 2); for (let i = 0; i < n1; i++) { const t = (i + .5) / n1; lobes.push([130 + t * 200 + (R(i + 30) - .5) * 30, 150 + (R(i + 40) - .5) * 20, 70 + R(i + 50) * 24, 1]); }
-  if (R(4) > .3) lobes.push([190 + R(60) * 80, 96 + R(61) * 16, 56 + R(62) * 18, 2]);
-  const order = lobes.slice().sort((a, b) => b[3] - a[3] || a[1] - b[1]); // sommets (fond) d'abord, rangée du bas (devant) ensuite
-  g.save(); g.translate(8, 16); g.fillStyle = P.sh; g.globalAlpha = .38; g.filter = 'blur(6px)'; order.forEach(([x, y, r]) => { g.beginPath(); g.arc(x, y, r * .96, 0, 7); g.fill(); }); g.filter = 'none'; g.restore();
-  const hexA = (h, a) => { const n = parseInt(h.slice(1), 16); return `rgba(${n >> 16},${(n >> 8) & 255},${n & 255},${a})`; };
-  const sil = () => { g.beginPath(); order.forEach(([x, y, r]) => { g.moveTo(x + r, y); g.arc(x, y, r, 0, 7); }); };
-  // une seule masse (les lobes se fondent, pas de contour entre eux), teinte d'ombre ; puis la lumière vient du haut
-  sil(); g.fillStyle = P.low; g.fill(); g.save(); sil(); g.clip();
-  const vg = g.createLinearGradient(0, 60, 0, base + 60); vg.addColorStop(0, P.mid); vg.addColorStop(.6, P.low); vg.addColorStop(1, P.sh); g.fillStyle = vg; g.fillRect(0, 0, W, H);
-  order.forEach(([x, y, r]) => { const lx = x - r * .18, ly = y - r * .34, gr = g.createRadialGradient(lx, ly, 0, lx, ly, r * 1.02); gr.addColorStop(0, hexA(P.top, 1)); gr.addColorStop(.45, hexA(P.top, .92)); gr.addColorStop(.75, hexA(P.mid, .55)); gr.addColorStop(1, hexA(P.mid, 0));
-    g.fillStyle = gr; g.fillRect(lx - r * 1.1, ly - r * 1.1, r * 2.2, r * 2.2); });
-  const bg = g.createLinearGradient(0, base - 40, 0, base + 60); bg.addColorStop(0, hexA(P.sh, 0)); bg.addColorStop(1, hexA(P.sh, .55)); g.fillStyle = bg; g.fillRect(0, base - 40, W, 120);
-  g.restore();
-  return (pSprCache[key] = c); }
-
-// ---------- champ de nuages (grille décalée qui déborde de l'écran)
-function pField(W, H) { const cols = Math.ceil(W / 150) + 2, rows = Math.ceil(H / 118) + 2, out = []; let i = 0;
-  for (let r = 0; r < rows; r++) for (let q = 0; q < cols; q++, i++) { const x = (q - .5 + (r % 2) * .5) * (W + 300) / (cols - 1) - 150 + (fxRnd(i * 3 + 1) - .5) * 70, y = (r - .5) * (H + 240) / (rows - 1) - 120 + (fxRnd(i * 5 + 2) - .5) * 60;
-    const z = fxRnd(i * 7 + 3); out.push({ x, y, z, s: .62 + z * .55 + fxRnd(i * 11 + 4) * .18, v: i % 6, a: fxRnd(i * 13 + 5) * 6.283 }); }
-  return out.sort((a, b) => a.z - b.z); }
-
-// Une image : c = fermeture (0 → 1 : les nuages arrivent), o = ouverture (0 → 1 : ils se déchirent depuis le centre)
+// ---------- brouillard : textures douces et raccordables (des centaines de nappes floues), générées une fois
+const pFogCache = {};
+function pFogTex(kind, v, P) { const key = kind + v; if (pFogCache[key]) return pFogCache[key];
+  const N = 512, c = document.createElement('canvas'); c.width = c.height = N; const g = c.getContext('2d'); const R = i => fxRnd(v * 131 + i * 7 + 3);
+  for (let i = 0; i < 46; i++) { const x = R(i) * N, y = R(i + 500) * N, r = 40 + R(i + 900) * (v === 0 ? 150 : 110), a = (v === 0 ? .3 : .38) + R(i + 1300) * .32, col = R(i + 1700) < .42 ? P.deep : P.fog;
+    for (const dx of [-N, 0, N]) for (const dy of [-N, 0, N]) { const cx = x + dx, cy = y + dy; if (cx + r < 0 || cx - r > N || cy + r < 0 || cy - r > N) continue;
+      const gr = g.createRadialGradient(cx, cy, 0, cx, cy, r); gr.addColorStop(0, `rgba(${col},${a})`); gr.addColorStop(.55, `rgba(${col},${a * .45})`); gr.addColorStop(1, `rgba(${col},0)`); g.fillStyle = gr; g.fillRect(cx - r, cy - r, r * 2, r * 2); } }
+  return (pFogCache[key] = c); }
+// une image : c = fermeture (le brouillard arrive et s'épaissit), o = ouverture (on le traverse : il s'étire, s'éclaircit et se dissipe depuis le centre)
 function portalFrame(ctx, W, H, st, now) {
-  const { pal, field } = st, P = pal.P, cx = W / 2, cy = H * .46, diag = Math.hypot(W, H) / 2, c = st.c, o = st.o, t = (now - st.t0) / 1000;
+  const { pal } = st, P = pal.P, cx = W / 2, cy = H * .46, diag = Math.hypot(W, H) / 2, c = st.c, o = st.o, t = (now - st.t0) / 1000;
   ctx.clearRect(0, 0, W, H);
-  const fa = pSmooth(.35, .9, c) * (1 - pSmooth(0, .6, o)); // fond de nuages : garantit une couverture totale
-  if (fa > .002) { ctx.save(); ctx.globalAlpha = fa; const lg = ctx.createLinearGradient(0, 0, W * .4, H); lg.addColorStop(0, P.fill[0]); lg.addColorStop(1, P.fill[1]); ctx.fillStyle = lg; ctx.fillRect(0, 0, W, H);
-    if (o > 0) { ctx.globalCompositeOperation = 'destination-out'; const r0 = pE.in(o) * diag * 1.3, rg = ctx.createRadialGradient(cx, cy, r0, cx, cy, r0 + 220); rg.addColorStop(0, 'rgba(0,0,0,1)'); rg.addColorStop(1, 'rgba(0,0,0,0)'); ctx.fillStyle = rg; ctx.fillRect(0, 0, W, H); }
-    ctx.restore(); }
-  const Wf = W + 360, Hf = H + 300, dx = t * 26, dy = -t * 11; // dérive en diagonale, parallaxe selon la profondeur
-  for (const p of field) {
-    let x = ((p.x + dx * (.6 + p.z * .8)) % Wf + Wf) % Wf - 180, y = ((p.y + dy * (.6 + p.z * .8)) % Hf + Hf) % Hf - 150;
-    let vx = x - cx, vy = y - cy; const d = Math.hypot(vx, vy) || 1; if (d < 40) { vx = Math.cos(p.a); vy = Math.sin(p.a); } else { vx /= d; vy /= d; } const dn = Math.min(1, d / diag);
-    const ki = pE.out(pClamp((c - dn * .28) / .72)), kj = pE.in(pClamp(o * 1.35 - dn * .3 - p.z * .05));
-    const push = (1 - ki) * (diag * .9 + 160) + kj * (diag * 1.1 + 200);
-    x += vx * push; y += vy * push * .9;
-    const al = Math.min(1, ki * 1.6) * (1 - pSmooth(.55, 1, kj)); if (al <= .01) continue;
-    const sc = p.s * (1 + (1 - ki) * .35 + kj * .45), img = pPuff(pal.kind, p.v, P), w = img.width * sc * .78, h = img.height * sc * .78;
-    ctx.globalAlpha = al; ctx.drawImage(img, x - w / 2, y - h / 2, w, h); }
-  ctx.globalAlpha = 1;
-  const la = pSmooth(.75, 1, c) * (1 - pSmooth(0, .18, o)) * (st.logo ? 1 : 0); // logo + chargement pendant que tout est couvert
+  const va = pSmooth(.15, .85, c) * (1 - pSmooth(.05, .75, o));
+  if (va > .002) { ctx.save(); ctx.globalAlpha = va; const lg = ctx.createLinearGradient(0, 0, W * .3, H); lg.addColorStop(0, P.veil[0]); lg.addColorStop(1, P.veil[1]); ctx.fillStyle = lg; ctx.fillRect(0, 0, W, H); ctx.restore(); }
+  // 4 nappes, de la plus lointaine à la plus proche : parallaxe, arrivée par les côtés, traversée à l'ouverture
+  const layers = [[0, .55, 14, -1], [1, .8, 24, 1], [2, 1.05, 36, -1], [3, 1.35, 52, 1]];
+  for (const [k, sc0, sp, side] of layers) { const tex = pFogTex(pal.kind, k, P), d = k / 3;
+    const ci = pE.out(pClamp((c - (1 - d) * .25) / .75)), oj = pE.in(pClamp(o * 1.3 - (1 - d) * .3));
+    const a = ci * (1 - oj) * (k === 3 ? .75 : 1); if (a <= .01) continue;
+    const sc = sc0 * (1 + oj * (1.2 + d)) * Math.max(W, H) / 512 * 1.15, tw = 512 * sc;
+    const ox = (((t * sp * side) + (1 - ci) * side * W * .6) % tw + tw) % tw, oy = ((t * sp * .35) % tw + tw) % tw; // décalage toujours replié : texture sans couture
+    ctx.globalAlpha = a; const z = 1 + oj * .6; // en traversant la nappe, elle grossit vers nous
+    for (let x = -(ox % tw) - tw; x < W + tw; x += tw) for (let y = -(oy % tw) - tw; y < H + tw; y += tw) ctx.drawImage(tex, cx + (x - cx) * z, cy + (y - cy) * z, tw * z + 1, tw * z + 1);
+    ctx.globalAlpha = 1; }
+  // trouée qui s'agrandit depuis le centre à l'ouverture
+  if (o > 0) { ctx.save(); ctx.globalCompositeOperation = 'destination-out'; const r0 = pE.in(o) * diag * 1.25, rg = ctx.createRadialGradient(cx, cy, r0 * .2, cx, cy, r0 + 260); rg.addColorStop(0, 'rgba(0,0,0,1)'); rg.addColorStop(1, 'rgba(0,0,0,0)'); ctx.fillStyle = rg; ctx.fillRect(0, 0, W, H); ctx.restore(); }
+  const la = pSmooth(.75, 1, c) * (1 - pSmooth(0, .18, o)) * (st.logo ? 1 : 0);
   if (st.lg) { const v = la.toFixed(3); if (st.lgA !== v) { st.lgA = v; st.lg.style.opacity = v; st.lg.style.visibility = la > .01 ? 'visible' : 'hidden'; }
     if (la > .01 && !st.lgImg) { const mk = pLogoMark(); if (mk) { st.lgImg = true; st.lg.querySelector('img').src = mk.toDataURL('image/png'); } } }
 }
@@ -1711,11 +1694,11 @@ function pLayer() {
   if (PORTAL.el && document.body.contains(PORTAL.el)) return PORTAL.st;
   const el = document.getElementById('portal') || document.createElement('div'); el.id = 'portal'; el.setAttribute('aria-hidden', 'true'); el.classList.add('clouds');
   const cv = document.createElement('canvas'); el.append(cv); if (!el.parentNode) SCREEN.append(el);
-  const W = SCREEN.clientWidth, H = SCREEN.clientHeight, dpr = 1; // nuages doux : résolution standard (4× moins de pixels) ; logo net en HTML par-dessus cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr); cv.style.width = W + 'px'; cv.style.height = H + 'px';
+  const W = SCREEN.clientWidth, H = SCREEN.clientHeight, dpr = 1; /* brouillard doux : résolution standard (4× moins de pixels) ; logo net en HTML par-dessus */ cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr); cv.style.width = W + 'px'; cv.style.height = H + 'px';
   const ctx = cv.getContext('2d'); ctx.scale(dpr, dpr);
   el.addEventListener('pointerdown', () => { const s = PORTAL.st; if (!s) return; s.skip = true; if (s.anim) s.anim.dur = Math.min(s.anim.dur, performance.now() - s.anim.t0 + 160); });
-  const lg = document.createElement('div'); lg.className = 'pLg ' + portalPalette().kind; lg.innerHTML = '<img alt=""><b>ONEERA</b><i></i><i></i><i></i>'; lg.style.opacity = '0'; el.append(lg);
-  const st = { el, ctx, lg, W, H, c: 0, o: 0, logo: false, pal: portalPalette(), field: pField(W, H), t0: performance.now(), raf: 0, anim: null };
+  const lg = document.createElement('div'); lg.className = 'pLg ' + portalPalette().kind; lg.innerHTML = '<img alt=""><b>ONEERA</b><span class="dots"><i></i><i></i><i></i></span>'; lg.style.opacity = '0'; el.append(lg);
+  const st = { el, ctx, lg, W, H, c: 0, o: 0, logo: false, pal: portalPalette(), t0: performance.now(), raf: 0, anim: null };
   const loop = (now) => { if (!document.body.contains(el)) { SCREEN.classList.remove('pCov'); if (PORTAL.st === st) { PORTAL.el = PORTAL.st = null; PORTAL.busy = false; } return; }
     if (st.anim) { const a = st.anim, k = pClamp((now - a.t0) / a.dur); st[a.key] = a.from + (a.to - a.from) * k; if (k >= 1) { st.anim = null; a.done(); } }
     const cov = st.c >= 1 && !st.o; if (cov !== st.cov) { st.cov = cov; SCREEN.classList.toggle('pCov', cov); } // écran couvert : la carte dessous ne se dessine plus
@@ -1728,10 +1711,10 @@ const pClosed = () => !!(PORTAL.st && PORTAL.st.c >= 1 && !PORTAL.st.o);
 
 // Fermer : les nuages recouvrent l'écran (résout quand tout est couvert)
 PORTAL.close = (o = {}) => { if (!portalAllowed() || !SCREEN) return Promise.resolve(); PORTAL.busy = true; const st = pLayer(); st.logo = !!o.logo; st.o = 0;
-  if (o.instant || st.c >= 1) { st.c = 1; return Promise.resolve(); } return pTween(st, 'c', 1, o.dur || 480); };
+  if (o.instant || st.c >= 1) { st.c = 1; return Promise.resolve(); } return pTween(st, 'c', 1, o.dur || 700); };
 // Ouvrir : les nuages se déchirent depuis le centre ; toucher l'écran accélère
 PORTAL.open = (o = {}) => { const st = PORTAL.st; if (!st) { PORTAL.busy = false; return Promise.resolve(); } st.c = 1; o.onStart && o.onStart();
-  return pTween(st, 'o', 1, st.skip ? 320 : (o.dur || 1150)).then(() => { if (PORTAL.st === st) pDrop(); }); };
+  return pTween(st, 'o', 1, st.skip ? 320 : (o.dur || 1400)).then(() => { if (PORTAL.st === st) pDrop(); }); };
 
 // Entrée sur la carte : la carte est déjà en place (un peu plus large) sous les nuages ; ils s'ouvrent et on zoome doucement
 PORTAL.enter = (mode = 'sky', hold = 420) => {
@@ -1739,8 +1722,8 @@ PORTAL.enter = (mode = 'sky', hold = 420) => {
   if (PORTAL.st && PORTAL.st.entering) return Promise.resolve();
   const mv = MV, at = [ST.me.pos[0], ST.me.pos[1] - 8], zoom = VENUE.zoom; mv.intro = null;
   SCREEN.classList.add('pIn');
-  return PORTAL.close({ logo: mode === 'logo' }).then(() => { PORTAL.st.entering = true; mv.alive && mv.center(at, Math.max(mv.minS, zoom * .84)); return pWait(hold); })
-    .then(() => PORTAL.open({ onStart: () => { setTimeout(() => mv.alive && mv.flyTo(at, zoom, 1300), 60); setTimeout(() => { SCREEN.classList.remove('pIn'); SCREEN.classList.add('pShow'); setTimeout(() => SCREEN.classList.remove('pShow'), 1400); }, 380); } }))
+  return PORTAL.close({ logo: mode === 'logo' }).then(() => { PORTAL.st.entering = true; mv.alive && mv.center(at, Math.max(mv.minS, zoom)); /* la carte est déjà à sa place, fixe : seul le brouillard bouge */ return pWait(hold); })
+    .then(() => PORTAL.open({ onStart: () => { setTimeout(() => { SCREEN.classList.remove('pIn'); SCREEN.classList.add('pShow'); setTimeout(() => SCREEN.classList.remove('pShow'), 1400); }, 380); } }))
     .then(() => SCREEN.classList.remove('pIn'));
 };
 // Sortie : les nuages se referment sur la carte (le logo apparaît quand on quitte l'univers)
