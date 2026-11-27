@@ -9,7 +9,7 @@ const { chromium, devices } = require('playwright');
   await p.goto('http://127.0.0.1:8090/local.html?portal=1'); await p.waitForTimeout(250);
   ok(await p.evaluate(() => !!document.querySelector('#portal canvas')), 'ouverture : le portail démarre sur le logo (même image que l’écran de démarrage)');
   ok(await p.evaluate(() => SCREEN.classList.contains('pIn')), 'pendant l’entrée, l’interface de la carte est cachée');
-  await p.waitForTimeout(250); ok(await p.evaluate(() => { const cv = document.querySelector('#portal canvas'), r = cv && cv.getBoundingClientRect(); return !!cv && cv.width >= SCREEN.clientWidth && cv.height >= SCREEN.clientHeight && r.width >= SCREEN.clientWidth - 1 && r.height >= SCREEN.clientHeight - 1; }), 'le brouillard couvre tout l’écran (jamais un petit rectangle)');
+  await p.waitForTimeout(250); ok(await p.evaluate(() => { const S = SCREEN.getBoundingClientRect(), ls = [...document.querySelectorAll('#portal .fogL, #portal .fogV')]; return ls.length === 5 && ls.every(l => { const r = l.getBoundingClientRect(); return r.left <= S.left + 1 && r.top <= S.top + 1 && r.right >= S.right - 1 && r.bottom >= S.bottom - 1; }); }), 'le brouillard couvre tout l’écran (jamais un petit rectangle)');
   await p.waitForTimeout(3900);
   ok(await p.evaluate(() => !document.querySelector('#portal')), 'le portail se termine seul (≈ 3 s) et disparaît');
   ok(await p.evaluate(() => !!document.querySelector('#mv') && getComputedStyle(document.querySelector('.mapTop')).opacity === '1'), 'on se pose sur la carte, interface révélée');

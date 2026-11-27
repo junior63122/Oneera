@@ -42,23 +42,18 @@ function pFogTex(kind, v, P) { const key = kind + v; if (pFogCache[key]) return 
       const gr = g.createRadialGradient(cx, cy, 0, cx, cy, r); gr.addColorStop(0, `rgba(${col},${a})`); gr.addColorStop(.55, `rgba(${col},${a * .45})`); gr.addColorStop(1, `rgba(${col},0)`); g.fillStyle = gr; g.fillRect(cx - r, cy - r, r * 2, r * 2); } }
   return (pFogCache[key] = c); }
 // une image : c = fermeture (le brouillard arrive et s'épaissit), o = ouverture (on le traverse : il s'étire, s'éclaircit et se dissipe depuis le centre)
+// Une image : on ne redessine rien, on déplace seulement des calques (transform + opacité) → animé par la puce graphique, fluide même sur un vieux téléphone
 function portalFrame(ctx, W, H, st, now) {
-  const { pal } = st, P = pal.P, cx = W / 2, cy = H * .46, diag = Math.hypot(W, H) / 2, c = st.c, o = st.o, t = (now - st.t0) / 1000;
-  ctx.clearRect(0, 0, W, H);
-  const va = pSmooth(.15, .85, c) * (1 - pSmooth(.05, .75, o));
-  if (va > .002) { ctx.save(); ctx.globalAlpha = va; const lg = ctx.createLinearGradient(0, 0, W * .3, H); lg.addColorStop(0, P.veil[0]); lg.addColorStop(1, P.veil[1]); ctx.fillStyle = lg; ctx.fillRect(0, 0, W, H); ctx.restore(); }
-  // 4 nappes, de la plus lointaine à la plus proche : parallaxe, arrivée par les côtés, traversée à l'ouverture
-  const layers = [[0, .55, 14, -1], [1, .8, 24, 1], [2, 1.05, 36, -1], [3, 1.35, 52, 1]];
-  for (const [k, sc0, sp, side] of layers) { const tex = pFogTex(pal.kind, k, P), d = k / 3;
-    const ci = pE.out(pClamp((c - (1 - d) * .25) / .75)), oj = pE.in(pClamp(o * 1.3 - (1 - d) * .3));
-    const a = ci * (1 - oj) * (k === 3 ? .75 : 1); if (a <= .01) continue;
-    const sc = sc0 * (1 + oj * (1.2 + d)) * Math.max(W, H) / 512 * 1.15, tw = 512 * sc;
-    const ox = (((t * sp * side) + (1 - ci) * side * W * .6) % tw + tw) % tw, oy = ((t * sp * .35) % tw + tw) % tw; // décalage toujours replié : texture sans couture
-    ctx.globalAlpha = a; const z = 1 + oj * .6; // en traversant la nappe, elle grossit vers nous
-    for (let x = -(ox % tw) - tw; x < W + tw; x += tw) for (let y = -(oy % tw) - tw; y < H + tw; y += tw) ctx.drawImage(tex, cx + (x - cx) * z, cy + (y - cy) * z, tw * z + 1, tw * z + 1);
-    ctx.globalAlpha = 1; }
-  // trouée qui s'agrandit depuis le centre à l'ouverture
-  if (o > 0) { ctx.save(); ctx.globalCompositeOperation = 'destination-out'; const r0 = pE.in(o) * diag * 1.25, rg = ctx.createRadialGradient(cx, cy, r0 * .2, cx, cy, r0 + 260); rg.addColorStop(0, 'rgba(0,0,0,1)'); rg.addColorStop(1, 'rgba(0,0,0,0)'); ctx.fillStyle = rg; ctx.fillRect(0, 0, W, H); ctx.restore(); }
+  const P = st.pal.P, c = st.c, o = st.o, t = (now - st.t0) / 1000;
+  if (!st.L) { const mk = (cls, css) => { const d = document.createElement('div'); d.className = cls; d.style.cssText = css; st.el.insertBefore(d, st.lg); return d; };
+    st.V = mk('fogV', `background:linear-gradient(160deg,${P.veil[0]},${P.veil[1]});opacity:0`);
+    st.L = [0, 1, 2, 3].map(k => { const tex = pFogTex(st.pal.kind, k, P), u = tex._url || (tex._url = tex.toDataURL('image/png')), sz = Math.round(Math.max(W, H) * [.62, .82, 1.05, 1.35][k]);
+      const d = mk('fogL', `background-image:url(${u});background-size:${sz}px ${sz}px;left:${-sz}px;top:${-sz}px;width:${W + sz * 2}px;height:${H + sz * 2}px;opacity:0`); d._sz = sz; return d; }); }
+  const va = pSmooth(.15, .85, c) * (1 - pSmooth(.05, .75, o)); st.V.style.opacity = va.toFixed(3);
+  [[14, -1], [24, 1], [36, -1], [52, 1]].forEach(([sp, side], k) => { const d = k / 3, el = st.L[k], sz = el._sz;
+    const ci = pE.out(pClamp((c - (1 - d) * .25) / .75)), oj = pE.in(pClamp(o * 1.3 - (1 - d) * .3)), a = ci * (1 - oj) * (k === 3 ? .75 : 1);
+    const ox = (((t * sp * side) + (1 - ci) * side * W * .6) % sz + sz) % sz, oy = ((t * sp * .35) % sz + sz) % sz, z = 1 + oj * (1.2 + d);
+    el.style.opacity = a.toFixed(3); el.style.transform = `translate3d(${(W / 2) * (1 - z) + ox * z}px,${(H * .46) * (1 - z) + oy * z}px,0) scale(${z.toFixed(4)})`; });
   const la = pSmooth(.75, 1, c) * (1 - pSmooth(0, .18, o)) * (st.logo ? 1 : 0);
   if (st.lg) { const v = la.toFixed(3); if (st.lgA !== v) { st.lgA = v; st.lg.style.opacity = v; st.lg.style.visibility = la > .01 ? 'visible' : 'hidden'; }
     if (la > .01 && !st.lgImg) { const mk = pLogoMark(); if (mk) { st.lgImg = true; st.lg.querySelector('img').src = mk.toDataURL('image/png'); } } }
@@ -68,19 +63,23 @@ function portalFrame(ctx, W, H, st, now) {
 function pLayer() {
   if (PORTAL.el && document.body.contains(PORTAL.el)) return PORTAL.st;
   const el = document.getElementById('portal') || document.createElement('div'); el.id = 'portal'; el.setAttribute('aria-hidden', 'true'); el.classList.add('clouds');
-  const cv = document.createElement('canvas'); el.append(cv); if (!el.parentNode) SCREEN.append(el);
-  const W = SCREEN.clientWidth, H = SCREEN.clientHeight, dpr = 1; /* brouillard doux : résolution standard (4× moins de pixels) ; logo net en HTML par-dessus */ cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr); cv.style.width = W + 'px'; cv.style.height = H + 'px';
+  const cv = document.createElement('canvas'); cv.width = cv.height = 1; cv.className = 'fogC'; el.append(cv); if (!el.parentNode) SCREEN.append(el); // repère gardé pour les tests ; le brouillard est en calques
+  const W = SCREEN.clientWidth, H = SCREEN.clientHeight, dpr = 1; /* brouillard doux : résolution standard (4× moins de pixels) ; logo net en HTML par-dessus */ 
   const ctx = cv.getContext('2d'); ctx.scale(dpr, dpr);
   el.addEventListener('pointerdown', () => { const s = PORTAL.st; if (!s) return; s.skip = true; if (s.anim) s.anim.dur = Math.min(s.anim.dur, performance.now() - s.anim.t0 + 160); });
   const lg = document.createElement('div'); lg.className = 'pLg ' + portalPalette().kind; lg.innerHTML = '<img alt=""><b>ONEERA</b><span class="dots"><i></i><i></i><i></i></span>'; lg.style.opacity = '0'; el.append(lg);
   const st = { el, ctx, lg, W, H, c: 0, o: 0, logo: false, pal: portalPalette(), t0: performance.now(), raf: 0, anim: null };
   const loop = (now) => { if (!document.body.contains(el)) { SCREEN.classList.remove('pCov'); if (PORTAL.st === st) { PORTAL.el = PORTAL.st = null; PORTAL.busy = false; } return; }
     if (st.anim) { const a = st.anim, k = pClamp((now - a.t0) / a.dur); st[a.key] = a.from + (a.to - a.from) * k; if (k >= 1) { st.anim = null; a.done(); } }
-    const cov = st.c >= 1 && !st.o; if (cov !== st.cov) { st.cov = cov; SCREEN.classList.toggle('pCov', cov); } // écran couvert : la carte dessous ne se dessine plus
+    const cov = st.c >= 1 && !st.o; if (cov !== st.cov || cov !== SCREEN.classList.contains('pCov')) { st.cov = cov; SCREEN.classList.toggle('pCov', cov); }
+    if (PORTAL.hideUI && !SCREEN.classList.contains('pIn')) SCREEN.classList.add('pIn'); // un écran qui se monte remet ses classes à zéro : on recache l'interface // écran couvert : la carte dessous ne se dessine plus
     try { portalFrame(ctx, W, H, st, now); } catch (_) {} st.raf = requestAnimationFrame(loop); };
   st.raf = requestAnimationFrame(loop); PORTAL.el = el; PORTAL.st = st; return st; }
-const pTween = (st, key, to, dur) => new Promise(r => { if (st.anim) st.anim.done(); st.anim = { key, from: st[key], to, dur, t0: performance.now(), done: r }; });
-function pDrop() { SCREEN && SCREEN.classList.remove('pCov'); const st = PORTAL.st; if (st) cancelAnimationFrame(st.raf); PORTAL.el && PORTAL.el.remove(); PORTAL.el = PORTAL.st = null; PORTAL.busy = false; }
+// une animation qui en remplace une autre sur la même valeur reprend ses « attentes » : personne n'est libéré trop tôt (sinon l'interface apparaît avant le brouillard)
+const pTween = (st, key, to, dur) => new Promise(r => { const prev = st.anim, waiters = [r]; if (prev) { if (prev.key === key) waiters.push(...prev.waiters); else prev.waiters.forEach(f => f()); }
+  if (prev && prev.key === key && prev.to === to) { prev.waiters = waiters; return; } // même cible : on garde l'animation en cours
+  st.anim = { key, from: st[key], to, dur, t0: performance.now(), waiters, done: () => waiters.forEach(f => f()) }; });
+function pDrop() { PORTAL.hideUI = false; SCREEN && SCREEN.classList.remove('pIn'); SCREEN && SCREEN.classList.remove('pCov'); const st = PORTAL.st; if (st) cancelAnimationFrame(st.raf); PORTAL.el && PORTAL.el.remove(); PORTAL.el = PORTAL.st = null; PORTAL.busy = false; }
 const pWait = ms => new Promise(r => { const t0 = performance.now(), tick = () => (PORTAL.st && PORTAL.st.skip) || performance.now() - t0 >= ms ? r() : setTimeout(tick, 40); tick(); });
 const pClosed = () => !!(PORTAL.st && PORTAL.st.c >= 1 && !PORTAL.st.o);
 
@@ -96,10 +95,10 @@ PORTAL.enter = (mode = 'sky', hold = 420) => {
   if (!portalAllowed() || !MV) return PORTAL.st ? PORTAL.open() : Promise.resolve();
   if (PORTAL.st && PORTAL.st.entering) return Promise.resolve();
   const mv = MV, at = [ST.me.pos[0], ST.me.pos[1] - 8], zoom = VENUE.zoom; mv.intro = null;
-  SCREEN.classList.add('pIn');
+  SCREEN.classList.add('pIn'); PORTAL.hideUI = true;
   return PORTAL.close({ logo: mode === 'logo' }).then(() => { PORTAL.st.entering = true; mv.alive && mv.center(at, Math.max(mv.minS, zoom)); /* la carte est déjà à sa place, fixe : seul le brouillard bouge */ return pWait(hold); })
-    .then(() => PORTAL.open({ onStart: () => { setTimeout(() => { SCREEN.classList.remove('pIn'); SCREEN.classList.add('pShow'); setTimeout(() => SCREEN.classList.remove('pShow'), 1400); }, 380); } }))
-    .then(() => SCREEN.classList.remove('pIn'));
+    .then(() => PORTAL.open({ onStart: () => { setTimeout(() => { PORTAL.hideUI = false; SCREEN.classList.remove('pIn'); SCREEN.classList.add('pShow'); setTimeout(() => SCREEN.classList.remove('pShow'), 1400); }, 380); } }))
+    .then(() => { PORTAL.hideUI = false; SCREEN.classList.remove('pIn'); });
 };
 // Sortie : les nuages se referment sur la carte (le logo apparaît quand on quitte l'univers)
 PORTAL.exit = (mode = 'sky') => { if (!portalAllowed() || !SCREEN) return Promise.resolve(); MV && MV.ov && (MV.ov.style.opacity = '0');
@@ -113,7 +112,7 @@ window.ONEERA_PORTAL = (o = {}) => o.dir === 'out' ? PORTAL.exit(o.mode || 'logo
 // 1. ouverture de l'app : écran de démarrage, les nuages arrivent sur le logo, puis s'ouvrent sur la carte
 PORTAL.launch = () => { let seen = false; try { seen = sessionStorage.getItem('oneera.portal') === '1'; sessionStorage.setItem('oneera.portal', '1'); } catch (_) {}
   if (seen || !portalAllowed() || !SCREEN) return;
-  const v = document.createElement('div'); v.id = 'portal'; v.className = 'veil'; v.setAttribute('aria-hidden', 'true'); v.innerHTML = `<img class="pre" src="${A}logo.webp" alt="">`; SCREEN.append(v); PORTAL.busy = true; $('#mv') && SCREEN.classList.add('pIn'); // voile immédiat : aucun flash
+  const v = document.createElement('div'); v.id = 'portal'; v.className = 'veil'; v.setAttribute('aria-hidden', 'true'); v.innerHTML = `<img class="pre" src="${A}logo-glow.webp" alt="">`; /* halo fondu dans le fond : aucun carré visible */ SCREEN.append(v); PORTAL.busy = true; PORTAL.hideUI = true; SCREEN.classList.add('pIn'); /* interface de la carte cachée dès la première image */ // voile immédiat : aucun flash
   setTimeout(() => PORTAL.close({ logo: true, dur: 560 }).then(() => { const im = v.querySelector('img.pre'); im && im.remove(); v.classList.remove('veil');
     return ($('#mv') && MV) ? PORTAL.enter('logo', 650) : pWait(650).then(() => PORTAL.open()); }), 40); };
 // 2. première visite d'un lieu (la carte vient d'être montée)

@@ -25,7 +25,9 @@ const secretKey = new TextEncoder().encode('loadtest-secret-0123456789-abcdef');
 
 /** Processus « téléphones » : connecte sa tranche d'utilisateurs, publie, mesure, renvoie ses chiffres. */
 async function clientWorker() {
-  const { port, eventId, users, duration, rate } = JSON.parse(process.env.LT_JOB!) as { port: number; eventId: string; users: string[]; duration: number; rate: number };
+  const { port, eventId, duration, rate } = JSON.parse(process.env.LT_JOB!) as { port: number; eventId: string; duration: number; rate: number };
+  // la liste des utilisateurs arrive par message (une variable d'environnement est limitée à quelques centaines de Ko)
+  const users = await new Promise<string[]>((r) => process.once('message', (m: { type: string; users: string[] }) => m.type === 'users' && r(m.users)));
   const lat: number[] = []; let sent = 0, received = 0, retries = 0, failed = 0; const t0 = Date.now();
   const clients: (WebSocket | undefined)[] = new Array(users.length);
   const onMsg = (d: unknown) => { const m = JSON.parse(String(d)) as ServerMsg; if (m.type === 'friend') { received++; if (Date.now() - t0 > 5000) lat.push(Date.now() - m.pos.t); } };
@@ -93,7 +95,8 @@ async function main() {
   if (WORKERS > 0) {
     const cpu0 = process.cpuUsage(); const slices = Array.from({ length: WORKERS }, (_, k) => users.filter((_, i) => i % WORKERS === k));
     const RATE = Number(process.env.RATE ?? 500);
-    const kids = slices.map((sl) => fork(process.argv[1], process.argv.slice(2), { env: { ...process.env, LT_JOB: JSON.stringify({ port, eventId, users: sl, duration: DURATION, rate: Math.max(1, Math.round(RATE / WORKERS)) }) }, execArgv: process.execArgv, stdio: ['ignore', 'inherit', 'inherit', 'ipc'] }));
+    const kids = slices.map((sl) => fork(process.argv[1], process.argv.slice(2), { env: { ...process.env, LT_JOB: JSON.stringify({ port, eventId, duration: DURATION, rate: Math.max(1, Math.round(RATE / WORKERS)) }) }, execArgv: process.execArgv, stdio: ['ignore', 'inherit', 'inherit', 'ipc'] }));
+    kids.forEach((k, i) => k.send({ type: 'users', users: slices[i] }));
     kids.forEach((k, i) => k.on('exit', (code) => { if (code) { console.error(`processus téléphones ${i} arrêté (code ${code})`); process.exit(1); } }));
     console.log(`argv1=${process.argv[1]} execArgv=${JSON.stringify(process.execArgv)}`);
     const ready = await Promise.all(kids.map((k) => new Promise<{ connectS: number }>((r) => k.on('message', (m: { type: string; connectS: number }) => m.type === 'ready' && r(m)))));

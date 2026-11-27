@@ -706,8 +706,6 @@ details.phone{background:#F7F7F9;border-radius:14px;padding:12px 14px}details.ph
 .st2 .stSay{position:absolute;left:50%;top:84px;z-index:6;max-width:min(78%,300px);transform:translateX(-50%) scale(.6);opacity:0;padding:10px 14px;border-radius:18px;background:#fff;color:#1E2033;font:750 14px/1.3 system-ui,-apple-system,sans-serif;text-align:center;box-shadow:0 8px 24px rgba(30,16,80,.25);pointer-events:none;transition:transform .32s cubic-bezier(.2,1.4,.4,1),opacity .22s}
 .st2 .stSay::after{content:'';position:absolute;left:50%;bottom:-7px;width:14px;height:14px;background:#fff;transform:translateX(-50%) rotate(45deg);border-radius:3px}
 .st2 .stSay.in{opacity:1;transform:translateX(-50%) scale(1)}
-#big.waving .avAr{animation:avWave .42s ease-in-out infinite alternate !important}
-#big.waving .avAl{animation:avWave .42s ease-in-out infinite alternate-reverse !important}
 #big.dancing svg{animation:avBounce .5s ease-in-out infinite alternate}
 #big.tapping svg{animation:avTap .3s ease-in-out 5}
 @keyframes avWave{from{transform:rotate(-9deg)}to{transform:rotate(9deg)}}
@@ -730,3 +728,17 @@ details.phone{background:#F7F7F9;border-radius:14px;padding:12px 14px}details.ph
 #portal .pLg.night b{color:#EDEBFF}#portal .pLg.night i{background:#B9B4F0}
 #portal .pLg .dots{display:flex;gap:2px;position:relative}
 #screen.pIn .toast,#screen.pCov .toast{visibility:hidden}
+#portal img.pre{width:200px;height:200px;margin:-100px 0 0 -100px} /* même image et même taille que l’écran de démarrage natif : passage invisible */
+/* vignettes du studio : images (rapides), squelette doux le temps du dessin */
+.st2 .stTiles .th .thI,.st2 .stLook .th .thI{width:100%;height:100%;display:block;object-fit:contain;-webkit-user-drag:none;user-select:none}
+.st2 .stTiles .th .thI:not([src]),.st2 .stLook .th .thI:not([src]){background:linear-gradient(100deg,#EFEDF8 30%,#F7F6FC 50%,#EFEDF8 70%);background-size:300% 100%;animation:thSk 1.1s linear infinite;border-radius:14px}
+@keyframes thSk{from{background-position:100% 0}to{background-position:0 0}}
+/* studio : les vignettes hors de l'écran ne sont ni mises en page ni dessinées (défilement et toucher instantanés) */
+.st2 .stTiles>button,.st2 .stTiles>.stLook{content-visibility:auto;contain-intrinsic-size:auto 120px}
+.st2 .stBody{contain:content}
+/* brouillard : calques composés par la puce graphique (aucun redessin) */
+#portal .fogV,#portal .fogL{position:absolute;pointer-events:none;will-change:transform,opacity;transform-origin:0 0;backface-visibility:hidden}
+#portal .fogV{inset:0}
+#portal .fogL{background-repeat:repeat}
+#portal canvas.fogC{position:absolute;width:1px;height:1px;opacity:0}
+#mepill{max-width:calc(100vw - 28px);overflow:hidden;text-overflow:ellipsis;white-space:nowrap} /* très petits écrans / gros zoom : la pastille ne sort jamais de l’écran */
