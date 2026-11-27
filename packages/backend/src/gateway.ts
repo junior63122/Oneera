@@ -79,6 +79,9 @@ export interface GatewayOptions {
   secret: Uint8Array;
   /** Débit maximal accepté par client (messages/s). */
   maxRate?: number;
+  /** Connexions simultanées maximales sur ce serveur : au-delà, on refuse proprement (code 1013, « réessaie ») au lieu de saturer
+   *  les descripteurs de fichiers et de perdre la base pour tout le monde. Défaut 15 000. */
+  maxConnections?: number;
   /** Intervalle d'écriture groupée (ms). */
   flushMs?: number;
   /** Durée de vie du cache d'audience (ms) — filet de sécurité en plus de NOTIFY. */
@@ -136,7 +139,7 @@ export class Gateway {
   private listener?: pg.Client;
   private pingTimer?: NodeJS.Timeout;
   private readonly offlineTimers = new Map<string, NodeJS.Timeout>(); // user|event → annonce différée
-  readonly stats = { received: 0, rejected: 0, delivered: 0, flushed: 0, flushErrors: 0, presence: 0, deadConnections: 0 };
+  readonly stats: { received: number; rejected: number; delivered: number; flushed: number; flushErrors: number; presence: number; deadConnections: number; refusedFull?: number } = { received: 0, rejected: 0, delivered: 0, flushed: 0, flushErrors: 0, presence: 0, deadConnections: 0, refusedFull: 0 };
 
   constructor(private readonly opts: GatewayOptions) {
     this.server = createServer((req, res) => {
@@ -185,6 +188,7 @@ export class Gateway {
   // ------------------------------------------------------------------ connexion
 
   private async onConnection(ws: WebSocket, req: IncomingMessage): Promise<void> {
+    if (this.wss.clients.size > (this.opts.maxConnections ?? 15000)) { this.stats.refusedFull = (this.stats.refusedFull ?? 0) + 1; ws.close(1013, 'server_full'); return; } // serveur plein : les connectés restent servis
     let userId: string;
     let eventId: string;
     try {
@@ -400,8 +404,9 @@ export class Gateway {
     try {
       await this.opts.pool.query('SELECT app.ingest_positions($1::jsonb)', [JSON.stringify(batch)]);
       this.stats.flushed += batch.length;
-    } catch {
+    } catch (e) {
       this.stats.flushErrors++;
+      if (this.stats.flushErrors <= 3) console.error('[oneera] enregistrement des positions impossible :', (e as Error).message, `(${batch.length} positions)`); // visible dans les journaux
     }
   }
 

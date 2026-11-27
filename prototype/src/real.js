@@ -213,7 +213,7 @@ async function realConnect() {
       else if (m.type === 'message') realOnMessage(m.message);
       else if (m.type === 'refresh') realSyncFriends().then(() => REAL.onFriends && REAL.onFriends()).catch(() => {});
       if (m.type === 'snapshot' || m.type === 'friend') realRefreshVisible(); };
-    ws.onclose = () => { REAL.wsOk = false; emit(); if (!realOn()) return; const d = [1, 2, 5, 10, 20][Math.min(REAL.retry++, 4)]; setTimeout(realConnect, d * 1000); };
+    ws.onclose = () => { REAL.wsOk = false; emit(); if (!realOn()) return; const d = [1, 2, 5, 10, 20][Math.min(REAL.retry++, 4)]; setTimeout(realConnect, d * 1000 * (.7 + Math.random() * .6)); }; /* délai varié : pas de retour en masse si le serveur était plein */
   } catch (_) { REAL.connecting = false; const d = [2, 5, 10, 20][Math.min(REAL.retry++, 3)]; setTimeout(realConnect, d * 1000); }
 }
 function realApplyPos(p) {
