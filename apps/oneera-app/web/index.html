@@ -735,7 +735,7 @@ details.phone{background:#F7F7F9;border-radius:14px;padding:12px 14px}details.ph
 #portal img.pre{width:200px;height:200px;margin:-100px 0 0 -100px} /* même image et même taille que l’écran de démarrage natif : passage invisible */
 /* vignettes du studio : images (rapides), squelette doux le temps du dessin */
 .st2 .stTiles .th .thI,.st2 .stLook .th .thI{width:100%;height:100%;display:block;object-fit:contain;-webkit-user-drag:none;user-select:none}
-.st2 .stTiles .th .thI:not([src]),.st2 .stLook .th .thI:not([src]){background:linear-gradient(100deg,#EFEDF8 30%,#F7F6FC 50%,#EFEDF8 70%);background-size:300% 100%;animation:thSk 1.1s linear infinite;border-radius:14px}
+.st2 .stTiles .th .thI[data-tq],.st2 .stLook .th .thI[data-tq]{background:linear-gradient(100deg,#EFEDF8 30%,#F7F6FC 50%,#EFEDF8 70%);background-size:300% 100%;animation:thSk 1.1s linear infinite;border-radius:14px}
 @keyframes thSk{from{background-position:100% 0}to{background-position:0 0}}
 /* studio : les vignettes hors de l'écran ne sont ni mises en page ni dessinées (défilement et toucher instantanés) */
 .st2 .stTiles>button,.st2 .stTiles>.stLook{content-visibility:auto;contain-intrinsic-size:auto 120px}
@@ -1716,7 +1716,7 @@ function pLayer() {
   const W = SCREEN.clientWidth, H = SCREEN.clientHeight, dpr = 1; /* brouillard doux : résolution standard (4× moins de pixels) ; logo net en HTML par-dessus */ 
   const ctx = cv.getContext('2d'); ctx.scale(dpr, dpr);
   el.addEventListener('pointerdown', () => { const s = PORTAL.st; if (!s) return; s.skip = true; if (s.anim) s.anim.dur = Math.min(s.anim.dur, performance.now() - s.anim.t0 + 160); });
-  const lg = document.createElement('div'); lg.className = 'pLg ' + portalPalette().kind; lg.innerHTML = '<img alt=""><b>ONEERA</b><span class="dots"><i></i><i></i><i></i></span>'; lg.style.opacity = '0'; el.append(lg);
+  const lg = document.createElement('div'); lg.className = 'pLg ' + portalPalette().kind; lg.innerHTML = '<img alt="" src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw=="><b>ONEERA</b><span class="dots"><i></i><i></i><i></i></span>'; lg.style.opacity = '0'; el.append(lg);
   const st = { el, ctx, lg, W, H, c: 0, o: 0, logo: false, pal: portalPalette(), t0: performance.now(), raf: 0, anim: null };
   const loop = (now) => { if (!document.body.contains(el)) { SCREEN.classList.remove('pCov'); if (PORTAL.st === st) { PORTAL.el = PORTAL.st = null; PORTAL.busy = false; } return; }
     if (st.anim) { const a = st.anim, k = pClamp((now - a.t0) / a.dur); st[a.key] = a.from + (a.to - a.from) * k; if (k >= 1) { st.anim = null; a.done(); } }
@@ -4948,7 +4948,7 @@ V.avatarPick = (onDone, step = true) => {
   const TABS = [['style', 'Style'], ['skin', 'Peau'], ['hair', 'Cheveux'], ['top', 'Haut'], ['bot', 'Bas'], ['shoe', 'Chaussures']];
   const el = mount(`${statusBar()}<div class="studio">
     <div class="stTop">${step ? '<span class="tiny" style="font-weight:800;color:var(--pri)">ÉTAPE 2 SUR 4</span>' : `<button class="rb" id="bk" aria-label="Retour">${I.back}</button>`}<b>Ton avatar</b><span style="flex:1"></span><button class="rb" id="un" aria-label="Annuler la dernière modification">${I.undo || '↶'}</button><button class="rb" id="rd" aria-label="Surprends-moi">${I.dice}</button></div>
-    <div class="stStage">${clouds()}<div class="stPed"></div><img id="big" alt="Ton avatar"><button class="stMapBtn" id="pv">Voir sur la carte</button><div class="stMap" id="mp" hidden><img src="${VENUE.map.src}" alt="" class="stMapBg" style="object-position:${ST.me.pos[0]}% ${ST.me.pos[1]}%"><div class="stMapMe"><span class="name">Moi</span><img id="mpi" alt=""><i></i></div></div></div>
+    <div class="stStage">${clouds()}<div class="stPed"></div><img id="big" alt="Ton avatar" src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw=="><button class="stMapBtn" id="pv">Voir sur la carte</button><div class="stMap" id="mp" hidden><img src="${VENUE.map.src}" alt="" class="stMapBg" style="object-position:${ST.me.pos[0]}% ${ST.me.pos[1]}%"><div class="stMapMe"><span class="name">Moi</span><img id="mpi" alt="" src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw=="><i></i></div></div></div>
     <div class="stPanel"><div class="seg" id="gd"><button data-g="f">Femme</button><button data-g="m">Homme</button></div>
       <div class="stTabs" id="tb">${TABS.map(t => `<button data-t="${t[0]}">${t[1]}</button>`).join('')}</div>
       <div class="stBody" id="bd"></div>
@@ -5041,7 +5041,7 @@ V.avatarPick = (onDone, step = true, init = null) => {
         <div class="stG" id="gd" role="group" aria-label="Genre de l'avatar"><button data-g="f">Femme</button><button data-g="m">Homme</button></div>
         <button class="rb" id="un" aria-label="Annuler la dernière modification">↶</button><button class="rb" id="rd" aria-label="Surprends-moi">${I.dice}</button></div>
       <button class="stMapBtn" id="pv">Voir sur la carte</button>
-      <div class="stMap" id="mp" hidden><img src="${VENUE.map.src}" alt="" class="stMapBg" style="object-position:${ST.me.pos[0]}% ${ST.me.pos[1]}%"><div class="stMapMe"><span class="name">Moi</span><img id="mpi" alt=""><i></i></div></div>
+      <div class="stMap" id="mp" hidden><img src="${VENUE.map.src}" alt="" class="stMapBg" style="object-position:${ST.me.pos[0]}% ${ST.me.pos[1]}%"><div class="stMapMe"><span class="name">Moi</span><img id="mpi" alt="" src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw=="><i></i></div></div>
       <button class="stSave" id="go">${step ? 'C’est moi !' : 'Enregistrer'}</button>
     </div>
     <div class="stPanel">
@@ -5053,7 +5053,7 @@ V.avatarPick = (onDone, step = true, init = null) => {
   // vignettes : images mémorisées (jamais recalculées deux fois) et dessinées progressivement, sans bloquer le toucher
   const TH = window.__avTH || (window.__avTH = new Map()); let TQ = [], tqN = 0, tqRaf = 0;
   const thumb = (cfg, view) => { const v = view || 'full', key = v + JSON.stringify(cfg); if (TH.has(key)) return `<img class="thI" src="${TH.get(key)}" alt="" draggable="false">`;
-    const id = ++tqN; TQ.push([id, cfg, v, key]); return `<img class="thI" data-tq="${id}" alt="" draggable="false">`; };
+    const id = ++tqN; TQ.push([id, cfg, v, key]); return `<img class="thI" data-tq="${id}" src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" alt="" draggable="false">`; }; // image transparente le temps du dessin (jamais d’image sans source)
   const flushThumbs = () => { cancelAnimationFrame(tqRaf); const run = () => { const t0 = performance.now(); while (TQ.length && performance.now() - t0 < 10) { const [id, cfg, v, key] = TQ.shift(), im = bd.querySelector(`img[data-tq="${id}"]`); if (!im) continue; let u = TH.get(key); if (!u) { u = av2URI(cfg, v); if (TH.size > 900) TH.clear(); TH.set(key, u); } im.src = u; im.removeAttribute('data-tq'); }
       if (TQ.length) tqRaf = requestAnimationFrame(run); }; tqRaf = requestAnimationFrame(run); };
   const MULTI = ['jewel', 'patches', 'acc', 'piercing', 'tattoo', 'feetAcc', 'faceAcc'];
@@ -5237,7 +5237,7 @@ V.avatarPick = (onDone, step = true, init = null) => {
     bub.dataset.side = side; bub.style.left = x + 'px'; bub.style.top = y + 'px'; bub.style.setProperty('--tail', tail + 'px'); };
   const say = (txt, ms = 2600) => { if (!document.body.contains(el)) return; clearTimeout(sayT); bub.textContent = txt; bub.hidden = false; bub.classList.remove('in'); placeBub(); void bub.offsetWidth; bub.classList.add('in'); lastSay = Date.now(); clearInterval(bub._follow); bub._follow = setInterval(() => { if (bub.hidden || !document.body.contains(el)) clearInterval(bub._follow); else placeBub(); }, 250); /* suit le visage si la caméra ou l'avatar bougent */ sayT = setTimeout(() => { bub.classList.remove('in'); setTimeout(() => { if (!bub.classList.contains('in')) bub.hidden = true; }, 260); }, ms); };
   window.__studioSay = say; window.__placeBub = placeBub; // utilisé par les tests de placement de la bulle
-  { const _cam = cam; cam = function () { _cam.apply(this, arguments); setTimeout(placeBub, 420); }; } // la caméra bouge (changement d'onglet) : la bulle suit le visage  const renderAs = (cfg) => { bigKey = ''; big.innerHTML = avatar2SVG(cfg, { pedestal: false, live: true, style: 'width:100%;height:100%' }); const sv = big.querySelector('svg'); sv && sv.setAttribute('viewBox', camV.join(' ')); };
+  { const _cam = cam; cam = function () { _cam.apply(this, arguments); setTimeout(placeBub, 420); }; } /* la caméra bouge (changement d'onglet) : la bulle suit le visage */
   const renderAs = (cfg) => { bigKey = ''; big.innerHTML = avatar2SVG(cfg, { pedestal: false, live: true, style: 'width:100%;height:100%' }); const sv = big.querySelector('svg'); sv && sv.setAttribute('viewBox', camV.join(' ')); };
   const gesture = (kind, ms = 2400) => { if (reduce || gesturing || spinning) return; gesturing = true; clearTimeout(gestT); const pose = kind === 'dance' ? 'dance' : 'wave';
     renderAs({ ...L, pose, mood: kind === 'dance' ? 'laugh' : L.mood }); big.classList.add(kind === 'dance' ? 'dancing' : 'waving');

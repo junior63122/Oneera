@@ -67,7 +67,7 @@ function pLayer() {
   const W = SCREEN.clientWidth, H = SCREEN.clientHeight, dpr = 1; /* brouillard doux : résolution standard (4× moins de pixels) ; logo net en HTML par-dessus */ 
   const ctx = cv.getContext('2d'); ctx.scale(dpr, dpr);
   el.addEventListener('pointerdown', () => { const s = PORTAL.st; if (!s) return; s.skip = true; if (s.anim) s.anim.dur = Math.min(s.anim.dur, performance.now() - s.anim.t0 + 160); });
-  const lg = document.createElement('div'); lg.className = 'pLg ' + portalPalette().kind; lg.innerHTML = '<img alt=""><b>ONEERA</b><span class="dots"><i></i><i></i><i></i></span>'; lg.style.opacity = '0'; el.append(lg);
+  const lg = document.createElement('div'); lg.className = 'pLg ' + portalPalette().kind; lg.innerHTML = '<img alt="" src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw=="><b>ONEERA</b><span class="dots"><i></i><i></i><i></i></span>'; lg.style.opacity = '0'; el.append(lg);
   const st = { el, ctx, lg, W, H, c: 0, o: 0, logo: false, pal: portalPalette(), t0: performance.now(), raf: 0, anim: null };
   const loop = (now) => { if (!document.body.contains(el)) { SCREEN.classList.remove('pCov'); if (PORTAL.st === st) { PORTAL.el = PORTAL.st = null; PORTAL.busy = false; } return; }
     if (st.anim) { const a = st.anim, k = pClamp((now - a.t0) / a.dur); st[a.key] = a.from + (a.to - a.from) * k; if (k >= 1) { st.anim = null; a.done(); } }

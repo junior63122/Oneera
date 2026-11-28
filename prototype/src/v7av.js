@@ -35,7 +35,7 @@ V.avatarPick = (onDone, step = true, init = null) => {
         <div class="stG" id="gd" role="group" aria-label="Genre de l'avatar"><button data-g="f">Femme</button><button data-g="m">Homme</button></div>
         <button class="rb" id="un" aria-label="Annuler la dernière modification">↶</button><button class="rb" id="rd" aria-label="Surprends-moi">${I.dice}</button></div>
       <button class="stMapBtn" id="pv">Voir sur la carte</button>
-      <div class="stMap" id="mp" hidden><img src="${VENUE.map.src}" alt="" class="stMapBg" style="object-position:${ST.me.pos[0]}% ${ST.me.pos[1]}%"><div class="stMapMe"><span class="name">Moi</span><img id="mpi" alt=""><i></i></div></div>
+      <div class="stMap" id="mp" hidden><img src="${VENUE.map.src}" alt="" class="stMapBg" style="object-position:${ST.me.pos[0]}% ${ST.me.pos[1]}%"><div class="stMapMe"><span class="name">Moi</span><img id="mpi" alt="" src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw=="><i></i></div></div>
       <button class="stSave" id="go">${step ? 'C’est moi !' : 'Enregistrer'}</button>
     </div>
     <div class="stPanel">
@@ -47,7 +47,7 @@ V.avatarPick = (onDone, step = true, init = null) => {
   // vignettes : images mémorisées (jamais recalculées deux fois) et dessinées progressivement, sans bloquer le toucher
   const TH = window.__avTH || (window.__avTH = new Map()); let TQ = [], tqN = 0, tqRaf = 0;
   const thumb = (cfg, view) => { const v = view || 'full', key = v + JSON.stringify(cfg); if (TH.has(key)) return `<img class="thI" src="${TH.get(key)}" alt="" draggable="false">`;
-    const id = ++tqN; TQ.push([id, cfg, v, key]); return `<img class="thI" data-tq="${id}" alt="" draggable="false">`; };
+    const id = ++tqN; TQ.push([id, cfg, v, key]); return `<img class="thI" data-tq="${id}" src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" alt="" draggable="false">`; }; // image transparente le temps du dessin (jamais d’image sans source)
   const flushThumbs = () => { cancelAnimationFrame(tqRaf); const run = () => { const t0 = performance.now(); while (TQ.length && performance.now() - t0 < 10) { const [id, cfg, v, key] = TQ.shift(), im = bd.querySelector(`img[data-tq="${id}"]`); if (!im) continue; let u = TH.get(key); if (!u) { u = av2URI(cfg, v); if (TH.size > 900) TH.clear(); TH.set(key, u); } im.src = u; im.removeAttribute('data-tq'); }
       if (TQ.length) tqRaf = requestAnimationFrame(run); }; tqRaf = requestAnimationFrame(run); };
   const MULTI = ['jewel', 'patches', 'acc', 'piercing', 'tattoo', 'feetAcc', 'faceAcc'];
@@ -231,7 +231,7 @@ V.avatarPick = (onDone, step = true, init = null) => {
     bub.dataset.side = side; bub.style.left = x + 'px'; bub.style.top = y + 'px'; bub.style.setProperty('--tail', tail + 'px'); };
   const say = (txt, ms = 2600) => { if (!document.body.contains(el)) return; clearTimeout(sayT); bub.textContent = txt; bub.hidden = false; bub.classList.remove('in'); placeBub(); void bub.offsetWidth; bub.classList.add('in'); lastSay = Date.now(); clearInterval(bub._follow); bub._follow = setInterval(() => { if (bub.hidden || !document.body.contains(el)) clearInterval(bub._follow); else placeBub(); }, 250); /* suit le visage si la caméra ou l'avatar bougent */ sayT = setTimeout(() => { bub.classList.remove('in'); setTimeout(() => { if (!bub.classList.contains('in')) bub.hidden = true; }, 260); }, ms); };
   window.__studioSay = say; window.__placeBub = placeBub; // utilisé par les tests de placement de la bulle
-  { const _cam = cam; cam = function () { _cam.apply(this, arguments); setTimeout(placeBub, 420); }; } // la caméra bouge (changement d'onglet) : la bulle suit le visage  const renderAs = (cfg) => { bigKey = ''; big.innerHTML = avatar2SVG(cfg, { pedestal: false, live: true, style: 'width:100%;height:100%' }); const sv = big.querySelector('svg'); sv && sv.setAttribute('viewBox', camV.join(' ')); };
+  { const _cam = cam; cam = function () { _cam.apply(this, arguments); setTimeout(placeBub, 420); }; } /* la caméra bouge (changement d'onglet) : la bulle suit le visage */
   const renderAs = (cfg) => { bigKey = ''; big.innerHTML = avatar2SVG(cfg, { pedestal: false, live: true, style: 'width:100%;height:100%' }); const sv = big.querySelector('svg'); sv && sv.setAttribute('viewBox', camV.join(' ')); };
   const gesture = (kind, ms = 2400) => { if (reduce || gesturing || spinning) return; gesturing = true; clearTimeout(gestT); const pose = kind === 'dance' ? 'dance' : 'wave';
     renderAs({ ...L, pose, mood: kind === 'dance' ? 'laugh' : L.mood }); big.classList.add(kind === 'dance' ? 'dancing' : 'waving');
