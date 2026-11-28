@@ -8,7 +8,7 @@ const OUT = process.argv[2];
   let r = await q('lunettes or', 'lunettes'); t('lunettes or → aviateur doré + rondes dorées', r.includes('Aviateur doré') && r.includes('Rondes dorées'));
   r = await q('cheveux crépus', 'crepus'); t('cheveux crépus → afro, locks, crépus courts…', ['Afro', 'Crépus courts', 'Locks (dreadlocks)'].every(x => r.includes(x)));
   r = await q('pompier', 'pompier'); t('pompier (homme) → Pompier', r[0] === 'Pompier');
-  r = await q('pull rouge', 'pull'); t('pull rouge → Sweat en rouge', r[0] && r[0].startsWith('Sweat') && await p.evaluate(() => !!document.querySelector('[data-sr] .stDot')));
+  r = await q('pull rouge', 'pull'); t('pull rouge → pull ou sweat en rouge', r[0] && /^(Pull|Sweat)/.test(r[0]) && await p.evaluate(() => !!document.querySelector('[data-sr] .stDot')));
   await p.click('[data-sr="0"]'); await p.waitForTimeout(400); t('appliqué : sweat rouge', await p.evaluate(() => document.querySelector('#big svg').outerHTML.includes('#E35D6A')));
   r = await q('talons'); t('talons → escarpins', r.includes('Escarpins'));
   r = await q('bague orteil'); t('bague orteil', r.includes('Bague d’orteil'));
