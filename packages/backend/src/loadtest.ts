@@ -35,8 +35,10 @@ async function clientWorker() {
     void issueToken(secretKey, users[i], eventId).then((tok) => {
       const ws = new WebSocket(`ws://127.0.0.1:${port}/rt?token=${tok}`);
       ws.on('message', onMsg); ws.on('error', () => {});
-      ws.once('open', () => { clients[i] = ws; resolve(); });
-      ws.once('close', () => { if (clients[i] === ws) return; if (attempt >= 4) { failed++; resolve(); return; } retries++; setTimeout(() => void connect(i, attempt + 1).then(resolve), [1000, 2000, 5000, 5000][attempt]); });
+      // une poignée de main qui ne répond jamais ne doit pas bloquer tout le test : abandon au bout de 15 s
+      const guard = setTimeout(() => { if (ws.readyState !== WebSocket.OPEN) ws.terminate(); }, 15000);
+      ws.once('open', () => { clearTimeout(guard); clients[i] = ws; resolve(); });
+      ws.once('close', () => { clearTimeout(guard); if (clients[i] === ws) return; if (attempt >= 4) { failed++; resolve(); return; } retries++; setTimeout(() => void connect(i, attempt + 1).then(resolve), [1000, 2000, 5000, 5000][attempt]); });
     });
   });
   const pend: Promise<void>[] = [];
