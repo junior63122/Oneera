@@ -194,7 +194,8 @@ function openSheet(html, opts = {}) {
   closeSheet(true);
   const back = document.createElement('div'); back.className = 'sheetBack'; back.onclick = () => closeSheet();
   const sh = document.createElement('div'); sh.className = 'sheet' + (opts.full ? ' full' : ''); sh.setAttribute('role', 'dialog'); sh.setAttribute('aria-modal', 'true');
-  sh.innerHTML = `<div class="grab" title="Glisser pour agrandir ou fermer"></div><div class="sbody">${html}</div>`;
+  sh.innerHTML = `<div class="grab" title="Glisser pour agrandir ou fermer"></div><button class="rb sClose" aria-label="Fermer"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button><div class="sbody">${html}</div>`;
+  sh.querySelector('.sClose').onclick = () => closeSheet(); /* plein écran : bouton Fermer visible (rien à toucher à côté) */
   if (opts.noBack) back.style.background = 'transparent';
   SCREEN.append(back, sh); sheetEl = { back, sh }; sheetOnClose = opts.onClose || null;
   // poignée : tirer vers le haut = plein écran, vers le bas = fermer ; toucher = basculer

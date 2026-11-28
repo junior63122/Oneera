@@ -367,7 +367,7 @@ img[src*="a/ic/"]{object-fit:contain;aspect-ratio:1/1;height:auto}
 .mk.me+.halo,.halo.me{animation:none}
 .gtx{position:absolute;left:50%;top:38%;transform:translate(-50%,-50%);display:flex;flex-direction:column;align-items:center;gap:6px;pointer-events:none;z-index:6;animation:gtx 2.5s ease forwards;text-align:center}
 .gtx img{width:64px;height:64px;border-radius:18px;box-shadow:0 10px 30px rgba(30,20,90,.35)}
-.gtx b{font-size:24px;font-weight:850;color:#1A1D2E;text-shadow:0 2px 14px rgba(255,255,255,.9)}
+.gtx b{white-space:nowrap;font-size:24px;font-weight:850;color:#1A1D2E;text-shadow:0 2px 14px rgba(255,255,255,.9)}
 .gtx span{font-size:13px;font-weight:700;color:#4A4F66;text-shadow:0 1px 10px #fff}
 @keyframes gtx{0%{opacity:0;transform:translate(-50%,-40%) scale(.96)}18%{opacity:1;transform:translate(-50%,-50%)}70%{opacity:1}100%{opacity:0;transform:translate(-50%,-62%) scale(1.04)}}
 .map.nite .mk .poi{box-shadow:0 0 0 2px rgba(255,255,255,.9),0 0 18px rgba(170,140,255,.55)}
@@ -754,3 +754,8 @@ details.phone{background:#F7F7F9;border-radius:14px;padding:12px 14px}details.ph
 .st2 .stSay[data-side="left"]{transform-origin:100% var(--tail,50%)}
 .st2 .stSay[data-side="left"]::after{left:auto;right:-5px;top:calc(var(--tail) - 6px);transform:rotate(45deg)}
 .st2 .stSay.noTail::after{display:none}
+
+/* Feuille en plein écran : bouton Fermer (HIG : toujours une sortie visible) */
+.sheet .sClose{display:none;position:absolute;top:max(12px,env(safe-area-inset-top,0px));right:12px;z-index:3;background:var(--soft,#F3F5FB);box-shadow:none}
+.sheet.full .sClose{display:flex}
+.sheet.full .sbody>.h2:first-child,.sheet.full .sbody>h2:first-child{padding-right:52px}

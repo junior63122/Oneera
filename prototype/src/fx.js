@@ -207,7 +207,7 @@ FX.draw = (mv, now) => {
       a.innerHTML = '<i class="aRays"></i><i class="aMist m1"></i><i class="aMist m2"></i><i class="aFg f1"></i><i class="aFg f2"></i><i class="aBirds"><b></b><b></b><b></b><b></b><b></b></i><i class="aStar"></i>';
       mv.tl.after(a); mv.atmo = a; }
     const kind = nk > .5 ? 'night' : dk > .3 ? 'dusk' : 'day';
-    if (mv._atK !== kind) { mv._atK = kind; mv.atmo.className = 'atmo ' + kind; const spr = typeof pSpr === 'function' ? pSpr(kind) : null; if (spr) { const u = spr.toDataURL('image/png'); mv.atmo.style.setProperty('--cl', `url(${u})`); } mv.atmo.style.setProperty('--rays', `url(${fxRaysURL(kind)})`); }
+    if (mv._atK !== kind) { mv._atK = kind; mv.atmo.className = 'atmo ' + kind; const spr = typeof pSpr === 'function' ? pSpr(kind) : null; if (spr) { const u = spr._url || (spr._url = spr.toDataURL('image/png')); /* encodé une seule fois */ mv.atmo.style.setProperty('--cl', `url(${u})`); } mv.atmo.style.setProperty('--rays', `url(${fxRaysURL(kind)})`); }
     if (mv._atS !== mv.s) { mv._atS = mv.s; mv._atZt = now; if (!mv.atmo.classList.contains('busy')) mv.atmo.classList.add('busy'); }
     else if (mv._atZt && now - mv._atZt > 320) { mv._atZt = 0; mv.atmo.classList.remove('busy'); }
     if (!mv._atT || now - mv._atT > 300) { mv._atT = now; const zf = Math.max(0, Math.min(1, 1.6 - mv.s / ((VENUE.zoom || .5) * 1.1))), zc = zf > .66 ? '' : zf > .2 ? 'zmid' : 'zin';

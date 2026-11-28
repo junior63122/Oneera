@@ -9,7 +9,7 @@ const MODE = process.argv[4] || 'both';
     let r = seed * 9301 + 49297; const rnd = () => (r = (r * 9301 + 49297) % 233280) / 233280;
     const dev = devices[seed % 2 ? 'iPhone 14' : 'iPhone SE'];
     const ctx = await b.newContext({ ...dev }); const p = await ctx.newPage(); const errs = [];
-    p.on('pageerror', e => { errs.push(e.message.split('\n')[0]); if (process.env.STACK) console.log('STACK', e.stack); }); p.on('dialog', d => d.dismiss().catch(() => {}));
+    p.on('pageerror', e => { errs.push(e.message.split('\n')[0]); if (!global.__st) global.__st = new Set(); const k1 = e.message.split('\n')[0]; if (!global.__st.has(k1)) { global.__st.add(k1); console.log('   pile : ' + (e.stack || '').split('\n').slice(0, 4).join(' ← ').replace(/http:\/\/127\.0\.0\.1:8090\/local\.html/g, '').slice(0, 400)); } }); p.on('dialog', d => d.dismiss().catch(() => {}));
     const url = mode === 'demo' ? 'http://127.0.0.1:8090/local.html?nouveau' : 'http://127.0.0.1:8090/local.html?nouveau&api=http://127.0.0.1:8787';
     await p.goto(url); await p.waitForTimeout(800);
     if (mode === 'real') { // vrai compte sur le serveur local

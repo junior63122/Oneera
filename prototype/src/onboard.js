@@ -202,7 +202,7 @@ V.searchPseudo = () => {
   $('#r', sb).onclick = e => { const b = e.target.closest('[data-a]'); if (!b) return; b.textContent = 'Envoyé'; b.disabled = true; setTimeout(() => { if (!ST.friends.includes(b.dataset.a)) ST.friends.push(b.dataset.a); emit(); toast('Demande acceptée'); }, 1500); };
 };
 V.shareSheet = (text, after) => {
-  const sb = openSheet(`<div class="card" style="background:#F3F5FB"><div class="small">${esc(text)}</div></div>
+  const sb = openSheet(`<h2 class="h2">Partager</h2><div class="card" style="background:#F3F5FB"><div class="small">${esc(text)}</div></div>
     <div class="grid3">${[['Messages', '#34C759'], ['WhatsApp', '#25D366'], ['Instagram', '#E1306C'], ['Snapchat', '#FFFC00'], ['Copier le lien', '#8E8E93'], ['Plus', '#C7C7CC']].map(a => `<button class="card" data-app="${a[0]}" style="align-items:center;gap:6px;padding:12px 4px"><span style="width:46px;height:46px;border-radius:12px;background:${a[1]}"></span><span style="font-size:12px;font-weight:650">${a[0]}</span></button>`).join('')}</div>`);
   sb.onclick = async e => { const b = e.target.closest('[data-app]'); if (!b) return; if (b.dataset.app === 'Copier le lien') { try { await navigator.clipboard.writeText(text); } catch (_) { } } closeSheet(); if (after) after(); else toast(b.dataset.app === 'Copier le lien' ? 'Lien copié' : 'Partagé via ' + b.dataset.app); };
 };

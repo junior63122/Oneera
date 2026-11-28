@@ -371,7 +371,7 @@ img[src*="a/ic/"]{object-fit:contain;aspect-ratio:1/1;height:auto}
 .mk.me+.halo,.halo.me{animation:none}
 .gtx{position:absolute;left:50%;top:38%;transform:translate(-50%,-50%);display:flex;flex-direction:column;align-items:center;gap:6px;pointer-events:none;z-index:6;animation:gtx 2.5s ease forwards;text-align:center}
 .gtx img{width:64px;height:64px;border-radius:18px;box-shadow:0 10px 30px rgba(30,20,90,.35)}
-.gtx b{font-size:24px;font-weight:850;color:#1A1D2E;text-shadow:0 2px 14px rgba(255,255,255,.9)}
+.gtx b{white-space:nowrap;font-size:24px;font-weight:850;color:#1A1D2E;text-shadow:0 2px 14px rgba(255,255,255,.9)}
 .gtx span{font-size:13px;font-weight:700;color:#4A4F66;text-shadow:0 1px 10px #fff}
 @keyframes gtx{0%{opacity:0;transform:translate(-50%,-40%) scale(.96)}18%{opacity:1;transform:translate(-50%,-50%)}70%{opacity:1}100%{opacity:0;transform:translate(-50%,-62%) scale(1.04)}}
 .map.nite .mk .poi{box-shadow:0 0 0 2px rgba(255,255,255,.9),0 0 18px rgba(170,140,255,.55)}
@@ -759,6 +759,11 @@ details.phone{background:#F7F7F9;border-radius:14px;padding:12px 14px}details.ph
 .st2 .stSay[data-side="left"]::after{left:auto;right:-5px;top:calc(var(--tail) - 6px);transform:rotate(45deg)}
 .st2 .stSay.noTail::after{display:none}
 
+/* Feuille en plein écran : bouton Fermer (HIG : toujours une sortie visible) */
+.sheet .sClose{display:none;position:absolute;top:max(12px,env(safe-area-inset-top,0px));right:12px;z-index:3;background:var(--soft,#F3F5FB);box-shadow:none}
+.sheet.full .sClose{display:flex}
+.sheet.full .sbody>.h2:first-child,.sheet.full .sbody>h2:first-child{padding-right:52px}
+
 </style></head><body><script>
 // ===== Données de démonstration (fictives) =====
 const A = 'a/';
@@ -1104,7 +1109,8 @@ function openSheet(html, opts = {}) {
   closeSheet(true);
   const back = document.createElement('div'); back.className = 'sheetBack'; back.onclick = () => closeSheet();
   const sh = document.createElement('div'); sh.className = 'sheet' + (opts.full ? ' full' : ''); sh.setAttribute('role', 'dialog'); sh.setAttribute('aria-modal', 'true');
-  sh.innerHTML = `<div class="grab" title="Glisser pour agrandir ou fermer"></div><div class="sbody">${html}</div>`;
+  sh.innerHTML = `<div class="grab" title="Glisser pour agrandir ou fermer"></div><button class="rb sClose" aria-label="Fermer"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button><div class="sbody">${html}</div>`;
+  sh.querySelector('.sClose').onclick = () => closeSheet(); /* plein écran : bouton Fermer visible (rien à toucher à côté) */
   if (opts.noBack) back.style.background = 'transparent';
   SCREEN.append(back, sh); sheetEl = { back, sh }; sheetOnClose = opts.onClose || null;
   // poignée : tirer vers le haut = plein écran, vers le bas = fermer ; toucher = basculer
@@ -1377,7 +1383,11 @@ MapView.prototype.declutter = function () {
   const hit = (a, b, m = 2) => a.left < b.right + m && a.right > b.left - m && a.top < b.bottom + m && a.bottom > b.top - m;
   const items = []; this.markers.forEach(el => { if (el.style.display === 'none') return; const per = !el.classList.contains('pm'); el.querySelectorAll(':scope > .lbl, :scope .fr > .name, :scope .fr > .bub').forEach(l => items.push({ l, el, p: (per ? 3 + (el.dataset.id === 'p_me' ? 2 : 0) : el.classList.contains('key') ? 2 : 1) - (l.classList.contains('bub') ? .5 : 0), y: el._y || 0 })); });
   items.sort((a, b) => b.p - a.p || a.y - b.y); const kept = [];
-  items.forEach(it => { it.l.classList.remove('lblHide'); const r = it.l.getBoundingClientRect(); const bad = ui.some(u => hit(r, u, 4)) || kept.some(k => hit(r, k)) || r.left < H.left + 2 || r.right > H.right - 2; if (bad && (it.p < 5 || ui.some(u => hit(r, u, 4)))) it.l.classList.add('lblHide'); else kept.push(r); });
+  // Toutes les lectures d'abord (visibility:hidden garde la géométrie), puis toutes les écritures : une seule mise en page
+  // au lieu d'une par étiquette (mesuré : c'était la première cause de saccades à l'ouverture de la carte).
+  items.forEach(it => { it.r = it.l.getBoundingClientRect(); });
+  items.forEach(it => { const r = it.r; const bad = ui.some(u => hit(r, u, 4)) || kept.some(k => hit(r, k)) || r.left < H.left + 2 || r.right > H.right - 2; it.hide = !!(bad && (it.p < 5 || ui.some(u => hit(r, u, 4)))); if (!it.hide) kept.push(r); });
+  items.forEach(it => { if (it.l.classList.contains('lblHide') !== it.hide) it.l.classList.toggle('lblHide', it.hide); });
 };
 const dashStyle = document.createElement('style'); dashStyle.textContent = '@keyframes dash{to{stroke-dashoffset:-22}}'; document.head.append(dashStyle);
 
@@ -1608,7 +1618,7 @@ FX.draw = (mv, now) => {
       a.innerHTML = '<i class="aRays"></i><i class="aMist m1"></i><i class="aMist m2"></i><i class="aFg f1"></i><i class="aFg f2"></i><i class="aBirds"><b></b><b></b><b></b><b></b><b></b></i><i class="aStar"></i>';
       mv.tl.after(a); mv.atmo = a; }
     const kind = nk > .5 ? 'night' : dk > .3 ? 'dusk' : 'day';
-    if (mv._atK !== kind) { mv._atK = kind; mv.atmo.className = 'atmo ' + kind; const spr = typeof pSpr === 'function' ? pSpr(kind) : null; if (spr) { const u = spr.toDataURL('image/png'); mv.atmo.style.setProperty('--cl', `url(${u})`); } mv.atmo.style.setProperty('--rays', `url(${fxRaysURL(kind)})`); }
+    if (mv._atK !== kind) { mv._atK = kind; mv.atmo.className = 'atmo ' + kind; const spr = typeof pSpr === 'function' ? pSpr(kind) : null; if (spr) { const u = spr._url || (spr._url = spr.toDataURL('image/png')); /* encodé une seule fois */ mv.atmo.style.setProperty('--cl', `url(${u})`); } mv.atmo.style.setProperty('--rays', `url(${fxRaysURL(kind)})`); }
     if (mv._atS !== mv.s) { mv._atS = mv.s; mv._atZt = now; if (!mv.atmo.classList.contains('busy')) mv.atmo.classList.add('busy'); }
     else if (mv._atZt && now - mv._atZt > 320) { mv._atZt = 0; mv.atmo.classList.remove('busy'); }
     if (!mv._atT || now - mv._atT > 300) { mv._atT = now; const zf = Math.max(0, Math.min(1, 1.6 - mv.s / ((VENUE.zoom || .5) * 1.1))), zc = zf > .66 ? '' : zf > .2 ? 'zmid' : 'zin';
@@ -2613,7 +2623,7 @@ function hairParts(k, F, o) {
   R.crop = { front: `<path d="M65 70 C61 44 76 24 100 23 C124 24 139 44 135 70 C133 62 130 56 127 52 C120 50 112 51 104 48 C96 51 86 49 79 52 C74 54 70 60 65 70 Z" fill="${HR}"/>${strands([[86, 26, 92, 36, 84, 50, 5], [100, 24, 104, 36, 98, 49, 5], [114, 26, 118, 38, 114, 50, 5], [76, 34, 76, 44, 72, 56, 4], [126, 34, 128, 46, 128, 56, 4]])}${hilite([[90, 30, 98, 30, 108, 36, 3], [80, 38, 86, 34, 94, 36, 2.4]])}<path d="M65 70 C64 62 65 58 67 54 L68 70 Z M135 70 C136 62 135 58 133 54 L132 70 Z" fill="${hcD}" opacity=".5"/>` };
   R.messy = { front: `<path d="M64 72 C58 46 72 22 100 20 C128 20 144 42 136 72 C134 60 130 54 126 52 L124 58 L118 50 L112 58 L106 49 L98 58 L92 49 L84 57 L80 50 L74 58 C70 60 66 66 64 72 Z" fill="${HR}"/>${strands([[82, 26, 92, 14, 104, 14, 7], [100, 22, 112, 12, 122, 18, 7], [70, 38, 64, 28, 66, 20, 6], [122, 30, 132, 26, 138, 30, 6]], hc, 1)}${strands([[90, 30, 94, 42, 90, 54, 4], [104, 30, 108, 42, 106, 54, 4], [116, 34, 120, 44, 120, 56, 4], [78, 38, 78, 48, 76, 58, 3.6]])}${hilite([[84, 28, 94, 22, 104, 22, 3], [106, 26, 114, 22, 122, 24, 2.4], [72, 42, 74, 34, 80, 30, 2.2]])}` };
   R.curlytop0 = { front: `<path d="M65 70 C62 56 64 46 70 40 L130 40 C136 46 138 56 135 70 C133 62 131 58 129 56 L71 56 C69 58 67 62 65 70 Z" fill="${hcD}"/>${curls([[72, 46, 6], [82, 38, 7], [94, 34, 7], [106, 34, 7], [118, 38, 7], [128, 46, 6], [76, 32, 6], [88, 26, 6.5], [100, 24, 7], [112, 26, 6.5], [124, 32, 6], [86, 48, 5.6], [98, 46, 6], [110, 47, 5.6], [120, 52, 4.8], [78, 54, 4.8], [94, 15 + 40, 4], [106, 55, 4]], 6)}` };
-  R.wavy = { back: `<path d="M64 72 C58 44 74 22 100 22 C126 22 142 44 136 72 C140 90 138 104 132 112 L124 108 L76 108 L68 112 C62 104 60 90 64 72 Z" fill="${HB}"/>`, front: `<path d="M63 92 C56 60 70 24 100 22 C130 24 144 60 137 92 C136 84 134 74 130 66 C128 58 122 50 114 46 C110 54 104 58 98 60 C92 52 86 48 82 46 C74 52 68 62 66 72 C64 80 64 86 63 92 Z" fill="${HR}"/>${strands([[98, 26, 90, 36, 82, 46, 6], [102, 26, 112, 36, 116, 46, 6], [70, 50, 66, 66, 66, 88, 4], [130, 50, 134, 66, 134, 88, 4]])}${hilite([[96, 30, 88, 34, 80, 44, 3], [106, 28, 116, 34, 122, 44, 3], [70, 56, 68, 66, 68, 78, 2.4]])}` };
+  R.wavy = { back: `<path d="M64 72 C58 44 74 22 100 22 C126 22 142 44 136 72 C140 90 138 104 132 112 L124 108 L76 108 L68 112 C62 104 60 90 64 72 Z" fill="${HB}"/>`, front: `<path d="M63 92 C56 60 70 24 100 22 C130 24 144 60 137 92 C136 82 133 72 128 64 C120 54 110 49 100 50 C88 51 78 57 72 65 C67 73 64 82 63 92 Z" fill="${HR}"/>${strands([[100, 26, 92, 36, 84, 52, 6], [104, 26, 114, 36, 122, 54, 6], [70, 50, 66, 66, 66, 88, 4], [130, 50, 134, 66, 134, 88, 4]])}${hilite([[96, 30, 88, 34, 80, 44, 3], [106, 28, 116, 34, 122, 44, 3], [70, 56, 68, 66, 68, 78, 2.4]])}` };
   R.buzz = { front: `<path d="M66 68 C63 44 78 27 100 26 C122 27 137 44 134 68 C132 60 129 54 126 52 Q100 46 74 52 C71 54 68 60 66 68 Z" fill="${hc}" opacity=".85"/><path d="M66 68 C63 44 78 27 100 26 C122 27 137 44 134 68" fill="none" stroke="${hcD}" stroke-width="1" opacity=".4"/>${hilite([[86, 32, 98, 28, 112, 32, 2.6]])}` };
   R.twists = { front: `<path d="M65 70 C61 46 76 28 100 27 C124 28 139 46 135 70 C133 62 130 57 127 55 Q100 50 73 55 C70 57 67 62 65 70 Z" fill="${hcD}" opacity=".9"/>${[[74, 48, -20], [82, 40, -12], [91, 36, -6], [100, 34, 0], [109, 36, 6], [118, 40, 12], [126, 48, 20], [86, 50, -8], [97, 48, -2], [108, 48, 4], [118, 52, 10]].map(([x, y, a]) => `<g transform="translate(${x} ${y}) rotate(${a})">${[0, 1, 2, 3].map(i => `<ellipse cx="${i % 2 ? .8 : -.8}" cy="${-i * 5.2}" rx="3.6" ry="3.2" fill="${i % 2 ? hc : hcM}" stroke="${hcD}" stroke-width=".8"/>`).join('')}<ellipse cx="-.8" cy="-17" rx="1.2" ry="1" fill="${hcL}" opacity=".6"/></g>`).join('')}` };
   R.afro = { back: `<path d="${A3.sm(Array.from({ length: 22 }, (_, i) => { const a = Math.PI * (i / 21) * 1.25 - Math.PI * 1.125, r = 48 + (i % 2) * 3.4; return [100 + Math.cos(a) * r * 1.02, 64 + Math.sin(a) * r * .92]; }), false, .8)} L100 100 Z" fill="${HB}"/>`, front: `<path d="M64 74 C58 48 70 26 100 22 C130 26 142 48 136 74 C132 62 126 56 118 54 Q100 50 82 54 C74 56 68 62 64 74 Z" fill="${hc}"/>${curls(Array.from({ length: 26 }, (_, i) => { const a = Math.PI * (1.08 + (i % 13) / 12 * .84), r = i < 13 ? 44 : 32; return [100 + Math.cos(a) * r, 66 + Math.sin(a) * r * .9, i < 13 ? 7 : 6]; }), 6)}` };
@@ -2896,7 +2906,7 @@ function avHair(k, F, o, t) { const { hc, hcD, hcL, HR, HB } = o;
   if (k === 'spacebuns') { const bun = (x) => `<circle cx="${x}" cy="24" r="13" fill="${HR}"/><path d="M${x - 9} 20 q9 -7 18 0 M${x - 10} 27 q10 -6 20 0" stroke="${hcD}" stroke-width="1.3" fill="none" opacity=".5"/><path d="M${x - 6} 16 q5 -3 10 -1" stroke="${hcL}" stroke-width="2" fill="none" opacity=".6" stroke-linecap="round"/>`;
     return { front: `<g class="hTop">${bun(74)}${bun(126)}</g><!--hTop-->` + cap() + t.strands([[78, 50, 86, 34, 98, 28, 4], [122, 50, 114, 34, 102, 28, 4]]) + t.hilite([[84, 42, 90, 34, 98, 31, 2.4]]) }; }
   if (k === 'puff') return { front: `<g class="hTop"><ellipse cx="100" cy="16" rx="26" ry="20" fill="${HB}"/>${t.swirls(t.grid(78, 122, 0, 32, 8, (x, y) => ((x - 100) / 25) ** 2 + ((y - 16) / 19) ** 2 < 1), 3.2)}</g><!--hTop-->` + cap('M64 72 C60 46 76 30 100 29 C124 30 140 46 136 72 C134 62 130 56 124 53 Q112 50 100 49 Q88 50 76 53 C70 56 66 62 64 72 Z') + `<path d="M76 52 Q88 38 100 34 Q112 38 124 52" stroke="${hcD}" stroke-width="1" fill="none" opacity=".5"/><path d="M84 40 q16 -8 32 0" stroke="${hcL}" stroke-width="2.2" fill="none" opacity=".55" stroke-linecap="round"/><rect x="92" y="30" width="16" height="4" rx="2" fill="#E35D6A"/>` };
-  if (k === 'coils') return { front: cap('M64 70 C60 44 76 26 100 25 C124 26 140 44 136 70 C134 60 130 55 124 52 Q112 49 100 48 Q88 49 76 52 C70 55 66 60 64 70 Z') + t.swirls(t.grid(66, 134, 28, 62, 6.4, (x, y) => ((x - 100) / 35) ** 2 + ((y - 56) / 31) ** 2 < 1 && y < 62 - Math.abs(x - 100) * .05), 2.4) };
+  if (k === 'coils') return { front: cap('M64 70 C60 44 76 26 100 25 C124 26 140 44 136 70 C134 60 130 55 124 52 Q112 49 100 48 Q88 49 76 52 C70 55 66 60 64 70 Z') + t.swirls(t.grid(70, 130, 30, 46, 6.4, (x, y) => ((x - 100) / 29) ** 2 + ((y - 46) / 17) ** 2 < 1 && y < 46), 2.4) /* reflets gardés à l'intérieur de la chevelure */ };
   if (k === 'mohawk') return { front: `<path d="M65 70 C62 50 70 36 82 32 L118 32 C130 36 138 50 135 70 C132 60 128 56 122 54 Q100 50 78 54 C72 56 68 60 65 70 Z" fill="${hcD}" opacity=".45"/><path d="M88 54 L86 30 L90 8 L96 26 L100 2 L104 26 L110 8 L114 30 L112 54 Q100 50 88 54 Z" fill="${HR}"/><path d="M96 26 L100 6 M104 26 L108 12" stroke="${hcL}" stroke-width="1.6" opacity=".6"/>` };
   return null; }
 
@@ -3158,7 +3168,7 @@ V.searchPseudo = () => {
   $('#r', sb).onclick = e => { const b = e.target.closest('[data-a]'); if (!b) return; b.textContent = 'Envoyé'; b.disabled = true; setTimeout(() => { if (!ST.friends.includes(b.dataset.a)) ST.friends.push(b.dataset.a); emit(); toast('Demande acceptée'); }, 1500); };
 };
 V.shareSheet = (text, after) => {
-  const sb = openSheet(`<div class="card" style="background:#F3F5FB"><div class="small">${esc(text)}</div></div>
+  const sb = openSheet(`<h2 class="h2">Partager</h2><div class="card" style="background:#F3F5FB"><div class="small">${esc(text)}</div></div>
     <div class="grid3">${[['Messages', '#34C759'], ['WhatsApp', '#25D366'], ['Instagram', '#E1306C'], ['Snapchat', '#FFFC00'], ['Copier le lien', '#8E8E93'], ['Plus', '#C7C7CC']].map(a => `<button class="card" data-app="${a[0]}" style="align-items:center;gap:6px;padding:12px 4px"><span style="width:46px;height:46px;border-radius:12px;background:${a[1]}"></span><span style="font-size:12px;font-weight:650">${a[0]}</span></button>`).join('')}</div>`);
   sb.onclick = async e => { const b = e.target.closest('[data-app]'); if (!b) return; if (b.dataset.app === 'Copier le lien') { try { await navigator.clipboard.writeText(text); } catch (_) { } } closeSheet(); if (after) after(); else toast(b.dataset.app === 'Copier le lien' ? 'Lien copié' : 'Partagé via ' + b.dataset.app); };
 };
@@ -3508,10 +3518,10 @@ V.chat = (id) => {
     <div class="chips quick" style="padding:6px 12px;background:#F7F7F9;flex-wrap:wrap" id="qr">${['📍 Ma position', 'On se retrouve où ?', 'J’arrive', 'Je suis au bar'].map(q => `<button class="chip" data-q="${q}">${q}</button>`).join('')}</div>
     <div class="composer"><button class="rb ghost" aria-label="Photo" id="ph">${I.camera}</button><input class="inp" id="tx" placeholder="Message" autocomplete="off" aria-label="Message"><button class="rb" id="snd" aria-label="Envoyer" style="background:var(--pri);color:#fff">${I.send}</button></div>`);
   const ms = $('#ms', el);
-  const draw = () => { ms.innerHTML = ST.convos[id].map(m => m.loc && !m.t ? `<div class="locmsg" style="align-self:${m.me ? 'flex-end' : 'flex-start'}"><div class="lm"></div><div style="padding:8px 12px"><b style="font-size:14px">📍 ${esc(m.loc)}</b><div class="small">Touche pour l’itinéraire</div></div></div>` : `<div class="bub ${m.me ? 'me' : 'them'}">${esc(m.t)}</div>`).join(''); ms.scrollTop = 1e6;
+  const draw = () => { ms.innerHTML = (ST.convos[id] || []).map(m => m.loc && !m.t ? `<div class="locmsg" style="align-self:${m.me ? 'flex-end' : 'flex-start'}"><div class="lm"></div><div style="padding:8px 12px"><b style="font-size:14px">📍 ${esc(m.loc)}</b><div class="small">Touche pour l’itinéraire</div></div></div>` : `<div class="bub ${m.me ? 'me' : 'them'}">${esc(m.t)}</div>`).join(''); ms.scrollTop = 1e6;
     $$('.locmsg', ms).forEach((b, i) => b.onclick = () => { const p = POIS.find(o => o.n === ST.convos[id].filter(m => m.loc && !m.t)[i]?.loc); V.map(); if (p) setTimeout(() => V.goTo(p.at, p.n, p.node), 200); }); };
-  const send = t => { if (!t.trim()) return; if (t === '📍 Ma position') ST.convos[id].push({ me: 1, loc: zoneOf(ST.me.pos) }); else ST.convos[id].push({ me: 1, t }); draw(); $('#tx', el).value = '';
-    if (!f.stale && FRIENDS.find(x => x.id === id)) setTimeout(() => { ST.convos[id].push({ me: 0, t: ['Top, j’arrive 🏃', 'Ok ! Je suis vers ' + zoneOf(friendPos(id)), '👍'][Math.floor(Math.random() * 3)] }); if (document.body.contains(ms)) draw(); }, 1800); };
+  const send = t => { if (!t.trim()) return; ST.convos[id] = ST.convos[id] || []; if (t === '📍 Ma position') ST.convos[id].push({ me: 1, loc: zoneOf(ST.me.pos) }); else ST.convos[id].push({ me: 1, t }); draw(); $('#tx', el).value = '';
+    if (!f.stale && FRIENDS.find(x => x.id === id)) setTimeout(() => { if (!document.body.contains(ms)) return; (ST.convos[id] = ST.convos[id] || []).push({ me: 0, t: ['Top, j’arrive 🏃', 'Ok ! Je suis vers ' + zoneOf(friendPos(id)), '👍'][Math.floor(Math.random() * 3)] }); if (document.body.contains(ms)) draw(); }, 1800); };
   $('#snd', el).onclick = () => send($('#tx', el).value); $('#ph', el).onclick = () => toast('Prototype : appareil photo ou galerie'); $('#tx', el).onkeydown = e => { if (e.key === 'Enter') send(e.target.value); };
   $('#qr', el).onclick = e => { const b = e.target.closest('[data-q]'); if (b) send(b.dataset.q); };
   $('#bk', el).onclick = V.chatList; $('#loc2', el).onclick = () => { if (FRIENDS.find(x => x.id === id)) { V.map({ at: friendPos(id), zoom: .6 }); setTimeout(() => V.friendSheet(id), 300); } else toast(f.n.split(' ')[0] + ' n’est pas à cet événement'); };
@@ -5047,7 +5057,7 @@ V.avatarPick = (onDone, step = true, init = null) => {
       <button class="stSave" id="go">${step ? 'C’est moi !' : 'Enregistrer'}</button>
     </div>
     <div class="stPanel">
-      <div class="stSearch"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.6-3.6"/></svg><input id="sq" type="search" placeholder="Rechercher : lunettes or, pompier, cheveux crépus…" autocomplete="off" autocapitalize="off" enterkeyhint="search" aria-label="Rechercher un élément pour ton avatar"><button id="sqx" aria-label="Effacer la recherche" hidden>✕</button></div>
+      <div class="stSearch"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.6-3.6"/></svg><input id="sq" type="search" placeholder="Lunettes or, pompier, crépus…" autocomplete="off" autocapitalize="off" enterkeyhint="search" aria-label="Rechercher un élément pour ton avatar"><button id="sqx" aria-label="Effacer la recherche" hidden>✕</button></div>
       <div class="stTabs" id="tb" role="tablist">${TABS.map(t => `<button data-t="${t[0]}" role="tab" aria-label="${t[1]}">${t[2]}<span>${t[1]}</span></button>`).join('')}</div>
       <div class="stBody" id="bd"></div>
     </div></div>`, 'sky');
@@ -6448,5 +6458,19 @@ function resetDemo() {
   if (walking) { tickers.delete(walking); walking = null; } if (MV) { MV.destroy(); MV = null; } clearTimeout(V._alwaysT); mapFilter = 'all'; showCrowd = false; nightMap = false;
    ST.account = null; ST.friends = []; ST.sent = []; ST.rdv = null; ST.role = 'visitor'; ST.offline = false; ST._askedAlways = 0; ST.me.pos = [50, 63]; Object.assign(ST.perms, { loc: null, always: false, bt: null, notif: null, motion: null, contacts: null, stats: false }); ST.metrics = { taps: 0, start: null, steps: {} }; $('#dash') && closeDash(); }
 boot();
+// Temps mort après le lancement : textures du brouillard, des nuages, de la mer et des rayons calculées à l'avance,
+// une par une, pour que la première ouverture de la carte ne saccade pas (mesuré : jusqu'à 950 ms de blocage sinon).
+(function fxPrewarm() {
+  const idle = window.requestIdleCallback ? (f) => requestIdleCallback(f, { timeout: 2500 }) : (f) => setTimeout(f, 80);
+  let pal; try { pal = portalPalette(); } catch (_) { return; }
+  const kinds = [...new Set([pal.kind, 'day', 'dusk', 'night'])];
+  const jobs = []; kinds.forEach((k, i) => {
+    jobs.push(() => { const s = pSpr(k); if (s && !s._url) s._url = s.toDataURL('image/png'); });
+    jobs.push(() => fxRaysURL(k)); jobs.push(() => fxSeaURL(k));
+    if (i === 0) [0, 1, 2, 3].forEach(v => jobs.push(() => { const t = pFogTex(k, v, pal.P); if (t && !t._url) t._url = t.toDataURL('image/png'); }));
+  });
+  const step = () => { const j = jobs.shift(); if (!j) return; try { j(); } catch (_) {} idle(step); };
+  setTimeout(() => idle(step), 400);
+})();
 
 </script></body></html>

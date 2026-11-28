@@ -140,7 +140,11 @@ MapView.prototype.declutter = function () {
   const hit = (a, b, m = 2) => a.left < b.right + m && a.right > b.left - m && a.top < b.bottom + m && a.bottom > b.top - m;
   const items = []; this.markers.forEach(el => { if (el.style.display === 'none') return; const per = !el.classList.contains('pm'); el.querySelectorAll(':scope > .lbl, :scope .fr > .name, :scope .fr > .bub').forEach(l => items.push({ l, el, p: (per ? 3 + (el.dataset.id === 'p_me' ? 2 : 0) : el.classList.contains('key') ? 2 : 1) - (l.classList.contains('bub') ? .5 : 0), y: el._y || 0 })); });
   items.sort((a, b) => b.p - a.p || a.y - b.y); const kept = [];
-  items.forEach(it => { it.l.classList.remove('lblHide'); const r = it.l.getBoundingClientRect(); const bad = ui.some(u => hit(r, u, 4)) || kept.some(k => hit(r, k)) || r.left < H.left + 2 || r.right > H.right - 2; if (bad && (it.p < 5 || ui.some(u => hit(r, u, 4)))) it.l.classList.add('lblHide'); else kept.push(r); });
+  // Toutes les lectures d'abord (visibility:hidden garde la géométrie), puis toutes les écritures : une seule mise en page
+  // au lieu d'une par étiquette (mesuré : c'était la première cause de saccades à l'ouverture de la carte).
+  items.forEach(it => { it.r = it.l.getBoundingClientRect(); });
+  items.forEach(it => { const r = it.r; const bad = ui.some(u => hit(r, u, 4)) || kept.some(k => hit(r, k)) || r.left < H.left + 2 || r.right > H.right - 2; it.hide = !!(bad && (it.p < 5 || ui.some(u => hit(r, u, 4)))); if (!it.hide) kept.push(r); });
+  items.forEach(it => { if (it.l.classList.contains('lblHide') !== it.hide) it.l.classList.toggle('lblHide', it.hide); });
 };
 const dashStyle = document.createElement('style'); dashStyle.textContent = '@keyframes dash{to{stroke-dashoffset:-22}}'; document.head.append(dashStyle);
 

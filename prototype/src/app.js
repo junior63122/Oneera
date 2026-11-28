@@ -66,3 +66,17 @@ function resetDemo() {
   if (walking) { tickers.delete(walking); walking = null; } if (MV) { MV.destroy(); MV = null; } clearTimeout(V._alwaysT); mapFilter = 'all'; showCrowd = false; nightMap = false;
    ST.account = null; ST.friends = []; ST.sent = []; ST.rdv = null; ST.role = 'visitor'; ST.offline = false; ST._askedAlways = 0; ST.me.pos = [50, 63]; Object.assign(ST.perms, { loc: null, always: false, bt: null, notif: null, motion: null, contacts: null, stats: false }); ST.metrics = { taps: 0, start: null, steps: {} }; $('#dash') && closeDash(); }
 boot();
+// Temps mort après le lancement : textures du brouillard, des nuages, de la mer et des rayons calculées à l'avance,
+// une par une, pour que la première ouverture de la carte ne saccade pas (mesuré : jusqu'à 950 ms de blocage sinon).
+(function fxPrewarm() {
+  const idle = window.requestIdleCallback ? (f) => requestIdleCallback(f, { timeout: 2500 }) : (f) => setTimeout(f, 80);
+  let pal; try { pal = portalPalette(); } catch (_) { return; }
+  const kinds = [...new Set([pal.kind, 'day', 'dusk', 'night'])];
+  const jobs = []; kinds.forEach((k, i) => {
+    jobs.push(() => { const s = pSpr(k); if (s && !s._url) s._url = s.toDataURL('image/png'); });
+    jobs.push(() => fxRaysURL(k)); jobs.push(() => fxSeaURL(k));
+    if (i === 0) [0, 1, 2, 3].forEach(v => jobs.push(() => { const t = pFogTex(k, v, pal.P); if (t && !t._url) t._url = t.toDataURL('image/png'); }));
+  });
+  const step = () => { const j = jobs.shift(); if (!j) return; try { j(); } catch (_) {} idle(step); };
+  setTimeout(() => idle(step), 400);
+})();

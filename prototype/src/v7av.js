@@ -39,7 +39,7 @@ V.avatarPick = (onDone, step = true, init = null) => {
       <button class="stSave" id="go">${step ? 'C’est moi !' : 'Enregistrer'}</button>
     </div>
     <div class="stPanel">
-      <div class="stSearch"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.6-3.6"/></svg><input id="sq" type="search" placeholder="Rechercher : lunettes or, pompier, cheveux crépus…" autocomplete="off" autocapitalize="off" enterkeyhint="search" aria-label="Rechercher un élément pour ton avatar"><button id="sqx" aria-label="Effacer la recherche" hidden>✕</button></div>
+      <div class="stSearch"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.6-3.6"/></svg><input id="sq" type="search" placeholder="Lunettes or, pompier, crépus…" autocomplete="off" autocapitalize="off" enterkeyhint="search" aria-label="Rechercher un élément pour ton avatar"><button id="sqx" aria-label="Effacer la recherche" hidden>✕</button></div>
       <div class="stTabs" id="tb" role="tablist">${TABS.map(t => `<button data-t="${t[0]}" role="tab" aria-label="${t[1]}">${t[2]}<span>${t[1]}</span></button>`).join('')}</div>
       <div class="stBody" id="bd"></div>
     </div></div>`, 'sky');

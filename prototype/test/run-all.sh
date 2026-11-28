@@ -20,6 +20,7 @@ for t in scenarios qav5 qa2 qafx bounds rot3d kb e2e-portal e2e-live e2e-chat e2
 done
 for t in looks search bubble; do # ces suites prennent un dossier de captures, pas l'adresse du serveur
   timeout 600 node "$PROTO/test/$t.js" "$OUT/$t" > "$OUT/$t.log" 2>&1; line "$t" "$(tail -1 "$OUT/$t.log")"; done
+timeout 600 node "$PROTO/test/sheets.js" > "$OUT/sheets.log" 2>&1; line "fenêtres (taille, fermeture)" "$(tail -1 "$OUT/sheets.log")"
 timeout 900 node "$PROTO/test/monkey.js" 6 400 > "$OUT/monkey.log" 2>&1; line "monkey (6×400)" "$(tail -1 "$OUT/monkey.log")"
 timeout 900 node "$PROTO/test/fuzz-api.mjs" "$API" 4000 > "$OUT/fuzz.log" 2>&1; line "fuzzing API (4000)" "$(tail -1 "$OUT/fuzz.log")"
 python3 "$PROTO/tools/commentcheck.py" "$PROTO/src" > "$OUT/comments.log" 2>&1; line "commentaires piégés" "$(tail -1 "$OUT/comments.log")"
