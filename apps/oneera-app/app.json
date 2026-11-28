@@ -12,7 +12,7 @@
     ],
     "ios": {
       "bundleIdentifier": "com.mapping.festival",
-      "buildNumber": "106",
+      "buildNumber": "107",
       "supportsTablet": false,
       "config": {
         "usesNonExemptEncryption": false
