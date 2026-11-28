@@ -162,7 +162,7 @@ V.avatarPick = (onDone, step = true, init = null) => {
     const R = st.getBoundingClientRect(), T = tp.getBoundingClientRect(); if (!R.height) return FULL;
     const top = Math.min(.42, Math.max(0, (T.bottom - R.top) / R.height + .02)), bot = .035, H = 436 / (1 - top - bot);
     return [100 - 86, -26 - top * H, 172, H]; };
-  const cam = () => { const svg = big.querySelector('svg'); if (!svg) return; const to = CAM[tab] || fullCam(), from = camV.slice(), t0 = performance.now(); cancelAnimationFrame(camT);
+  let cam = () => { const svg = big.querySelector('svg'); if (!svg) return; const to = CAM[tab] || fullCam(), from = camV.slice(), t0 = performance.now(); cancelAnimationFrame(camT);
     const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
     const step = now => { const k = reduce ? 1 : Math.min(1, (now - t0) / 380), e = 1 - Math.pow(1 - k, 3); camV = from.map((v, i) => v + (to[i] - v) * e); const sv = big.querySelector('svg'); sv && sv.setAttribute('viewBox', camV.map(v => v.toFixed(1)).join(' ')); if (k < 1) camT = requestAnimationFrame(step); };
     svg.setAttribute('viewBox', camV.join(' ')); { const fl = el.querySelector('.stPed, .stFloor'); if (fl) fl.style.opacity = CAM[tab] ? 0 : 1; } camT = requestAnimationFrame(step); };
@@ -214,8 +214,24 @@ V.avatarPick = (onDone, step = true, init = null) => {
   const stage = el.querySelector('.stStage'), bub = document.createElement('div'); bub.className = 'stSay'; bub.setAttribute('aria-live', 'polite'); bub.hidden = true; stage.append(bub);
   const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches, pick = a => a[Math.floor(Math.random() * a.length)], nm = (ST.me && ST.me.name) ? String(ST.me.name).split(' ')[0] : '';
   let sayT = 0, gestT = 0, lastAct = Date.now(), lastSay = 0, idleN = 0, gesturing = false;
-  const say = (txt, ms = 2600) => { if (!document.body.contains(el)) return; clearTimeout(sayT); bub.textContent = txt; bub.hidden = false; bub.classList.remove('in'); void bub.offsetWidth; bub.classList.add('in'); lastSay = Date.now(); sayT = setTimeout(() => { bub.classList.remove('in'); setTimeout(() => { if (!bub.classList.contains('in')) bub.hidden = true; }, 260); }, ms); };
-  const renderAs = (cfg) => { bigKey = ''; big.innerHTML = avatar2SVG(cfg, { pedestal: false, live: true, style: 'width:100%;height:100%' }); const sv = big.querySelector('svg'); sv && sv.setAttribute('viewBox', camV.join(' ')); };
+  // la bulle se place selon le visage réellement à l'écran : sous le menton (pointe vers la bouche), sinon au-dessus de la tête, sinon à côté — jamais sur le visage
+  const placeBub = () => { if (bub.hidden) return; const S = stage.getBoundingClientRect(), f = big.querySelector('.avFace'); if (!f) return; const F = f.getBoundingClientRect(), H = (big.querySelector('.avH') || f).getBoundingClientRect();
+    const bw = Math.min(S.width - 32, 250), bh = bub.offsetHeight || 60, cx = F.left + F.width / 2 - S.left, top = el.querySelector('.stTop').getBoundingClientRect().bottom - S.top + 6, bottom = Math.min((el.querySelector('#go').getBoundingClientRect().top - S.top) - 8, S.height - 8);
+    const clampX = x => Math.max(14, Math.min(S.width - bw - 14, x)); let x, y, side;
+    if (F.bottom < S.top + top || F.top > S.top + bottom) { side = 'none'; y = top; x = clampX(14); } // visage hors champ (caméra sur les pieds) : en haut, sans pointe
+    else if (F.bottom - S.top + 14 + bh <= bottom) { side = 'down'; y = F.bottom - S.top + 14; x = clampX(cx - bw / 2); }
+    else if (H.top - S.top - 14 - bh >= top) { side = 'up'; y = H.top - S.top - 14 - bh; x = clampX(cx - bw / 2); }
+    else { const leftRoom = F.left - S.left, rightRoom = S.right - F.right; side = rightRoom > leftRoom ? 'right' : 'left'; const room = Math.max(leftRoom, rightRoom);
+      if (room >= 170) { const w = Math.min(bw, room - 22); bub.style.width = w + 'px'; x = side === 'right' ? F.right - S.left + 14 : F.left - S.left - 14 - w; y = Math.max(top, Math.min(bottom - bh, F.top - S.top + F.height * .55 - bh / 2)); }
+      else if (F.top - S.top - 10 - bh >= top - 2) { side = 'up'; y = F.top - S.top - 10 - bh; x = clampX(cx - bw / 2); } // sur les cheveux, au-dessus du front
+      else { side = 'up'; y = Math.max(top, F.top - S.top - bh + F.height * .12); x = clampX(cx - bw / 2); } } // très petit écran : le plus haut possible (front, jamais yeux ni bouche)
+    if (side !== 'right' && side !== 'left') bub.style.width = '';
+    bub.classList.toggle('noTail', side === 'none');
+    const tail = side === 'down' || side === 'up' ? Math.max(18, Math.min((bub.offsetWidth || bw) - 18, cx - x)) : Math.max(14, Math.min(bh - 14, F.top - S.top + F.height * .62 - y));
+    bub.dataset.side = side; bub.style.left = x + 'px'; bub.style.top = y + 'px'; bub.style.setProperty('--tail', tail + 'px'); };
+  const say = (txt, ms = 2600) => { if (!document.body.contains(el)) return; clearTimeout(sayT); bub.textContent = txt; bub.hidden = false; bub.classList.remove('in'); placeBub(); void bub.offsetWidth; bub.classList.add('in'); lastSay = Date.now(); sayT = setTimeout(() => { bub.classList.remove('in'); setTimeout(() => { if (!bub.classList.contains('in')) bub.hidden = true; }, 260); }, ms); };
+  window.__studioSay = say; // utilisé par les tests de placement de la bulle
+  { const _cam = cam; cam = function () { _cam.apply(this, arguments); setTimeout(placeBub, 420); }; } // la caméra bouge (changement d'onglet) : la bulle suit le visage  const renderAs = (cfg) => { bigKey = ''; big.innerHTML = avatar2SVG(cfg, { pedestal: false, live: true, style: 'width:100%;height:100%' }); const sv = big.querySelector('svg'); sv && sv.setAttribute('viewBox', camV.join(' ')); };
   const gesture = (kind, ms = 2400) => { if (reduce || gesturing || spinning) return; gesturing = true; clearTimeout(gestT); const pose = kind === 'dance' ? 'dance' : 'wave';
     renderAs({ ...L, pose, mood: kind === 'dance' ? 'laugh' : L.mood }); big.classList.add(kind === 'dance' ? 'dancing' : 'waving');
     gestT = setTimeout(() => { big.classList.remove('waving', 'dancing'); gesturing = false; if (document.body.contains(el)) renderAs(L); }, ms); };

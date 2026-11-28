@@ -225,7 +225,7 @@ function avatar2SVG(c0, opt = {}) {
   const iHead0 = S.length;
   const face = F ? 'M67 68 C67 45 81 34 100 34 C119 34 133 45 133 68 C133 85 128 97 119 105 C112 111 106 114 100 114 C94 114 88 111 81 105 C72 97 67 85 67 68 Z' : 'M66 67 C66 44 80 33 100 33 C120 33 134 44 134 67 C134 86 130 99 121 107 C114 113 107 116 100 116 C93 116 86 113 79 107 C70 99 66 86 66 67 Z';
   const ear = s => `<path d="M${100 + s * 32} 70 C${100 + s * 41} 66 ${100 + s * 43} 78 ${100 + s * 40} 86 C${100 + s * 38} 92 ${100 + s * 34} 93 ${100 + s * 31} 90 Z" fill="${SK}"/><path d="M${100 + s * 34} 74 C${100 + s * 39} 73 ${100 + s * 39} 82 ${100 + s * 35} 86" stroke="${skD}" stroke-width="1.4" fill="none" stroke-linecap="round"/>`;
-  add(ear(-1) + ear(1) + `<path d="${face}" fill="url(#${u}fc)"/><path d="M${100 + 22} 52 C${100 + 33} 62 ${100 + 33} 84 ${100 + 24} 100 C${100 + 18} 108 ${100 + 10} 112 100 114 C${100 + 14} 106 ${100 + 22} 92 ${100 + 24} 76 C${100 + 25} 66 ${100 + 24} 58 ${100 + 22} 52 Z" fill="${skD}" opacity=".28"/>`);
+  add(ear(-1) + ear(1) + `<path class="avFace" d="${face}" fill="url(#${u}fc)"/><path d="M${100 + 22} 52 C${100 + 33} 62 ${100 + 33} 84 ${100 + 24} 100 C${100 + 18} 108 ${100 + 10} 112 100 114 C${100 + 14} 106 ${100 + 22} 92 ${100 + 24} 76 C${100 + 25} 66 ${100 + 24} 58 ${100 + 22} 52 Z" fill="${skD}" opacity=".28"/>`);
   if (J.has('hoops')) add(`<circle cx="${100 - 36}" cy="96" r="5" fill="none" stroke="#E2B451" stroke-width="1.8"/><circle cx="${100 + 36}" cy="96" r="5" fill="none" stroke="#E2B451" stroke-width="1.8"/>`);
   // joues
   add(`<ellipse cx="${100 - 21}" cy="92" rx="8" ry="5" fill="url(#${u}bl)"/><ellipse cx="${100 + 21}" cy="92" rx="8" ry="5" fill="url(#${u}bl)"/>`);

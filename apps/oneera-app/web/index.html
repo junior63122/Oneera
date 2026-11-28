@@ -746,6 +746,18 @@ details.phone{background:#F7F7F9;border-radius:14px;padding:12px 14px}details.ph
 #portal .fogL{background-repeat:repeat}
 #portal canvas.fogC{position:absolute;width:1px;height:1px;opacity:0}
 #mepill{max-width:calc(100vw - 28px);overflow:hidden;text-overflow:ellipsis;white-space:nowrap} /* très petits écrans / gros zoom : la pastille ne sort jamais de l’écran */
+/* bulle de l'avatar : compacte, posée à côté du visage (jamais dessus), pointe dirigée vers la bouche */
+.st2 .stSay{left:0;top:0;bottom:auto;right:auto;width:auto;max-width:250px;padding:8px 12px;border-radius:16px;font:750 13.5px/1.3 system-ui,-apple-system,sans-serif;text-align:left;transform:scale(.7);transform-origin:var(--tail,50%) 0;box-shadow:0 6px 18px rgba(30,16,80,.28)}
+.st2 .stSay.in{transform:scale(1)}
+.st2 .stSay::after{width:12px;height:12px;border-radius:2px;right:auto;bottom:auto}
+.st2 .stSay[data-side="down"]::after{top:-5px;left:calc(var(--tail) - 6px);transform:rotate(45deg)}
+.st2 .stSay[data-side="up"]{transform-origin:var(--tail,50%) 100%}
+.st2 .stSay[data-side="up"]::after{top:auto;bottom:-5px;left:calc(var(--tail) - 6px);transform:rotate(45deg)}
+.st2 .stSay[data-side="right"]{transform-origin:0 var(--tail,50%)}
+.st2 .stSay[data-side="right"]::after{left:-5px;top:calc(var(--tail) - 6px);transform:rotate(45deg)}
+.st2 .stSay[data-side="left"]{transform-origin:100% var(--tail,50%)}
+.st2 .stSay[data-side="left"]::after{left:auto;right:-5px;top:calc(var(--tail) - 6px);transform:rotate(45deg)}
+.st2 .stSay.noTail::after{display:none}
 
 </style></head><body><script>
 // ===== Données de démonstration (fictives) =====
@@ -2412,7 +2424,7 @@ function avatar2SVG(c0, opt = {}) {
   const iHead0 = S.length;
   const face = F ? 'M67 68 C67 45 81 34 100 34 C119 34 133 45 133 68 C133 85 128 97 119 105 C112 111 106 114 100 114 C94 114 88 111 81 105 C72 97 67 85 67 68 Z' : 'M66 67 C66 44 80 33 100 33 C120 33 134 44 134 67 C134 86 130 99 121 107 C114 113 107 116 100 116 C93 116 86 113 79 107 C70 99 66 86 66 67 Z';
   const ear = s => `<path d="M${100 + s * 32} 70 C${100 + s * 41} 66 ${100 + s * 43} 78 ${100 + s * 40} 86 C${100 + s * 38} 92 ${100 + s * 34} 93 ${100 + s * 31} 90 Z" fill="${SK}"/><path d="M${100 + s * 34} 74 C${100 + s * 39} 73 ${100 + s * 39} 82 ${100 + s * 35} 86" stroke="${skD}" stroke-width="1.4" fill="none" stroke-linecap="round"/>`;
-  add(ear(-1) + ear(1) + `<path d="${face}" fill="url(#${u}fc)"/><path d="M${100 + 22} 52 C${100 + 33} 62 ${100 + 33} 84 ${100 + 24} 100 C${100 + 18} 108 ${100 + 10} 112 100 114 C${100 + 14} 106 ${100 + 22} 92 ${100 + 24} 76 C${100 + 25} 66 ${100 + 24} 58 ${100 + 22} 52 Z" fill="${skD}" opacity=".28"/>`);
+  add(ear(-1) + ear(1) + `<path class="avFace" d="${face}" fill="url(#${u}fc)"/><path d="M${100 + 22} 52 C${100 + 33} 62 ${100 + 33} 84 ${100 + 24} 100 C${100 + 18} 108 ${100 + 10} 112 100 114 C${100 + 14} 106 ${100 + 22} 92 ${100 + 24} 76 C${100 + 25} 66 ${100 + 24} 58 ${100 + 22} 52 Z" fill="${skD}" opacity=".28"/>`);
   if (J.has('hoops')) add(`<circle cx="${100 - 36}" cy="96" r="5" fill="none" stroke="#E2B451" stroke-width="1.8"/><circle cx="${100 + 36}" cy="96" r="5" fill="none" stroke="#E2B451" stroke-width="1.8"/>`);
   // joues
   add(`<ellipse cx="${100 - 21}" cy="92" rx="8" ry="5" fill="url(#${u}bl)"/><ellipse cx="${100 + 21}" cy="92" rx="8" ry="5" fill="url(#${u}bl)"/>`);
@@ -5156,7 +5168,7 @@ V.avatarPick = (onDone, step = true, init = null) => {
     const R = st.getBoundingClientRect(), T = tp.getBoundingClientRect(); if (!R.height) return FULL;
     const top = Math.min(.42, Math.max(0, (T.bottom - R.top) / R.height + .02)), bot = .035, H = 436 / (1 - top - bot);
     return [100 - 86, -26 - top * H, 172, H]; };
-  const cam = () => { const svg = big.querySelector('svg'); if (!svg) return; const to = CAM[tab] || fullCam(), from = camV.slice(), t0 = performance.now(); cancelAnimationFrame(camT);
+  let cam = () => { const svg = big.querySelector('svg'); if (!svg) return; const to = CAM[tab] || fullCam(), from = camV.slice(), t0 = performance.now(); cancelAnimationFrame(camT);
     const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
     const step = now => { const k = reduce ? 1 : Math.min(1, (now - t0) / 380), e = 1 - Math.pow(1 - k, 3); camV = from.map((v, i) => v + (to[i] - v) * e); const sv = big.querySelector('svg'); sv && sv.setAttribute('viewBox', camV.map(v => v.toFixed(1)).join(' ')); if (k < 1) camT = requestAnimationFrame(step); };
     svg.setAttribute('viewBox', camV.join(' ')); { const fl = el.querySelector('.stPed, .stFloor'); if (fl) fl.style.opacity = CAM[tab] ? 0 : 1; } camT = requestAnimationFrame(step); };
@@ -5208,8 +5220,24 @@ V.avatarPick = (onDone, step = true, init = null) => {
   const stage = el.querySelector('.stStage'), bub = document.createElement('div'); bub.className = 'stSay'; bub.setAttribute('aria-live', 'polite'); bub.hidden = true; stage.append(bub);
   const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches, pick = a => a[Math.floor(Math.random() * a.length)], nm = (ST.me && ST.me.name) ? String(ST.me.name).split(' ')[0] : '';
   let sayT = 0, gestT = 0, lastAct = Date.now(), lastSay = 0, idleN = 0, gesturing = false;
-  const say = (txt, ms = 2600) => { if (!document.body.contains(el)) return; clearTimeout(sayT); bub.textContent = txt; bub.hidden = false; bub.classList.remove('in'); void bub.offsetWidth; bub.classList.add('in'); lastSay = Date.now(); sayT = setTimeout(() => { bub.classList.remove('in'); setTimeout(() => { if (!bub.classList.contains('in')) bub.hidden = true; }, 260); }, ms); };
-  const renderAs = (cfg) => { bigKey = ''; big.innerHTML = avatar2SVG(cfg, { pedestal: false, live: true, style: 'width:100%;height:100%' }); const sv = big.querySelector('svg'); sv && sv.setAttribute('viewBox', camV.join(' ')); };
+  // la bulle se place selon le visage réellement à l'écran : sous le menton (pointe vers la bouche), sinon au-dessus de la tête, sinon à côté — jamais sur le visage
+  const placeBub = () => { if (bub.hidden) return; const S = stage.getBoundingClientRect(), f = big.querySelector('.avFace'); if (!f) return; const F = f.getBoundingClientRect(), H = (big.querySelector('.avH') || f).getBoundingClientRect();
+    const bw = Math.min(S.width - 32, 250), bh = bub.offsetHeight || 60, cx = F.left + F.width / 2 - S.left, top = el.querySelector('.stTop').getBoundingClientRect().bottom - S.top + 6, bottom = Math.min((el.querySelector('#go').getBoundingClientRect().top - S.top) - 8, S.height - 8);
+    const clampX = x => Math.max(14, Math.min(S.width - bw - 14, x)); let x, y, side;
+    if (F.bottom < S.top + top || F.top > S.top + bottom) { side = 'none'; y = top; x = clampX(14); } // visage hors champ (caméra sur les pieds) : en haut, sans pointe
+    else if (F.bottom - S.top + 14 + bh <= bottom) { side = 'down'; y = F.bottom - S.top + 14; x = clampX(cx - bw / 2); }
+    else if (H.top - S.top - 14 - bh >= top) { side = 'up'; y = H.top - S.top - 14 - bh; x = clampX(cx - bw / 2); }
+    else { const leftRoom = F.left - S.left, rightRoom = S.right - F.right; side = rightRoom > leftRoom ? 'right' : 'left'; const room = Math.max(leftRoom, rightRoom);
+      if (room >= 170) { const w = Math.min(bw, room - 22); bub.style.width = w + 'px'; x = side === 'right' ? F.right - S.left + 14 : F.left - S.left - 14 - w; y = Math.max(top, Math.min(bottom - bh, F.top - S.top + F.height * .55 - bh / 2)); }
+      else if (F.top - S.top - 10 - bh >= top - 2) { side = 'up'; y = F.top - S.top - 10 - bh; x = clampX(cx - bw / 2); } // sur les cheveux, au-dessus du front
+      else { side = 'up'; y = Math.max(top, F.top - S.top - bh + F.height * .12); x = clampX(cx - bw / 2); } } // très petit écran : le plus haut possible (front, jamais yeux ni bouche)
+    if (side !== 'right' && side !== 'left') bub.style.width = '';
+    bub.classList.toggle('noTail', side === 'none');
+    const tail = side === 'down' || side === 'up' ? Math.max(18, Math.min((bub.offsetWidth || bw) - 18, cx - x)) : Math.max(14, Math.min(bh - 14, F.top - S.top + F.height * .62 - y));
+    bub.dataset.side = side; bub.style.left = x + 'px'; bub.style.top = y + 'px'; bub.style.setProperty('--tail', tail + 'px'); };
+  const say = (txt, ms = 2600) => { if (!document.body.contains(el)) return; clearTimeout(sayT); bub.textContent = txt; bub.hidden = false; bub.classList.remove('in'); placeBub(); void bub.offsetWidth; bub.classList.add('in'); lastSay = Date.now(); sayT = setTimeout(() => { bub.classList.remove('in'); setTimeout(() => { if (!bub.classList.contains('in')) bub.hidden = true; }, 260); }, ms); };
+  window.__studioSay = say; // utilisé par les tests de placement de la bulle
+  { const _cam = cam; cam = function () { _cam.apply(this, arguments); setTimeout(placeBub, 420); }; } // la caméra bouge (changement d'onglet) : la bulle suit le visage  const renderAs = (cfg) => { bigKey = ''; big.innerHTML = avatar2SVG(cfg, { pedestal: false, live: true, style: 'width:100%;height:100%' }); const sv = big.querySelector('svg'); sv && sv.setAttribute('viewBox', camV.join(' ')); };
   const gesture = (kind, ms = 2400) => { if (reduce || gesturing || spinning) return; gesturing = true; clearTimeout(gestT); const pose = kind === 'dance' ? 'dance' : 'wave';
     renderAs({ ...L, pose, mood: kind === 'dance' ? 'laugh' : L.mood }); big.classList.add(kind === 'dance' ? 'dancing' : 'waving');
     gestT = setTimeout(() => { big.classList.remove('waving', 'dancing'); gesturing = false; if (document.body.contains(el)) renderAs(L); }, ms); };

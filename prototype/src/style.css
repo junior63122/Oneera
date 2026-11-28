@@ -742,3 +742,15 @@ details.phone{background:#F7F7F9;border-radius:14px;padding:12px 14px}details.ph
 #portal .fogL{background-repeat:repeat}
 #portal canvas.fogC{position:absolute;width:1px;height:1px;opacity:0}
 #mepill{max-width:calc(100vw - 28px);overflow:hidden;text-overflow:ellipsis;white-space:nowrap} /* très petits écrans / gros zoom : la pastille ne sort jamais de l’écran */
+/* bulle de l'avatar : compacte, posée à côté du visage (jamais dessus), pointe dirigée vers la bouche */
+.st2 .stSay{left:0;top:0;bottom:auto;right:auto;width:auto;max-width:250px;padding:8px 12px;border-radius:16px;font:750 13.5px/1.3 system-ui,-apple-system,sans-serif;text-align:left;transform:scale(.7);transform-origin:var(--tail,50%) 0;box-shadow:0 6px 18px rgba(30,16,80,.28)}
+.st2 .stSay.in{transform:scale(1)}
+.st2 .stSay::after{width:12px;height:12px;border-radius:2px;right:auto;bottom:auto}
+.st2 .stSay[data-side="down"]::after{top:-5px;left:calc(var(--tail) - 6px);transform:rotate(45deg)}
+.st2 .stSay[data-side="up"]{transform-origin:var(--tail,50%) 100%}
+.st2 .stSay[data-side="up"]::after{top:auto;bottom:-5px;left:calc(var(--tail) - 6px);transform:rotate(45deg)}
+.st2 .stSay[data-side="right"]{transform-origin:0 var(--tail,50%)}
+.st2 .stSay[data-side="right"]::after{left:-5px;top:calc(var(--tail) - 6px);transform:rotate(45deg)}
+.st2 .stSay[data-side="left"]{transform-origin:100% var(--tail,50%)}
+.st2 .stSay[data-side="left"]::after{left:auto;right:-5px;top:calc(var(--tail) - 6px);transform:rotate(45deg)}
+.st2 .stSay.noTail::after{display:none}
