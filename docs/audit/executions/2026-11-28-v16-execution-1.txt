@@ -1,0 +1,28 @@
+Exécution du 28/11/2026 10:17
+serveur (vitest)       Tests 54 passed (54)
+scenarios              23/23 · échecs 0 · code 0 · OK   erreurs JS : aucune
+qav5                   34/34 · échecs 0 · code 0 · OK   erreurs JS : aucune
+qa2                    — · échecs 0 · code 0 · OK   erreurs JS : aucune
+qafx                   — · échecs 0 · code 0 · OK   erreurs JS : aucune
+bounds                 19/19 · échecs 0 · code 0 · OK   erreurs JS : aucune
+rot3d                  — · échecs 0 · code 0 · errs []
+kb                     50/50 · échecs 0 · code 0 · OK   iPhone SE : erreurs JS : aucune
+e2e-portal             14/14 · échecs 0 · code 0 · OK   erreurs JS : aucune
+e2e-live               32/32 · échecs 0 · code 0 · OK   comptes réels : erreurs JS : aucune
+e2e-chat               21/21 · échecs 0 · code 0 · OK   erreurs JS : aucune
+e2e2                   17/17 · échecs 0 · code 0 · OK   erreurs JS : aucune
+e2e-recap              8/8 · échecs 0 · code 0 · OK   erreurs JS : aucune
+e2e-contacts           8/8 · échecs 0 · code 0 · OK   erreurs JS : aucune
+e2e-reports            14/14 · échecs 0 · code 0 · OK   erreurs JS : aucune
+e2e-staff              25/25 · échecs 0 · code 0 · OK   erreurs JS : aucune
+realleak               — · échecs 0 · code 0 · erreurs []
+xss-client             — · échecs 0 · code 0 
+personas               14/14 · échecs 0 · code 0 · OK   erreurs JS : aucune
+looks                  looks + motifs : 14/14
+search                 recherche : 13/13
+bubble                 16/16
+fenêtres (taille, fermeture) 207/207
+monkey (6×400)        TOUT OK
+fuzzing API (4000)     FUZZ API : OK
+commentaires piégés  suspects : 0
+Fin 10:37
