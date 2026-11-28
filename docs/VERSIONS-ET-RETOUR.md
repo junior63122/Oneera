@@ -6,7 +6,7 @@ Chaque version d'ONEERA est sauvegardée à **trois endroits indépendants**. En
 
 | Endroit | Ce qu'il contient | Comment le voir |
 |---|---|---|
-| **Étiquettes GitHub** (`prototype-v…`, `app-build-…`) | Le code complet de chaque version, figé | GitHub › dépôt `oneera` › **Tags**. Chaque étiquette se télécharge en `.zip`. |
+| **Commits sur GitHub** + **étiquettes git** (`prototype-v…`, `app-build-…`) | Le code complet de chaque version, figé | Liens « code .zip » dans le tableau ci-dessous, toujours valables puisque chaque commit est sur GitHub. Les étiquettes sont dans l'archive complète. Pour les voir aussi dans l'onglet **Tags** de GitHub, lancer depuis ton ordinateur, après restauration de l'archive : `git push origin --tags`. Cette session cloud n'a le droit d'envoyer que sa branche. |
 | **`prototype/versions/vN.html`** | La page complète de l'app à chaque version, utilisable telle quelle | Ouvrir le fichier dans un navigateur |
 | **Archive complète** (`.bundle`) | Tout l'historique du code, toutes versions comprises | Fichier envoyé par Claude, à garder sur ton ordinateur ou ton Drive |
 
