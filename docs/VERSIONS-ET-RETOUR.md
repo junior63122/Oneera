@@ -14,13 +14,13 @@ Les builds TestFlight correspondent exactement à une étiquette `app-build-N`. 
 
 | Build iOS | Étiquette | Date | Contenu principal |
 |---|---|---|---|
-| 100 | `app-build-100` | 26/11 | Première compilation rattachée à l'app ONEERA |
-| 101 | `app-build-101` | 26/11 | Passage à Expo 58 |
-| 102 | `app-build-102` | 26/11 | Version réelle : comptes, amis, positions |
-| 103 | `app-build-103` | 26/11 | Messagerie, notifications, récap |
-| 104 | `app-build-104` | 26/11 | Avatar vivant, export des données |
-| 105 | `app-build-105` | 27/11 | Portail d'entrée, carte « vue des Dieux » |
-| 106 | `app-build-106` | 27/11 | Costumes femme / homme, recherche, nuages |
+| 100 | `app-build-100` · [code .zip](https://github.com/junior63122/oneera/archive/1197738e37a439ade921960a48bf0a4e04c82447.zip) | 26/11 | Première compilation rattachée à l'app ONEERA |
+| 101 | `app-build-101` · [code .zip](https://github.com/junior63122/oneera/archive/fc0764767b551a59aae3ba603111fa2b45094cb6.zip) | 26/11 | Passage à Expo 58 |
+| 102 | `app-build-102` · [code .zip](https://github.com/junior63122/oneera/archive/730143978d717b00516fae99f73725abf067a612.zip) | 26/11 | Version réelle : comptes, amis, positions |
+| 103 | `app-build-103` · [code .zip](https://github.com/junior63122/oneera/archive/c0fcc2a5129f44ca4f568eb6abfe75152c84be26.zip) | 26/11 | Messagerie, notifications, récap |
+| 104 | `app-build-104` · [code .zip](https://github.com/junior63122/oneera/archive/8b863295b5111558cc1d5af179a8fc04c585266f.zip) | 26/11 | Avatar vivant, export des données |
+| 105 | `app-build-105` · [code .zip](https://github.com/junior63122/oneera/archive/9c189aaf8e60d1cd746e3b921ee313df674e1fb0.zip) | 27/11 | Portail d'entrée, carte « vue des Dieux » |
+| 106 | `app-build-106` · [code .zip](https://github.com/junior63122/oneera/archive/36d95a23ca0f026ff365d45c534f90670d2a76cb.zip) | 27/11 | Costumes femme / homme, recherche, nuages |
 
 Les versions du prototype (`prototype-v1` à `prototype-v14`) sont décrites ligne par ligne dans `prototype/VERSIONS.md`.
 

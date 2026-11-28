@@ -15,7 +15,8 @@ git add "prototype/versions/$V.html" && git commit -q -m "Version $V : $MSG" && 
 git tag -a "prototype-$V" -m "Prototype ONEERA $V — $MSG"
 [ -n "$BUILD" ] && git tag -a "app-build-$BUILD" -m "App iOS ONEERA, build TestFlight $BUILD — $MSG"
 BR="$(git branch --show-current)"
-git push -q origin "$BR" && git push -q origin "prototype-$V" ${BUILD:+"app-build-$BUILD"}
+git push -q origin "$BR"
+git push -q origin "prototype-$V" ${BUILD:+"app-build-$BUILD"} 2>/dev/null || echo "étiquettes gardées localement (envoi refusé par GitHub ici) : elles sont dans l'archive ci-dessous"
 mkdir -p "$ROOT/../oneera-backups" && B="$ROOT/../oneera-backups/oneera-$V-$(date +%Y%m%d-%H%M).bundle"
 git bundle create "$B" --all >/dev/null 2>&1 && echo "archive complète : $B"
 echo "Version $V enregistrée et sauvegardée."
