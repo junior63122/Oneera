@@ -889,7 +889,7 @@ const STAFF = [
   { id: 'marc', n: 'Marc B.', role: 'Manager', h: 'staff_pro', node: 'E', col: '#E58A00', sector: 'Superviseur nuit', st: 'Dispo' },
   { id: 'lucas', n: 'Lucas M.', role: 'Bar', h: 'staff_pro', node: 'M', col: '#8B5CF6', sector: 'Bar Ouest', st: 'Dispo' }
 ];
-const staffNode = s => NODES[s.node] ? s.node : Object.keys(NODES)[0];
+const staffNode = s => s && NODES[s.node] ? s.node : Object.keys(NODES)[0];
 const staffHead = s => HEAD(s.h === 'secu' ? 'secu' : s.h === 'valide_sante' ? 'valide_sante' : 'staff_pro');
 // Programmation : statut calculé depuis l'heure, jamais codé en dur
 const toMin20 = t => { const [h, m] = t.split(':').map(Number); return ((h * 60 + m) - 20 * 60 + 1440) % 1440 || (h === 20 && m === 0 ? 0 : 480); };
@@ -3370,7 +3370,8 @@ V.programme = () => {
 // ---------- fiche d'un lieu ----------
 function waitOf(id) { if (ST.barWait && ST.barWait[id] != null) return ST.barWait[id]; return { barP: 6, barT: 2, barS2: 4, barO: 9, barE: 3, barC: 14, barS: 1, food: 7, vestiaire: 4, cashless: 5 }[id]; }
 V.poiSheet = (id) => {
-  const o = POIS.find(p => p.id === id), rt = route(nearestNode(ST.me.pos), o.node), m = metersPath(rt, ST.me.pos);
+  const o = POIS.find(p => p.id === id); if (!o) return; /* lieu absent de la carte courante (changement de lieu) */
+  const rt = route(nearestNode(ST.me.pos), o.node), m = metersPath(rt, ST.me.pos);
   const w = waitOf(id); let extra = '';
   if (o.bar) {
     const best = POIS.filter(p => p.bar).map(p => p.id).filter(b => b !== id).map(b => ({ b, w: waitOf(b), m: metersPath(route(nearestNode(ST.me.pos), POIS.find(p => p.id === b).node), ST.me.pos) })).sort((a, c) => a.w + a.m / 70 - c.w - c.m / 70)[0];
@@ -3404,11 +3405,11 @@ V.goTo = (at, name, node) => {
   const bn = document.createElement('div'); bn.className = 'banner'; bn.style.cssText += 'bottom:158px;background:#1C1F2A;color:#fff;padding:10px 12px';
   bn.innerHTML = `${I.route.replace('<svg', '<svg width="20"')}<div style="flex:1"><b>${esc(name)}</b><div style="font-size:12px;opacity:.8">${m} m · ${walkMin(m)} min · par les allées</div></div><button class="btn sm" id="walk" style="min-height:34px">Marcher</button><button class="rb" id="stop" style="width:34px;height:34px;background:rgba(255,255,255,.15);color:#fff" aria-label="Arrêter">${I.close}</button>`;
   SCREEN.querySelector('.scr').append(bn);
-  $('#stop', bn).onclick = () => { MV.setRoute(null); bn.remove(); if (walking) tickers.delete(walking); walking = null; };
+  $('#stop', bn).onclick = () => { MV && MV.setRoute(null); bn.remove(); if (walking) tickers.delete(walking); walking = null; };
   $('#walk', bn).onclick = () => {
     $('#walk', bn).remove(); let i = 1; const sp = 0.9; // %/s (accéléré ×6 pour la démo)
     if (walking) tickers.delete(walking);
-    walking = dt => { if (i >= pts.length) { tickers.delete(walking); walking = null; MV.setRoute(null); bn.remove(); toast(`Tu es arrivé : ${esc(name)}`); ST.me.node = to; return; }
+    walking = dt => { if (!bn.isConnected || !MV) { tickers.delete(walking); walking = null; return; } /* carte quittée pendant la marche */ if (i >= pts.length) { tickers.delete(walking); walking = null; MV.setRoute(null); bn.remove(); toast(`Tu es arrivé : ${esc(name)}`); ST.me.node = to; return; }
       const p = ST.me.pos, q = pts[i], d = dist(p, q), stp = sp * dt * 1.586; if (d <= stp) { ST.me.pos = [...q]; i++; } else ST.me.pos = [p[0] + (q[0] - p[0]) / d * stp, p[1] + (q[1] - p[1]) / d * stp]; };
     tickers.add(walking);
   };
