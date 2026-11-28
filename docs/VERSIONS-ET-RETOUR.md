@@ -21,6 +21,7 @@ Les builds TestFlight correspondent exactement à une étiquette `app-build-N`. 
 | 104 | `app-build-104` · [code .zip](https://github.com/junior63122/oneera/archive/8b863295b5111558cc1d5af179a8fc04c585266f.zip) | 26/11 | Avatar vivant, export des données |
 | 105 | `app-build-105` · [code .zip](https://github.com/junior63122/oneera/archive/9c189aaf8e60d1cd746e3b921ee313df674e1fb0.zip) | 27/11 | Portail d'entrée, carte « vue des Dieux » |
 | 106 | `app-build-106` · [code .zip](https://github.com/junior63122/oneera/archive/36d95a23ca0f026ff365d45c534f90670d2a76cb.zip) | 27/11 | Costumes femme / homme, recherche, nuages |
+| 107 | `app-build-107` · [code .zip](https://github.com/junior63122/oneera/archive/102e852f4b30b4d639fd2078063903f361452a20.zip) | 28/11 | Audit complet (v15) : bras, cheveux, bulle, logo, brouillard GPU, studio plus rapide |
 
 Les versions du prototype (`prototype-v1` à `prototype-v14`) sont décrites ligne par ligne dans `prototype/VERSIONS.md`.
 
