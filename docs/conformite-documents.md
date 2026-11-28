@@ -20,18 +20,19 @@ Ce tableau reprend **toutes** les exigences extraites de tes documents et dit, p
 
 ## 1. Ce qui a été fait aujourd'hui
 
-Une nouvelle migration (`008_operations.sql`), de nouvelles routes et de nouveaux tests. Résultat : serveur **54/54**, nouvelle suite navigateur **e2e-reports 14/14**.
+Une nouvelle migration (`008_operations.sql`), de nouvelles routes, de nouveaux écrans réels dans l'app et de nouveaux tests. Résultat : serveur **54/54** ; nouvelles suites navigateur **e2e-reports 14/14** et **e2e-staff 25/25**.
 
 | Exigence | Avant | Maintenant | Preuve |
 |---|---|---|---|
 | Bouton « Signaler un problème » avec les 3 choix exacts (PT-015, DB-209) | Démo : « version de test, appelle le 112 » | **✅ Réel** : l'alerte part au serveur avec la position, en catégorie aide / zone bondée / objets perdus | `e2e-reports` : « reçu par le staff réel » |
 | Anti-spam : pas de doublon en 3 min, 3 au plus en 10 min | Contrôle local seulement | **✅ Imposé par le serveur** ; envoi différé hors réseau, compté une seule fois | `operations.test` : « anti-spam » ; `e2e-reports` : « anti-doublon », « réseau revenu » |
 | Suivi Reçue → En route → Sur place → Résolue (DB-211) | Simulé | **✅ En direct** : chaque étape validée par l'agent s'affiche sur le téléphone du visiteur, avec notification | `e2e-reports`, 4 étapes ; capture `e2e-report-resolu.png` |
-| Staff prévenu en direct d'un nouveau signalement (PT-064) | — | **🟢** Message temps réel à tout le staff actif de l'organisation | `operations.test` : « staff prévenu en direct » |
+| Staff prévenu en direct d'un nouveau signalement (PT-064) | — | **✅** Notification et liste « À prendre » dans l'espace staff de l'app | `e2e-staff` : « alerte du visiteur reçue en direct par l'agent » |
+| Espace staff dans l'app : rejoindre par code, traiter une alerte (PT-061) | Démo | **✅** Réglages → Espace staff → code → boutons « Je prends en charge · en route », « Je suis sur place », « Clôturer l'alerte » ; le visiteur voit chaque étape | `e2e-staff` ; captures `e2e-staff-alerte.png`, `e2e-staff-equipe.png` |
 | Historique de chaque signalement, délai de 1ʳᵉ réponse, délai de résolution (DB-062, DB-113, PT-067) | — | **🟢** Table `incident_updates` + horodatages | `operations.test` |
-| Invitation du staff par code sécurisé : rôle imposé, durée, nombre d'utilisations, sans auto-attribution de droits (PT-058) | — | **🟢** Un manager ne peut pas nommer un manager ; seul le propriétaire le peut | `operations.test` : « invitations staff » |
+| Invitation du staff par code sécurisé : rôle imposé, durée, nombre d'utilisations, sans auto-attribution de droits (PT-058) | — | **✅** Dans l'app, écran Équipe. Un manager ne peut pas nommer un manager ; seul le propriétaire le peut. | `operations.test` ; `e2e-staff` : « code d'invitation créé » |
 | 4 rôles du cahier : staff, sécurité, manager, administrateur festival ; plus analyste et lecture seule (PT-059, DB-133) | Schéma seul | **🟢** Droits différents testés (un analyste lit mais ne modifie rien) | `operations.test` : « cloisonnement » |
-| Suspension ou révocation instantanée (PT-068) | — | **🟢** Effet à la requête suivante | `operations.test` : « effet immédiat » |
+| Suspension ou révocation instantanée (PT-068) | — | **✅** Bouton « Suspendre » dans l'app ; effet à la requête suivante | `e2e-staff` : « accès coupé immédiatement » |
 | Journal d'audit des actions (PT-143, DB-134) | Partiel | **🟢** Invitations, arrivées, révocations, changements d'état, programmation | `operations.test` |
 | Occupation reconstituable **minute par minute** ; carte rejouable des années après (DB-019, DB-045, DB-048, DB-050, DB-073) | — | **🟢** Comptage par zone et par minute, calculé chaque minute, conservé **sans limite**. Les positions brutes sont purgées ; le replay reste possible. | `operations.test` : « purge des positions brutes : les agrégats restent » |
 | Données organisateur strictement agrégées, jamais une personne identifiable (DB-001, DB-003, DB-016, PT-136) | Fonction existante | **🟢** Toute case de moins de **5 personnes** est masquée côté serveur | `operations.test` : « masque sous 5 personnes » |
@@ -39,7 +40,8 @@ Une nouvelle migration (`008_operations.sql`), de nouvelles routes et de nouveau
 | Comparer deux dates, deux heures ou deux éditions (PT-093, PT-094, PT-102, DB-051, DB-129) | Démo | **🟢** Route `compare` : deux périodes, même événement ou un autre | `operations.test` : « comparaison » |
 | Par zone : capacité, pic, heure du pic, moyenne, taux de remplissage (PT-084, DB-089 à DB-093) | Démo | **🟢** | `operations.test` |
 | Alertes automatiques de densité (≥ 90 %, critique ≥ 100 %) et de flux anormal (PT-100, DB-111) | Démo | **🟢** L'immobilité prolongée, donnée individuelle, attend ta décision : voir § 4 | `operations.test` : « alerte de densité », « flux anormal » |
-| Programmation : création, modification, annulation, statut à venir / en cours / terminé, synchronisation en direct, conflits d'horaires (PT-017 à PT-020, DB-234 à DB-246) | Démo | **🟢** Réservé aux managers ; lecture par tous ; mise à jour poussée aux téléphones | `operations.test` : « programmation » |
+| Programmation : création, modification, annulation, statut à venir / en cours / terminé, synchronisation en direct, conflits d'horaires (PT-017 à PT-020, DB-234 à DB-246) | Démo | **✅** Réservé aux managers ; lecture par tous. Dès que l'organisateur saisit sa programmation, elle remplace celle de démonstration dans l'app, en direct, et reste lisible hors réseau. | `operations.test` ; `e2e-staff` : « programmation reçue en direct » |
+| Tableau de bord réel dans l'app (owner, manager, analyste, lecture seule) | — | **✅** Staff → Tableau de bord : zones, alertes automatiques, flux de la dernière heure, comparaison avec hier | `e2e-staff` : « zone réelle chiffrée », « zone de 2 personnes jamais chiffrée » ; capture `e2e-staff-dashboard.png` |
 | Purge automatique des positions brutes (PT-135, PT-138) | Fonction jamais appelée | **🟢** Purge chaque heure ; 7 jours par défaut, réglable (`POSITIONS_RETENTION_HOURS`) | `maintenance.ts` ; `security.test` |
 | Trois couches de données séparées : temps réel, persistantes, analytiques (PT-156, DB-002) | 2 couches | **🟢** `live_positions`, tables métier, agrégats minute | — |
 
@@ -62,7 +64,7 @@ Une nouvelle migration (`008_operations.sql`), de nouvelles routes et de nouveau
 | PT-011 | Messagerie avec historique | ✅ | `e2e-chat` 21/21 |
 | PT-014, PT-104 | Signaler un autre utilisateur → modération | ⏳ | — |
 | PT-015, PT-016 | Signaler un problème, avec anti-spam | ✅ | **Nouveau.** Voir § 1. |
-| PT-017 à PT-020 | Programmation | 🟢 | Serveur prêt et testé. L'écran Programme de l'app affiche encore la démo. |
+| PT-017 à PT-020 | Programmation | ✅ | Les conflits d'horaires sont visibles côté serveur. L'écran de saisie pour l'organisateur reste à faire : aujourd'hui, la saisie passe par l'API. |
 | PT-019 | Favoris et rappel 15 min avant | 🟡 local | La notification push attend Q-01 / APNs. |
 | PT-021 | Récap personnel | ✅ | `e2e-recap` |
 | PT-022, PT-023 | Mini-jeux, replay communautaire | 🟡 | Évolution future dans les documents |
@@ -94,12 +96,12 @@ Une nouvelle migration (`008_operations.sql`), de nouvelles routes et de nouveau
 
 | ID | Exigence | Statut | Note |
 |---|---|---|---|
-| PT-058, PT-059, PT-068 | Invitations, rôles, révocation | 🟢 | **Nouveau.** |
+| PT-058, PT-059, PT-068 | Invitations, rôles, révocation | ✅ | **Nouveau.** Dans l'app. |
 | PT-060 | 200 à 300 membres du staff | ⏳ non mesuré | Le test de charge a validé 12 000 téléphones, mais pas un scénario staff spécifique. |
-| PT-061 | Interface staff selon le rôle | 🟡 écrans · 🟢 serveur | Prochaine étape : brancher les écrans staff sur les routes `/v1/staff`. |
+| PT-061 | Interface staff selon le rôle | ✅ alertes, équipe, tableau de bord | Un analyste ou un compte en lecture seule consulte sans pouvoir traiter. La carte staff d'un compte réel n'affiche plus de fausse équipe ni de densité simulée. |
 | PT-062 | Carte des positions du staff par rôle | ⏳ | Demande aussi le consentement du staff pour sa localisation. |
 | PT-063 | Messagerie interne du staff, par rôle ou par zone | ⏳ | — |
-| PT-064 | Incidents : assignation, suivi, priorité | 🟢 | L'escalade automatique (non pris en charge en 2 min → superviseur) reste à faire (⏳). |
+| PT-064 | Incidents : assignation, suivi, priorité | ✅ | L'escalade automatique (non pris en charge en 2 min → superviseur) et l'appel masqué restent à faire (⏳). Leurs boutons de démo sont retirés sur un compte réel. |
 | PT-065 | Densité et flux pour la sécurité | 🟢 | Alertes |
 | PT-066, PT-069 | Mode crise, SOS | 🟡 | — |
 | PT-067 | Bilan du staff | 🟢 données · ⏳ écran | — |
@@ -113,7 +115,7 @@ Une nouvelle migration (`008_operations.sql`), de nouvelles routes et de nouveau
 | PT-076, PT-077, PT-078 | Éditeur de zones, de points d'intérêt et de balises | 🟢 schéma · ⏳ éditeur | — |
 | PT-079 | QR codes et activation | ✅ | — |
 | PT-080, DB-140, PT-111 | Messages ciblés par rôle ou zone, campagnes | 🟡 · ✋ Q-04 | — |
-| PT-081 à PT-084, DB-074 à DB-095 | Vue globale, par zone, remplissage, pics | 🟢 | Routes `/v1/dashboard/…/live` et `compare`. Le tableau de bord web affiche encore la démo. |
+| PT-081 à PT-084, DB-074 à DB-095 | Vue globale, par zone, remplissage, pics | ✅ dans l'app (staff) · 🟡 tableau de bord web | Le grand tableau de bord web (carte, heatmap, replay) affiche encore la démo. Le brancher sur les mêmes routes est la prochaine étape. |
 | DB-092, PT-084 | Durées moyenne et médiane de présence | ⏳ | Dérivées de parcours individuels : voir ✋ X-04 |
 | PT-085, DB-096 à DB-101 | Vitesses, pas, distances, friction | ⏳ · ✋ | Mêmes réserves (données individuelles) |
 | PT-086 à PT-088 | Un flux = trajet réel case par case, visible même pour une seule personne | ✋ **contradiction X-04** | Montrer le trajet d'une personne seule contredit « strictement agrégé, k ≥ 5 » (DB-001, DB-003, PT-136). Le serveur applique aujourd'hui k ≥ 5. |
@@ -185,11 +187,12 @@ Hors app : licences, tarifs, délais, équipe. Rien à coder.
 
 ## 3. Prochaines étapes, sans décision de ta part
 
-1. Brancher les **écrans staff** de l'app sur les routes réelles : liste des alertes en direct, boutons En route / Sur place / Résolue, invitation par code.
-2. Brancher le **tableau de bord web** sur les routes `/v1/dashboard` : vue en direct, timeline à la minute, flux, comparaison.
-3. Brancher l'écran **Programme** de l'app sur `/v1/events/…/programme`, avec cache hors réseau.
-4. Écrire l'**éditeur** de zones, points d'intérêt et balises pour l'organisateur.
-5. Ajouter le blocage d'un utilisateur, le signalement d'un utilisateur et l'écran « changer mon mot de passe ».
+1. ~~Écrans staff réels~~ : fait (`e2e-staff`).
+2. ~~Écran Programme réel~~ : fait.
+3. Brancher le **grand tableau de bord web** (carte, heatmap, replay à la minute) sur les routes `/v1/dashboard`.
+4. Écrans de **saisie organisateur** : programmation, zones, points d'intérêt, balises.
+5. Escalade automatique d'une alerte non prise en charge ; messagerie interne du staff.
+6. Blocage d'un utilisateur, signalement d'un utilisateur, écran « changer mon mot de passe ».
 
 ## 4. Décisions qui t'attendent
 

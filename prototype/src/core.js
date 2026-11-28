@@ -170,7 +170,7 @@ function genIncidents() {
   return out.sort((a, b) => a.t - b.t);
 }
 const incidentsUntil = m => genIncidents().filter(i => i.t <= m);
-const isLive = l => { const m = nowMin(); return toMin20(l.f) <= m && m < toMin20(l.t); };
+const isLive = l => { if (l.cancelled) return false; const m = nowMin(); return toMin20(l.f) <= m && m < toMin20(l.t); };
 const fmtN = n => Math.round(n).toLocaleString('fr-FR');
 
 // ---------- UI : écrans, feuilles, dialogues système, toasts ----------

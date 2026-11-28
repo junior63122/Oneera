@@ -14,7 +14,7 @@ for vid, img in venues:
     decor[vid] = cache[img]['d']
 json.dump(cache, open(cache_f, 'w'))
 open(os.path.join(R, 'src', '_decor.js'), 'w', encoding='utf-8').write('// Généré par build.py (tools/mapdecor.py) : ne pas modifier à la main.\nconst MAP_DECOR = ' + json.dumps(decor) + ';\n')
-js = '\n'.join(src(f) for f in ['data.js', 'core.js', 'venues.js', 'map.js', '_decor.js', 'fx.js', 'portal.js', 'avatar.js', 'avatar2.js', 'avatar3.js', 'avatar4.js', 'onboard.js', 'avatar_ui.js', 'visitor.js', 'modes.js', 'discover.js', 'i18n.js', 'staff.js', 'dash.js', 'analytics.js', 'report.js', 'v5.js', 'v5dash.js', 'v6av.js', 'v6kit.js', 'fun.js', 'v7av.js', 'real.js', 'real2.js', 'live.js', 'ux.js', 'app.js'])
+js = '\n'.join(src(f) for f in ['data.js', 'core.js', 'venues.js', 'map.js', '_decor.js', 'fx.js', 'portal.js', 'avatar.js', 'avatar2.js', 'avatar3.js', 'avatar4.js', 'onboard.js', 'avatar_ui.js', 'visitor.js', 'modes.js', 'discover.js', 'i18n.js', 'staff.js', 'dash.js', 'analytics.js', 'report.js', 'v5.js', 'v5dash.js', 'v6av.js', 'v6kit.js', 'fun.js', 'v7av.js', 'real.js', 'real2.js', 'real3.js', 'live.js', 'ux.js', 'app.js'])
 head = '''<title>Prototype ONEERA</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800;900&display=swap">

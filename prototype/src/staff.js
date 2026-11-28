@@ -1,4 +1,4 @@
-const staffMe = () => ST.role === 'bar' ? STAFF.find(s => s.id === 'lucas') : STAFF.find(s => s.id === 'nadia');
+const staffMe = () => ((typeof realStaffOn === 'function' && realStaffOn()) && realStaffMe()) || (ST.role === 'bar' ? STAFF.find(s => s.id === 'lucas') : STAFF.find(s => s.id === 'nadia'));
 const myBar = () => POIS.find(o => o.bar && o.node === staffNode(STAFF.find(s => s.id === 'lucas'))) || POIS.find(o => o.bar);
 // ===== App staff (même app, interface selon le rôle) =====
 const S = {};
@@ -14,6 +14,7 @@ function staffNav(active) {
 }
 function wireStaffNav(el) {
   $$('[data-sn]', el).forEach(b => b.onclick = () => ({ map: S.map, alerts: S.alerts, team: S.team, me: S.me, bar: S.bar })[b.dataset.sn]());
+  if ((typeof realStaffOn === 'function' && realStaffOn())) $('#sos2', el).hidden = true; /* renfort réel : messagerie staff pas encore branchée */
   $('#sos2', el).onclick = async () => { const v = await sysAlert({ title: 'Demander du renfort ?', text: 'Ta position est envoyée aux managers et à la sécurité la plus proche.', buttons: [{ t: 'Envoyer', v: 1, b: 1 }, { t: 'Annuler', v: 0 }] }); if (v) { ST.reports.unshift({ id: Date.now() % 100000, cat: 'danger', label: 'Renfort demandé (staff)', note: ST.role === 'bar' ? 'Bar Ouest' : 'Fosse', at: [...NODES[staffNode(staffMe())]], zone: zoneOf(NODES[staffNode(staffMe())]), time: fmtClock(ST.clock), status: 'Reçue', by: ST.role === 'bar' ? 'Lucas M. (bar)' : 'Nadir K.', prio: 'Critique', hist: [[fmtClock(ST.clock), 'Renfort demandé']] }); emit(); toast('Renfort demandé : 2 agents prévenus'); } };
 }
 S.map = () => {
@@ -23,13 +24,13 @@ S.map = () => {
     <div class="ctrls" style="top:150px"><div class="stack">${viewCtl()}<button id="zin" aria-label="Zoomer">${I.plus}</button><button id="zout" aria-label="Dézoomer">${I.minus}</button><button id="hm" aria-label="Densité">${I.fire}</button></div></div>
     <div class="livebar" id="lb"></div>${staffNav('map')}`, '');
   wireStaffNav(el);
-  let heat = true, flt = 'Tout';
+  let heat = !(typeof realStaffOn === 'function' && realStaffOn()), flt = 'Tout'; /* compte réel : pas de densité simulée */
   if (MV) MV.destroy();
   MV = new MapView($('#mv', el), { at: [48, 52], zoom: .36, cluster: false, rotate: true, markers: () => {
     const out = [];
     if (heat && flt !== 'Alertes') ZONES.forEach(z => { const r = occNow(z) / z.cap, c = r > .85 ? '#E5484D' : r > .6 ? '#E58A00' : '#16A34A'; out.push({ id: 'z' + z.id, at: z.at, aria: z.n, html: `<div class="lbl" style="background:${c};color:#fff;transform:translateY(50%)">${Math.round(r * 100)} %</div>`, halo: { m: z.r * 4.1, c }, onClick: () => toast(`${z.n} : ${Math.round(r * 100)} % · ≈ ${fmtN(occNow(z))} pers. · ${STAFF.filter(s => dist(NODES[staffNode(s)], z.at) < 12).length} agent(s) proche(s)`), z: 1 }); });
     POIS.filter(o => o.bar || ['secours', 'entree', 'scene', 'info', 'secu', 'sortie'].includes(o.id)).forEach(o => out.push({ ...poiMarker(o, () => toast(`${o.n}${o.bar ? ' · attente ≈ ' + waitOf(o.id) + ' min' : ''} · ${metersPath(route(staffNode(staffMe()), o.node), NODES[staffNode(staffMe())])} m de toi`)), z: 2 }));
-    STAFF.filter(s => flt === 'Tout' || s.role === flt).filter(() => flt !== 'Alertes').forEach(s => out.push(personMarker('st' + s.id, s.n.split(' ')[0], staffHead(s), NODES[staffNode(s)], { staff: true, col: s.col, sub: s.st === 'Dispo' ? s.role : s.st, acc: 4, onClick: () => S.member(s) })));
+    STAFF.filter(s => flt === 'Tout' || s.role === flt).filter(() => flt !== 'Alertes' && !(typeof realStaffOn === 'function' && realStaffOn())) /* compte réel : pas de fausse équipe */.forEach(s => out.push(personMarker('st' + s.id, s.n.split(' ')[0], staffHead(s), NODES[staffNode(s)], { staff: true, col: s.col, sub: s.st === 'Dispo' ? s.role : s.st, acc: 4, onClick: () => S.member(s) })));
     ST.reports.filter(r => r.at && r.status !== 'Résolu' && r.status !== 'En attente réseau' && ['Tout', 'Alertes', 'Sécurité', 'Médical'].includes(flt)).forEach(r => out.push({ id: 'al' + r.id, at: r.at, cls: 'alert', html: `<div class="poi" style="width:36px;height:36px">!</div><div class="lbl">${esc(r.label)}</div>`, onClick: () => S.alert(r.id), z: 9 }));
     return out; } });
   wireViewCtl(el, MV); $('#zin', el).onclick = () => MV.zoomBy(1.4); $('#zout', el).onclick = () => MV.zoomBy(1 / 1.4); $('#hm', el).onclick = () => { heat = !heat; };
