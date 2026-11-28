@@ -46,7 +46,11 @@ export type ServerMsg =
   | { type: 'gone'; userId: string; reason: 'share_stopped' }
   /** Présence d'un ami (connecté / hors ligne), envoyée aux seuls spectateurs autorisés. */
   | { type: 'presence'; userId: string; online: boolean; at: number }
-  | { type: 'refresh'; what: 'friends' }
+  | { type: 'refresh'; what: 'friends' | 'programme' }
+  /** Signalement nouveau ou mis à jour : envoyé au staff de l'organisation. */
+  | { type: 'incident'; id: string; eventId: string; status: string; isNew: boolean }
+  /** Suivi de son propre signalement (Reçue → En route → Sur place → Résolue). */
+  | { type: 'report'; id: string; status: string }
   /** Message d'un ami (ou envoyé depuis un autre appareil du même compte). */
   | { type: 'message'; message: ChatMessage }
   | { type: 'error'; code: string };
@@ -162,7 +166,11 @@ export class Gateway {
     await this.listener.connect();
     await this.listener.query('LISTEN share_changed');
     await this.listener.query('LISTEN message_new');
+    await this.listener.query('LISTEN incident');
+    await this.listener.query('LISTEN programme_changed');
     this.listener.on('notification', (n) => {
+      if (n.channel === 'incident' && n.payload) void this.onIncident(n.payload).catch((e) => console.error('[gateway] incident', (e as Error).message));
+      if (n.channel === 'programme_changed' && n.payload) this.onProgramme(n.payload);
       if (n.channel === 'share_changed' && n.payload) void this.onShareChanged(n.payload);
       if (n.channel === 'message_new' && n.payload) this.onChatMessage(n.payload);
     });
@@ -322,6 +330,23 @@ export class Gateway {
     try { m = JSON.parse(payload); } catch { return; }
     const msg: ServerMsg = { type: 'message', message: { id: m.id, from: m.from, to: m.to, kind: m.kind, body: m.body, loc: m.loc ?? null, at: m.at } };
     for (const uid of new Set([m.to, m.from])) for (const c of this.conns.get(uid) ?? []) this.send(c.ws, msg);
+  }
+
+  /** Signalement : le staff actif de l'organisation est prévenu en direct, l'auteur suit l'état. */
+  private async onIncident(payload: string): Promise<void> {
+    let m: { id: string; org: string; event: string; reporter: string | null; status: string; new: boolean };
+    try { m = JSON.parse(payload); } catch { return; }
+    const staff = (await this.opts.pool.query('SELECT user_id FROM app.active_staff($1)', [m.org])).rows as { user_id: string }[];
+    const msg: ServerMsg = { type: 'incident', id: m.id, eventId: m.event, status: m.status, isNew: !!m.new };
+    for (const { user_id } of staff) for (const c of this.conns.get(user_id) ?? []) this.send(c.ws, msg);
+    if (m.reporter && !m.new) for (const c of this.conns.get(m.reporter) ?? []) this.send(c.ws, { type: 'report', id: m.id, status: m.status });
+  }
+
+  /** Programmation modifiée : chaque téléphone de l'événement recharge (statut, annulation, horaires). */
+  private onProgramme(payload: string): void {
+    let m: { event: string };
+    try { m = JSON.parse(payload); } catch { return; }
+    for (const set of this.conns.values()) for (const c of set) if (c.eventId === m.event) this.send(c.ws, { type: 'refresh', what: 'programme' });
   }
 
   /** Un partage, un consentement ou une amitié de `owner` a changé. */

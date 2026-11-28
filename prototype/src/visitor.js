@@ -324,15 +324,15 @@ V.reportDetail = (cat) => {
 };
 V.reportStatus = (id) => {
   const r = ST.reports.find(x => x.id === id); if (!r) return;
-  const steps = r.status === 'En attente réseau' ? ['En attente réseau', 'Reçue', 'Prise en charge', 'En route', 'Sur place', 'Résolu'] : ['Reçue', 'Prise en charge', 'En route', 'Sur place', 'Résolu'], k = steps.indexOf(r.status), hOf = (s, i) => r.hist.find(h => h[2] === s) || (i === 0 && !r.hist[0][2] ? r.hist[0] : null);
+  const steps = (r.status === 'En attente réseau' ? ['En attente réseau', 'Reçue', 'Prise en charge', 'En route', 'Sur place', 'Résolu'] : ['Reçue', 'Prise en charge', 'En route', 'Sur place', 'Résolu']).filter(x => !(r.real && x === 'Prise en charge')) /* cahier : Reçue → En route → Sur place → Résolue */, k = steps.indexOf(r.status), hOf = (s, i) => r.hist.find(h => h[2] === s) || (i === 0 && !r.hist[0][2] ? r.hist[0] : null);
   const sb = openSheet(`<div style="display:flex;gap:12px;align-items:center"><img src="${A}av/${r.status === 'Reçue' ? 'valide_secu' : 'secu'}.webp" alt="" style="height:110px"><div><h2 class="h2">${r.status === 'En attente réseau' ? 'Envoi dès le retour du réseau' : r.status === 'Reçue' ? 'C’est envoyé !' : r.status === 'Résolu' ? 'Alerte résolue' : 'Un agent arrive'}</h2><div class="small">${r.label} · ${r.zone} · ${r.time}</div></div></div>
-    <div class="list">${steps.map((s, i) => `<div class="row" style="min-height:44px"><span style="width:22px;height:22px;border-radius:11px;flex-shrink:0;display:flex;align-items:center;justify-content:center;color:#fff;background:${i <= k ? '#16A34A' : '#DADDE6'}">${i <= k ? I.check.replace('<svg', '<svg width="13"') : ''}</span><div class="grow"><div class="t" style="font-size:14px;${i <= k ? '' : 'color:var(--ink3)'}">${s}</div>${hOf(s, i) ? `<div class="s">${hOf(s, i)[0]} · ${esc(hOf(s, i)[1])}</div>` : ''}</div></div>`).join('')}</div>
+    <div class="list">${steps.map((s, i) => `<div class="row" style="min-height:44px"><span style="width:22px;height:22px;border-radius:11px;flex-shrink:0;display:flex;align-items:center;justify-content:center;color:#fff;background:${i <= k ? '#16A34A' : '#DADDE6'}">${i <= k ? I.check.replace('<svg', '<svg width="13"') : ''}</span><div class="grow"><div class="t" style="font-size:14px;${i <= k ? '' : 'color:var(--ink3)'}">${s === 'Résolu' ? 'Résolue' : s}</div>${hOf(s, i) ? `<div class="s">${hOf(s, i)[0]} · ${esc(hOf(s, i)[1])}</div>` : ''}</div></div>`).join('')}</div>
     <div class="card" style="background:#FDECEC"><div class="small">Reste visible si tu le peux. En cas de danger immédiat : <b style="user-select:all">112</b></div></div>`);
   const upd = () => { if (!document.body.contains(sb)) { listeners.delete(upd); return; } if (r._seen !== r.status) { r._seen = r.status; listeners.delete(upd); V.reportStatus(id); } };
   r._seen = r.status; listeners.add(upd);
 };
 function staffTake(id, who) {
-  const r = ST.reports.find(x => x.id === id); if (!r || r.status !== 'Reçue') return;
+  const r = ST.reports.find(x => x.id === id); if (!r || r.status !== 'Reçue' || r.real) return; /* compte réel : seule la vraie équipe fait avancer l'alerte */
   const role = (STAFF.find(s => s.n === who) || { role: 'staff' }).role.toLowerCase(); r.status = 'Prise en charge'; r.agent = who; r.hist.push([fmtClock(ST.clock), who + ' (' + role + ') prend en charge', 'Prise en charge']); emit();
   if (r.mine) push({ rid: id, title: 'Alerte prise en charge', text: `${who} arrive vers toi (≈ 2 min).`, icon: IC('securite'), onTap: () => V.reportStatus(id) });
   setTimeout(() => { if (r.status === 'Prise en charge') { r.status = 'En route'; r.hist.push([fmtClock(ST.clock), who + ' en route · 2 min', 'En route']); emit(); } }, 4000);
@@ -444,4 +444,4 @@ V.lock = () => {
   $('#la', el).onclick = () => V.map(); $('.push', el).onclick = () => V.chat('ines');
 };
 // alertes mises en file hors ligne : envoyées au retour du réseau
-function flushOffline() { (ST.outbox || []).forEach(id => { const r = ST.reports.find(x => x.id === id); if (r && r.status === 'En attente réseau') { r.status = 'Reçue'; r.hist.push([fmtClock(ST.clock), 'Envoyée au retour du réseau, reçue par l’équipe', 'Reçue']); setTimeout(() => { if (r.status === 'Reçue' && ST.role === 'visitor') staffTake(r.id, 'Nadir K.'); }, 9000); } }); ST.outbox = []; }
+function flushOffline() { (ST.outbox || []).forEach(id => { const r = ST.reports.find(x => x.id === id); if (r && r.real) { realSendReport(r); return; } if (r && r.status === 'En attente réseau') { r.status = 'Reçue'; r.hist.push([fmtClock(ST.clock), 'Envoyée au retour du réseau, reçue par l’équipe', 'Reçue']); setTimeout(() => { if (r.status === 'Reçue' && ST.role === 'visitor') staffTake(r.id, 'Nadir K.'); }, 9000); } }); ST.outbox = []; }

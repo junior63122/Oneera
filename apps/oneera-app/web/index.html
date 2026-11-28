@@ -3572,15 +3572,15 @@ V.reportDetail = (cat) => {
 };
 V.reportStatus = (id) => {
   const r = ST.reports.find(x => x.id === id); if (!r) return;
-  const steps = r.status === 'En attente réseau' ? ['En attente réseau', 'Reçue', 'Prise en charge', 'En route', 'Sur place', 'Résolu'] : ['Reçue', 'Prise en charge', 'En route', 'Sur place', 'Résolu'], k = steps.indexOf(r.status), hOf = (s, i) => r.hist.find(h => h[2] === s) || (i === 0 && !r.hist[0][2] ? r.hist[0] : null);
+  const steps = (r.status === 'En attente réseau' ? ['En attente réseau', 'Reçue', 'Prise en charge', 'En route', 'Sur place', 'Résolu'] : ['Reçue', 'Prise en charge', 'En route', 'Sur place', 'Résolu']).filter(x => !(r.real && x === 'Prise en charge')) /* cahier : Reçue → En route → Sur place → Résolue */, k = steps.indexOf(r.status), hOf = (s, i) => r.hist.find(h => h[2] === s) || (i === 0 && !r.hist[0][2] ? r.hist[0] : null);
   const sb = openSheet(`<div style="display:flex;gap:12px;align-items:center"><img src="${A}av/${r.status === 'Reçue' ? 'valide_secu' : 'secu'}.webp" alt="" style="height:110px"><div><h2 class="h2">${r.status === 'En attente réseau' ? 'Envoi dès le retour du réseau' : r.status === 'Reçue' ? 'C’est envoyé !' : r.status === 'Résolu' ? 'Alerte résolue' : 'Un agent arrive'}</h2><div class="small">${r.label} · ${r.zone} · ${r.time}</div></div></div>
-    <div class="list">${steps.map((s, i) => `<div class="row" style="min-height:44px"><span style="width:22px;height:22px;border-radius:11px;flex-shrink:0;display:flex;align-items:center;justify-content:center;color:#fff;background:${i <= k ? '#16A34A' : '#DADDE6'}">${i <= k ? I.check.replace('<svg', '<svg width="13"') : ''}</span><div class="grow"><div class="t" style="font-size:14px;${i <= k ? '' : 'color:var(--ink3)'}">${s}</div>${hOf(s, i) ? `<div class="s">${hOf(s, i)[0]} · ${esc(hOf(s, i)[1])}</div>` : ''}</div></div>`).join('')}</div>
+    <div class="list">${steps.map((s, i) => `<div class="row" style="min-height:44px"><span style="width:22px;height:22px;border-radius:11px;flex-shrink:0;display:flex;align-items:center;justify-content:center;color:#fff;background:${i <= k ? '#16A34A' : '#DADDE6'}">${i <= k ? I.check.replace('<svg', '<svg width="13"') : ''}</span><div class="grow"><div class="t" style="font-size:14px;${i <= k ? '' : 'color:var(--ink3)'}">${s === 'Résolu' ? 'Résolue' : s}</div>${hOf(s, i) ? `<div class="s">${hOf(s, i)[0]} · ${esc(hOf(s, i)[1])}</div>` : ''}</div></div>`).join('')}</div>
     <div class="card" style="background:#FDECEC"><div class="small">Reste visible si tu le peux. En cas de danger immédiat : <b style="user-select:all">112</b></div></div>`);
   const upd = () => { if (!document.body.contains(sb)) { listeners.delete(upd); return; } if (r._seen !== r.status) { r._seen = r.status; listeners.delete(upd); V.reportStatus(id); } };
   r._seen = r.status; listeners.add(upd);
 };
 function staffTake(id, who) {
-  const r = ST.reports.find(x => x.id === id); if (!r || r.status !== 'Reçue') return;
+  const r = ST.reports.find(x => x.id === id); if (!r || r.status !== 'Reçue' || r.real) return; /* compte réel : seule la vraie équipe fait avancer l'alerte */
   const role = (STAFF.find(s => s.n === who) || { role: 'staff' }).role.toLowerCase(); r.status = 'Prise en charge'; r.agent = who; r.hist.push([fmtClock(ST.clock), who + ' (' + role + ') prend en charge', 'Prise en charge']); emit();
   if (r.mine) push({ rid: id, title: 'Alerte prise en charge', text: `${who} arrive vers toi (≈ 2 min).`, icon: IC('securite'), onTap: () => V.reportStatus(id) });
   setTimeout(() => { if (r.status === 'Prise en charge') { r.status = 'En route'; r.hist.push([fmtClock(ST.clock), who + ' en route · 2 min', 'En route']); emit(); } }, 4000);
@@ -3692,7 +3692,7 @@ V.lock = () => {
   $('#la', el).onclick = () => V.map(); $('.push', el).onclick = () => V.chat('ines');
 };
 // alertes mises en file hors ligne : envoyées au retour du réseau
-function flushOffline() { (ST.outbox || []).forEach(id => { const r = ST.reports.find(x => x.id === id); if (r && r.status === 'En attente réseau') { r.status = 'Reçue'; r.hist.push([fmtClock(ST.clock), 'Envoyée au retour du réseau, reçue par l’équipe', 'Reçue']); setTimeout(() => { if (r.status === 'Reçue' && ST.role === 'visitor') staffTake(r.id, 'Nadir K.'); }, 9000); } }); ST.outbox = []; }
+function flushOffline() { (ST.outbox || []).forEach(id => { const r = ST.reports.find(x => x.id === id); if (r && r.real) { realSendReport(r); return; } if (r && r.status === 'En attente réseau') { r.status = 'Reçue'; r.hist.push([fmtClock(ST.clock), 'Envoyée au retour du réseau, reçue par l’équipe', 'Reçue']); setTimeout(() => { if (r.status === 'Reçue' && ST.role === 'visitor') staffTake(r.id, 'Nadir K.'); }, 9000); } }); ST.outbox = []; }
 
 // ===== Modèles d'événement : un même moteur, des modules activés selon le type de lieu =====
 const TEMPLATES = [
@@ -5495,13 +5495,14 @@ async function realConnect() {
     if (!realOn()) { REAL.connecting = false; return; }
     const ws = new WebSocket(REAL.api.replace(/^http/, 'ws') + '/rt?token=' + encodeURIComponent(token));
     REAL.ws = ws; REAL.connecting = false;
-    ws.onopen = () => { REAL.wsOk = true; REAL.retry = 0; REAL.lastSent = null; emit(); };
+    ws.onopen = () => { REAL.wsOk = true; REAL.retry = 0; REAL.lastSent = null; emit(); realFlushReports(); };
     ws.onmessage = (ev) => { let m; try { m = JSON.parse(ev.data); } catch (_) { return; }
       if (m.type === 'snapshot') m.friends.forEach(p => realApplyPos(p));
       else if (m.type === 'friend') realApplyPos(m.pos);
       else if (m.type === 'presence') { REAL.online[m.userId] = m.online; if (m.online && !FRIENDS.some(f => f.id === m.userId)) realSyncFriends().catch(() => {}); realRefreshVisible(); }
       else if (m.type === 'gone') { delete REAL.pos[m.userId]; delete FR_STATE[m.userId]; realRefreshVisible(true); }
       else if (m.type === 'message') realOnMessage(m.message);
+      else if (m.type === 'report') realOnReport(m);
       else if (m.type === 'refresh') realSyncFriends().then(() => REAL.onFriends && REAL.onFriends()).catch(() => {});
       if (m.type === 'snapshot' || m.type === 'friend') realRefreshVisible(); };
     ws.onclose = () => { REAL.wsOk = false; emit(); if (!realOn()) return; const d = [1, 2, 5, 10, 20][Math.min(REAL.retry++, 4)]; setTimeout(realConnect, d * 1000 * (.7 + Math.random() * .6)); }; /* délai varié : pas de retour en masse si le serveur était plein */
@@ -6049,10 +6050,49 @@ V.meSheet = () => {
   $('#sh', sb).onclick = V.shareSettings;
 };
 
-// ---------- Signalement : en version de test, aucune équipe n'est encore branchée — on le dit clairement ----------
-const _reportDemo = V.report;
-V.report = (...a) => { _reportDemo(...a); if (!realOn()) return; const sb = $('.sheet .sbody'); if (!sb || $('#tstw', sb)) return;
-  const h = sb.querySelector('h2'); h && h.insertAdjacentHTML('afterend', `<div id="tstw" class="card" style="background:#FFF4E5;padding:10px 12px"><div class="small" style="color:#8A4B00"><b>Version de test :</b> l’alerte n’est pas encore transmise à une équipe du lieu. En cas d’urgence, appelle directement le 112.</div></div>`); };
+// ---------- Signalement réel : envoyé au serveur, reçu en direct par le staff du lieu, suivi en direct ----------
+// Correspondance avec le cahier : « Quelqu'un a besoin d'aide ici » → help, « Zone bondée / danger potentiel » → crowd,
+// « Objets perdus / retrouvés » → lost_found ; les autres situations partent en « autre » avec leur libellé.
+const REPORT_CAT = { medical: 'help', crowd: 'crowd', lost: 'lost_found' };
+const REPORT_ST = { open: 'Reçue', assigned: 'En route', in_progress: 'Sur place', resolved: 'Résolu', cancelled: 'Résolu' };
+const REPORT_TXT = { open: 'Alerte reçue par l’équipe du lieu', assigned: 'Un agent est en route', in_progress: 'L’agent est sur place', resolved: 'Alerte résolue', cancelled: 'Alerte close par l’équipe' };
+function realReportApply(r, st) {
+  const label = REPORT_ST[st]; if (!label || r.status === label) return;
+  r.status = label; r.hist.push([fmtClock(ST.clock), REPORT_TXT[st], label]); emit();
+  if (st !== 'open') push({ rid: r.id, title: st === 'resolved' || st === 'cancelled' ? 'Alerte résolue' : st === 'assigned' ? 'Un agent arrive' : 'L’agent est sur place', text: r.label + ' · ' + r.zone, icon: IC('securite'), onTap: () => V.reportStatus(r.id) });
+}
+async function realSendReport(r) {
+  if (!realOn() || r.serverId || r.sending) return; r.sending = true;
+  try {
+    if (!REAL.eventId) REAL.eventId = (await api('GET', '/v1/events/BDF-DEMO')).id;
+    const cat = REPORT_CAT[r.cat] || 'other', desc = [cat === 'other' ? r.label : '', r.note].filter(Boolean).join(' · ');
+    const out = await api('POST', `/v1/events/${REAL.eventId}/reports`, { category: cat, clientId: r.cid, x: r.at[0], y: r.at[1], floor: (ST.me.floor || 'L0').replace(/[^A-Za-z0-9_-]/g, '').slice(0, 24) || null, zone: String(zoneOf(r.at) || '').normalize('NFD').replace(/[^A-Za-z0-9_-]/g, '').slice(0, 24) || null, description: desc || undefined });
+    const rep = out.report; r.sending = false;
+    if (rep.duplicate && rep.id !== r.serverId) { const twin = ST.reports.find(x => x.serverId === rep.id); if (twin && twin !== r) { ST.reports = ST.reports.filter(x => x !== r); emit(); toast('Ton signalement est déjà transmis à l’équipe : suis son avancement ici'); return V.reportStatus(twin.id); } }
+    r.serverId = rep.id; const h0 = r.hist.find(h => h[2] === 'Reçue'); if (h0 && /Envoi/.test(h0[1])) h0[1] = 'Alerte reçue par l’équipe du lieu';
+    if (r.status === 'En attente réseau') { r.status = 'Reçue'; r.hist.push([fmtClock(ST.clock), 'Envoyée au retour du réseau, reçue par l’équipe', 'Reçue']); }
+    realReportApply(r, rep.status); emit();
+  } catch (e) {
+    r.sending = false;
+    if (/3 signalements|429/.test(e.message)) { ST.reports = ST.reports.filter(x => x !== r); emit(); closeSheet(true); toast(esc(e.message)); return; }
+    if (r.status !== 'En attente réseau') { r.status = 'En attente réseau'; r.hist.push([fmtClock(ST.clock), 'Pas de réseau : envoi automatique dès qu’il revient', 'En attente réseau']); emit(); }
+  }
+}
+function realFlushReports() { if (!realOn()) return; ST.reports.filter(r => r.real && !r.serverId).forEach(r => realSendReport(r));
+  if (REAL.eventId) api('GET', `/v1/events/${REAL.eventId}/reports/mine`).then(o => o.reports.forEach(x => { const r = ST.reports.find(y => y.serverId === x.id); if (r) realReportApply(r, x.status); })).catch(() => {}); }
+function realOnReport(m) { const r = ST.reports.find(x => x.serverId === m.id); if (r) realReportApply(r, m.status); }
+const _reportDetailReal = V.reportDetail;
+V.reportDetail = (cat) => {
+  _reportDetailReal(cat); if (!realOn()) return;
+  const sb = $('.sheet .sbody'), send = sb && $('#send', sb); if (!send || send._real) return; send._real = 1;
+  const demoSend = send.onclick;
+  send.onclick = (e) => { const before = ST.reports[0]; demoSend.call(send, e); const r = ST.reports[0]; if (!r || r === before || !r.mine) return;
+    r.real = true; r.cid = 'r' + Date.now().toString(36) + Math.random().toString(36).slice(2, 8); r.hist[0][1] = ST.offline ? r.hist[0][1] : 'Envoi à l’équipe du lieu…';
+    if (!ST.offline) realSendReport(r); };
+};
+const _reportReal = V.report;
+V.report = (...a) => { _reportReal(...a); if (!realOn()) return; const sb = $('.sheet .sbody'); if (!sb || $('#tstw', sb)) return;
+  const h = sb.querySelector('h2'); h && h.insertAdjacentHTML('afterend', `<div id="tstw" class="tiny" style="margin-top:-4px">Transmis en direct à l’équipe du lieu inscrite sur ONEERA, avec ta position.</div>`); };
 
 // Réglages d'un compte réel : « Modifier le profil » = prénom et avatar (pas de photo ni de pseudo séparés)
 const _settingsReal2 = V.settings;

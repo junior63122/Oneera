@@ -169,6 +169,29 @@ export function createApi(opts: ApiOptions) {
     return JSON.stringify(out);
   };
 
+  /** Période demandée (ISO 8601) ; par défaut la dernière heure ; 31 jours au plus. */
+  const range = (req: IncomingMessage, kf: string, kt: string): [string, string] => {
+    const q = new URL(req.url ?? '/', 'http://x').searchParams;
+    const to = q.get(kt) ? new Date(q.get(kt)!) : new Date(), from = q.get(kf) ? new Date(q.get(kf)!) : new Date(to.getTime() - 3_600_000);
+    if (isNaN(+from) || isNaN(+to) || to <= from) throw new HttpError(400, 'invalid_range', 'Période invalide.');
+    if (+to - +from > 31 * 86_400_000) throw new HttpError(400, 'range_too_long', 'Période trop longue (31 jours maximum).');
+    return [from.toISOString(), to.toISOString()];
+  };
+  const zoneOut = (r: Record<string, any>) => ({ zone: r.zone_key, name: r.name ?? r.zone_key, capacity: r.capacity, peak: r.peak, peakAt: r.peak_at, avg: r.avg_devices === null ? null : Number(r.avg_devices), masked: r.masked,
+    fill: r.capacity && r.peak !== null ? Math.round((1000 * r.peak) / r.capacity) / 10 : null });
+  const PKINDS = ['dj', 'concert', 'show', 'screening', 'fireworks', 'talk', 'other'];
+  async function saveProgramme(req: IncomingMessage, ev: string, item: string | null) {
+    const u = await auth(req); limitUser(u, 60, 'prog'); const b = await body(req);
+    const title = typeof b.title === 'string' ? b.title.normalize('NFC').replace(/[<>\u0000-\u001f\u007f‪-‮⁦-⁩]/g, '').trim() : '';
+    if (!title || [...title].length > 120) throw new HttpError(400, 'invalid_title', 'Nom obligatoire (120 caractères maximum).');
+    const kind = String(b.kind ?? 'other'); if (!PKINDS.includes(kind)) throw new HttpError(400, 'invalid_kind');
+    const stage = typeof b.stage === 'string' && TOKEN.test(b.stage) && b.stage ? b.stage : null; if (!stage) throw new HttpError(400, 'invalid_stage', 'Choisis la scène.');
+    const s = new Date(String(b.startsAt ?? '')), e = new Date(String(b.endsAt ?? ''));
+    if (isNaN(+s) || isNaN(+e) || e <= s || +e - +s > 86_400_000) throw new HttpError(400, 'invalid_time', 'Horaires invalides (fin après début, 24 h maximum).');
+    const descr = typeof b.description === 'string' ? b.description.replace(/[\u0000-\u0008\u000b-\u001f\u007f]/g, '').trim().slice(0, 1000) || null : null;
+    const r = await withContext(pool, { userId: u }, async (c) => (await c.query('SELECT app.programme_upsert($1, $2, $3, $4, $5, $6, $7, $8, $9) AS r', [ev, item, title, kind, stage, s.toISOString(), e.toISOString(), descr, b.cancelled === true])).rows[0].r);
+    return { item: r };
+  }
   const routes: Record<string, (req: IncomingMessage, m: RegExpMatchArray) => Promise<unknown>> = {
     'GET /v1/health': async () => ({ ok: true }),
 
@@ -371,6 +394,125 @@ export function createApi(opts: ApiOptions) {
       return me(u);
     },
 
+    // ---------- Signalements du public (3 choix du cahier + « autre ») ----------
+    'POST /v1/events/(?<id>[0-9a-f-]{36})/reports': async (req, m) => {
+      const u = await auth(req); limitUser(u, 10, 'report'); const b = await body(req);
+      const cat = String(b.category ?? '');
+      if (!['help', 'crowd', 'lost_found', 'other'].includes(cat)) throw new HttpError(400, 'invalid_category', 'Choisis le type de signalement.');
+      const cid = String(b.clientId ?? '');
+      if (!/^[A-Za-z0-9_-]{6,64}$/.test(cid)) throw new HttpError(400, 'invalid_client_id');
+      const x = b.x === undefined || b.x === null ? null : Number(b.x), y = b.y === undefined || b.y === null ? null : Number(b.y);
+      if ((x !== null && !(x >= 0 && x <= 100)) || (y !== null && !(y >= 0 && y <= 100))) throw new HttpError(400, 'invalid_location');
+      const floor = typeof b.floor === 'string' && TOKEN.test(b.floor) ? b.floor : null;
+      const zone = typeof b.zone === 'string' && TOKEN.test(b.zone) ? b.zone : null;
+      const descr = typeof b.description === 'string' ? b.description.normalize('NFC').replace(/[\u0000-\u0008\u000b-\u001f\u007f‪-‮⁦-⁩]/g, '').trim().slice(0, 1000) || null : null;
+      const r = await withContext(pool, { userId: u }, async (c) => (await c.query('SELECT app.report_incident($1, $2, $3, $4, $5, $6, $7, $8) AS r', [m.groups!.id, cat, cid, floor, x, y, zone, descr])).rows[0].r);
+      return { report: r };
+    },
+    'GET /v1/events/(?<id>[0-9a-f-]{36})/reports/mine': async (req, m) => {
+      const u = await auth(req);
+      const rows = await withContext(pool, { userId: u }, async (c) => (await c.query('SELECT app.my_reports($1) AS r', [m.groups!.id])).rows);
+      return { reports: rows.map((r) => r.r) };
+    },
+
+    // ---------- Programmation (lecture : toute personne connectée) ----------
+    'GET /v1/events/(?<id>[0-9a-f-]{36})/programme': async (req, m) => {
+      const u = await auth(req);
+      const rows = await withContext(pool, { userId: u }, async (c) => (await c.query('SELECT app.programme($1) AS p', [m.groups!.id])).rows);
+      return { items: rows.map((r) => r.p), at: new Date().toISOString() };
+    },
+
+    // ---------- Staff ----------
+    'GET /v1/staff/me': async (req) => {
+      const u = await auth(req);
+      const rows = await withContext(pool, { userId: u }, async (c) => (await c.query('SELECT * FROM app.my_staff_roles()')).rows);
+      return { organizations: rows.map((r) => ({ id: r.organization_id, name: r.organization, role: r.role })) };
+    },
+    'POST /v1/staff/join': async (req) => {
+      const u = await auth(req); limitUser(u, 10, 'join'); const b = await body(req);
+      const code = String(b.code ?? '').trim().toUpperCase().replace(/[^A-Z0-9]/g, '');
+      if (code.length !== 12) throw new HttpError(400, 'invalid_code', 'Le code staff fait 12 caractères.');
+      try { return await withContext(pool, { userId: u }, async (c) => (await c.query('SELECT app.accept_staff_invite($1) AS r', [code])).rows[0].r); }
+      catch (e) { if ((e as { code?: string }).code === '22023') throw new HttpError(400, 'invalid_code', 'Code invalide, expiré ou déjà utilisé.'); throw e; }
+    },
+    'POST /v1/staff/orgs/(?<org>[0-9a-f-]{36})/invites': async (req, m) => {
+      const u = await auth(req); limitUser(u, 30, 'sinv'); const b = await body(req);
+      const role = String(b.role ?? 'staff');
+      if (!['manager', 'security', 'staff', 'analyst', 'readonly'].includes(role)) throw new HttpError(400, 'invalid_role');
+      const hours = Math.round(Number(b.hours ?? 72)) || 72, uses = Math.round(Number(b.maxUses ?? 1)) || 1;
+      const r = await withContext(pool, { userId: u }, async (c) => (await c.query('SELECT app.create_staff_invite($1, $2, $3, $4) AS r', [m.groups!.org, role, hours, uses])).rows[0].r);
+      return { invite: r };
+    },
+    'GET /v1/staff/orgs/(?<org>[0-9a-f-]{36})/members': async (req, m) => {
+      const u = await auth(req);
+      const rows = await withContext(pool, { userId: u }, async (c) => (await c.query('SELECT * FROM app.staff_members($1)', [m.groups!.org])).rows);
+      return { members: rows.map((r) => ({ id: r.user_id, displayName: r.display_name, role: r.role, active: r.active })) };
+    },
+    'PATCH /v1/staff/orgs/(?<org>[0-9a-f-]{36})/members/(?<id>[0-9a-f-]{36})': async (req, m) => {
+      const u = await auth(req); const b = await body(req);
+      const role = b.role === undefined ? null : String(b.role);
+      if (role !== null && !['manager', 'security', 'staff', 'analyst', 'readonly'].includes(role)) throw new HttpError(400, 'invalid_role');
+      const r = await withContext(pool, { userId: u }, async (c) => (await c.query('SELECT app.set_staff_access($1, $2, $3, $4) AS r', [m.groups!.org, m.groups!.id, b.active !== false, role])).rows[0].r);
+      return { member: r };
+    },
+    'GET /v1/staff/events/(?<id>[0-9a-f-]{36})/incidents': async (req, m) => {
+      const u = await auth(req);
+      const open = new URL(req.url ?? '/', 'http://x').searchParams.get('open') === '1';
+      const rows = await withContext(pool, { userId: u }, async (c) => (await c.query('SELECT app.staff_incidents($1, $2) AS r', [m.groups!.id, open])).rows);
+      return { incidents: rows.map((r) => r.r) };
+    },
+    'POST /v1/staff/incidents/(?<id>[0-9a-f-]{36})/status': async (req, m) => {
+      const u = await auth(req); limitUser(u, 60, 'inc'); const b = await body(req);
+      const st = String(b.status ?? '');
+      if (!['assigned', 'in_progress', 'resolved', 'cancelled'].includes(st)) throw new HttpError(400, 'invalid_status');
+      const note = typeof b.note === 'string' ? b.note.replace(/[\u0000-\u001f\u007f]/g, ' ').trim().slice(0, 500) : '';
+      const r = await withContext(pool, { userId: u }, async (c) => (await c.query('SELECT app.set_incident_status($1, $2, $3) AS r', [m.groups!.id, st, note])).rows[0].r);
+      return { incident: r };
+    },
+    'POST /v1/staff/events/(?<id>[0-9a-f-]{36})/programme': async (req, m) => saveProgramme(req, m.groups!.id, null),
+    'PATCH /v1/staff/events/(?<id>[0-9a-f-]{36})/programme/(?<item>[0-9a-f-]{36})': async (req, m) => saveProgramme(req, m.groups!.id, m.groups!.item),
+    'DELETE /v1/staff/events/(?<id>[0-9a-f-]{36})/programme/(?<item>[0-9a-f-]{36})': async (req, m) => {
+      const u = await auth(req);
+      const ok = await withContext(pool, { userId: u }, async (c) => (await c.query('SELECT app.programme_delete($1, $2) AS ok', [m.groups!.id, m.groups!.item])).rows[0].ok);
+      if (!ok) throw new HttpError(404, 'not_found');
+      return { deleted: true };
+    },
+    'GET /v1/staff/events/(?<id>[0-9a-f-]{36})/programme/conflicts': async (req, m) => {
+      const u = await auth(req);
+      const rows = await withContext(pool, { userId: u }, async (c) => (await c.query('SELECT * FROM app.programme_conflicts($1)', [m.groups!.id])).rows);
+      return { conflicts: rows.map((r) => ({ a: r.a, b: r.b, stage: r.stage, overlapMinutes: r.overlap_minutes })) };
+    },
+
+    // ---------- Tableau de bord organisateur (agrégats seulement, cases < 5 personnes masquées) ----------
+    'GET /v1/dashboard/events/(?<id>[0-9a-f-]{36})/live': async (req, m) => {
+      const u = await auth(req); const ev = m.groups!.id;
+      return withContext(pool, { userId: u }, async (c) => {
+        const now = new Date(), from = new Date(now.getTime() - 3 * 60_000);
+        const zones = (await c.query('SELECT * FROM app.zone_summary($1, $2, $3)', [ev, from, now])).rows.map(zoneOut);
+        const alerts = (await c.query('SELECT * FROM app.event_alerts($1)', [ev])).rows.map((r) => ({ kind: r.kind, level: r.level, zone: r.zone_key, value: Number(r.value), threshold: Number(r.threshold) }));
+        const inc = (await c.query('SELECT app.staff_incidents($1, true) AS r', [ev])).rows.map((r) => r.r);
+        return { at: now.toISOString(), zones, alerts, openIncidents: inc.length, incidents: inc.slice(0, 20) };
+      });
+    },
+    'GET /v1/dashboard/events/(?<id>[0-9a-f-]{36})/timeline': async (req, m) => {
+      const u = await auth(req); const [t0, t1] = range(req, 'from', 'to');
+      const rows = await withContext(pool, { userId: u }, async (c) => (await c.query('SELECT * FROM app.zone_timeline($1, $2, $3)', [m.groups!.id, t0, t1])).rows);
+      return { from: t0, to: t1, k: 5, points: rows.map((r) => ({ minute: r.minute, zone: r.zone_key, devices: r.devices, masked: r.masked })) };
+    },
+    'GET /v1/dashboard/events/(?<id>[0-9a-f-]{36})/flows': async (req, m) => {
+      const u = await auth(req); const [t0, t1] = range(req, 'from', 'to');
+      const rows = await withContext(pool, { userId: u }, async (c) => (await c.query('SELECT * FROM app.zone_flows($1, $2, $3)', [m.groups!.id, t0, t1])).rows);
+      return { from: t0, to: t1, k: 5, flows: rows.map((r) => ({ from: r.from_zone, to: r.to_zone, n: r.n, masked: r.masked })) };
+    },
+    'GET /v1/dashboard/events/(?<id>[0-9a-f-]{36})/compare': async (req, m) => {
+      const u = await auth(req); const a = range(req, 'aFrom', 'aTo'), b = range(req, 'bFrom', 'bTo');
+      const q = new URL(req.url ?? '/', 'http://x').searchParams; const evB = q.get('otherEvent');
+      if (evB !== null && !UUID.test(evB)) throw new HttpError(400, 'invalid_event');
+      return withContext(pool, { userId: u }, async (c) => ({
+        a: { eventId: m.groups!.id, from: a[0], to: a[1], zones: (await c.query('SELECT * FROM app.zone_summary($1, $2, $3)', [m.groups!.id, a[0], a[1]])).rows.map(zoneOut) },
+        b: { eventId: evB ?? m.groups!.id, from: b[0], to: b[1], zones: (await c.query('SELECT * FROM app.zone_summary($1, $2, $3)', [evB ?? m.groups!.id, b[0], b[1]])).rows.map(zoneOut) },
+      }));
+    },
     'GET /v1/events/(?<code>[A-Za-z0-9-]{3,40})': async (_req, m) => {
       const ev = await withContext(pool, {}, async (c) => (await c.query('SELECT event_id, name, map_version FROM app.event_by_code($1)', [m.groups!.code])).rows[0]);
       if (!ev) throw new HttpError(404, 'event_not_found', 'Événement introuvable.');
@@ -403,7 +545,7 @@ export function createApi(opts: ApiOptions) {
       res.end(JSON.stringify(out));
     } catch (e) {
       const pgCode = (e as { code?: string }).code;
-      const he = e instanceof HttpError ? e : pgCode === '42501' ? new HttpError(403, 'forbidden', 'Action réservée à tes amis.') : pgCode === '23514' || pgCode === '22001' || pgCode === '22P02' ? new HttpError(400, 'invalid_input', 'Donnée invalide : vérifie ce que tu as saisi.') : null;
+      const he = e instanceof HttpError ? e : pgCode === '42501' ? new HttpError(403, 'forbidden', path.includes('/staff/') || path.includes('/dashboard/') ? 'Action réservée au staff de cet événement.' : 'Action réservée à tes amis.') : pgCode === 'OE429' ? new HttpError(429, 'too_many_reports', 'Tu as déjà envoyé 3 signalements en 10 minutes. En cas d’urgence vitale, appelle le 112.') : pgCode === 'OE409' ? new HttpError(409, 'invalid_transition', 'Ce changement d’état n’est pas possible.') : pgCode === 'OE404' ? new HttpError(404, 'not_found', 'Introuvable ou événement terminé.') : pgCode === '22023' ? new HttpError(400, 'invalid_input', 'Donnée invalide.') : pgCode === '23514' || pgCode === '22001' || pgCode === '22P02' ? new HttpError(400, 'invalid_input', 'Donnée invalide : vérifie ce que tu as saisi.') : null;
       if (!he) console.error('[api]', req.method, path, (e as Error).message);
       res.writeHead(he?.status ?? 500, { 'content-type': 'application/json; charset=utf-8' });
       res.end(JSON.stringify({ error: he?.code ?? 'server_error', message: he?.message ?? 'Erreur serveur, réessaie.' }));

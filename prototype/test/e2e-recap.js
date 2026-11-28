@@ -22,6 +22,6 @@ const API = 'http://127.0.0.1:8787';
   const ms = await p.evaluate(() => document.querySelector('.sheet').innerText);
   ok(!/Écrire un message sur la carte/.test(ms) && /Inviter un ami/.test(ms), 'fiche « Moi » : invitation réelle, pas de bulle locale trompeuse');
   await p.evaluate(() => V.report()); await p.waitForTimeout(400);
-  ok(/Version de test/.test(await p.evaluate(() => document.querySelector('.sheet').innerText)), 'signalement : avertissement honnête « version de test » + 112');
+  { const t2 = await p.evaluate(() => document.querySelector('.sheet').innerText); ok(/Transmis en direct à l’équipe du lieu/.test(t2) && /112/.test(t2), 'signalement : transmis à l’équipe réelle du lieu + rappel 112'); }
   ok(errs.length === 0, 'erreurs JS : ' + (errs.join(' | ') || 'aucune'));
   console.log(`${n - f}/${n}`); await b.close(); })();

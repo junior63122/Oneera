@@ -5,6 +5,7 @@
 import { createApi } from './api';
 import { createPool, migrate } from './db';
 import { Gateway } from './gateway';
+import { startMaintenance } from './maintenance';
 
 const need = (k: string) => { const v = process.env[k]; if (!v) { console.error(`Variable manquante : ${k}`); process.exit(1); } return v; };
 const dbUrl = need('DATABASE_URL');
@@ -19,6 +20,7 @@ console.log(`[oneera] migrations appliquées : ${applied.length ? applied.join('
 const gw = new Gateway({ pool, listenUrl: dbUrl, secret, maxRate: 3, flushMs: 500, http: createApi({ pool, secret, publicWsUrl: process.env.PUBLIC_WS_URL, appleAudiences: list(process.env.APPLE_AUDIENCES), googleAudiences: list(process.env.GOOGLE_CLIENT_IDS) }) });
 const port = await gw.listen(Number(process.env.PORT ?? 8080));
 console.log(`[oneera] serveur prêt sur le port ${port}`);
-const stop = async () => { console.log('[oneera] arrêt…'); await gw.close(); await pool.end(); process.exit(0); };
+const stopMaintenance = startMaintenance(pool, Number(process.env.POSITIONS_RETENTION_HOURS ?? 168) || 168);
+const stop = async () => { console.log('[oneera] arrêt…'); stopMaintenance(); await gw.close(); await pool.end(); process.exit(0); };
 process.on('SIGTERM', stop);
 process.on('SIGINT', stop);

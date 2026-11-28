@@ -12,7 +12,7 @@ echo "Exécution du $(date '+%d/%m/%Y %H:%M')" | tee -a "$SUM"
 ( cd "$ROOT/packages/backend" && TEST_DATABASE_URL=postgres://oneera@127.0.0.1:55432/postgres npx vitest run --no-file-parallelism > "$OUT/backend.log" 2>&1 )
 line "serveur (vitest)" "$(grep -E '^ +Tests ' "$OUT/backend.log" | tr -s ' ' | sed 's/^ //')"
 # app : suites de bout en bout (navigateur réel)
-for t in scenarios qav5 qa2 qafx bounds rot3d kb e2e-portal e2e-live e2e-chat e2e2 e2e-recap e2e-contacts realleak xss-client personas; do
+for t in scenarios qav5 qa2 qafx bounds rot3d kb e2e-portal e2e-live e2e-chat e2e2 e2e-recap e2e-contacts e2e-reports realleak xss-client personas; do
   timeout 600 node "$PROTO/test/$t.js" "$API" > "$OUT/$t.log" 2>&1; code=$?
   res=$(grep -E '^[0-9]+/[0-9]+$' "$OUT/$t.log" | tail -1); fails=$(grep -cE '^FAIL|ÉCHEC' "$OUT/$t.log")
   errs=$(grep -E 'erreurs JS|errs \[|erreurs \[' "$OUT/$t.log" | tail -1 | cut -c1-60)

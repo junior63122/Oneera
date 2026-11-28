@@ -204,13 +204,14 @@ async function realConnect() {
     if (!realOn()) { REAL.connecting = false; return; }
     const ws = new WebSocket(REAL.api.replace(/^http/, 'ws') + '/rt?token=' + encodeURIComponent(token));
     REAL.ws = ws; REAL.connecting = false;
-    ws.onopen = () => { REAL.wsOk = true; REAL.retry = 0; REAL.lastSent = null; emit(); };
+    ws.onopen = () => { REAL.wsOk = true; REAL.retry = 0; REAL.lastSent = null; emit(); realFlushReports(); };
     ws.onmessage = (ev) => { let m; try { m = JSON.parse(ev.data); } catch (_) { return; }
       if (m.type === 'snapshot') m.friends.forEach(p => realApplyPos(p));
       else if (m.type === 'friend') realApplyPos(m.pos);
       else if (m.type === 'presence') { REAL.online[m.userId] = m.online; if (m.online && !FRIENDS.some(f => f.id === m.userId)) realSyncFriends().catch(() => {}); realRefreshVisible(); }
       else if (m.type === 'gone') { delete REAL.pos[m.userId]; delete FR_STATE[m.userId]; realRefreshVisible(true); }
       else if (m.type === 'message') realOnMessage(m.message);
+      else if (m.type === 'report') realOnReport(m);
       else if (m.type === 'refresh') realSyncFriends().then(() => REAL.onFriends && REAL.onFriends()).catch(() => {});
       if (m.type === 'snapshot' || m.type === 'friend') realRefreshVisible(); };
     ws.onclose = () => { REAL.wsOk = false; emit(); if (!realOn()) return; const d = [1, 2, 5, 10, 20][Math.min(REAL.retry++, 4)]; setTimeout(realConnect, d * 1000 * (.7 + Math.random() * .6)); }; /* délai varié : pas de retour en masse si le serveur était plein */

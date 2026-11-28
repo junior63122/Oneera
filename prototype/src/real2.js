@@ -329,10 +329,49 @@ V.meSheet = () => {
   $('#sh', sb).onclick = V.shareSettings;
 };
 
-// ---------- Signalement : en version de test, aucune équipe n'est encore branchée — on le dit clairement ----------
-const _reportDemo = V.report;
-V.report = (...a) => { _reportDemo(...a); if (!realOn()) return; const sb = $('.sheet .sbody'); if (!sb || $('#tstw', sb)) return;
-  const h = sb.querySelector('h2'); h && h.insertAdjacentHTML('afterend', `<div id="tstw" class="card" style="background:#FFF4E5;padding:10px 12px"><div class="small" style="color:#8A4B00"><b>Version de test :</b> l’alerte n’est pas encore transmise à une équipe du lieu. En cas d’urgence, appelle directement le 112.</div></div>`); };
+// ---------- Signalement réel : envoyé au serveur, reçu en direct par le staff du lieu, suivi en direct ----------
+// Correspondance avec le cahier : « Quelqu'un a besoin d'aide ici » → help, « Zone bondée / danger potentiel » → crowd,
+// « Objets perdus / retrouvés » → lost_found ; les autres situations partent en « autre » avec leur libellé.
+const REPORT_CAT = { medical: 'help', crowd: 'crowd', lost: 'lost_found' };
+const REPORT_ST = { open: 'Reçue', assigned: 'En route', in_progress: 'Sur place', resolved: 'Résolu', cancelled: 'Résolu' };
+const REPORT_TXT = { open: 'Alerte reçue par l’équipe du lieu', assigned: 'Un agent est en route', in_progress: 'L’agent est sur place', resolved: 'Alerte résolue', cancelled: 'Alerte close par l’équipe' };
+function realReportApply(r, st) {
+  const label = REPORT_ST[st]; if (!label || r.status === label) return;
+  r.status = label; r.hist.push([fmtClock(ST.clock), REPORT_TXT[st], label]); emit();
+  if (st !== 'open') push({ rid: r.id, title: st === 'resolved' || st === 'cancelled' ? 'Alerte résolue' : st === 'assigned' ? 'Un agent arrive' : 'L’agent est sur place', text: r.label + ' · ' + r.zone, icon: IC('securite'), onTap: () => V.reportStatus(r.id) });
+}
+async function realSendReport(r) {
+  if (!realOn() || r.serverId || r.sending) return; r.sending = true;
+  try {
+    if (!REAL.eventId) REAL.eventId = (await api('GET', '/v1/events/BDF-DEMO')).id;
+    const cat = REPORT_CAT[r.cat] || 'other', desc = [cat === 'other' ? r.label : '', r.note].filter(Boolean).join(' · ');
+    const out = await api('POST', `/v1/events/${REAL.eventId}/reports`, { category: cat, clientId: r.cid, x: r.at[0], y: r.at[1], floor: (ST.me.floor || 'L0').replace(/[^A-Za-z0-9_-]/g, '').slice(0, 24) || null, zone: String(zoneOf(r.at) || '').normalize('NFD').replace(/[^A-Za-z0-9_-]/g, '').slice(0, 24) || null, description: desc || undefined });
+    const rep = out.report; r.sending = false;
+    if (rep.duplicate && rep.id !== r.serverId) { const twin = ST.reports.find(x => x.serverId === rep.id); if (twin && twin !== r) { ST.reports = ST.reports.filter(x => x !== r); emit(); toast('Ton signalement est déjà transmis à l’équipe : suis son avancement ici'); return V.reportStatus(twin.id); } }
+    r.serverId = rep.id; const h0 = r.hist.find(h => h[2] === 'Reçue'); if (h0 && /Envoi/.test(h0[1])) h0[1] = 'Alerte reçue par l’équipe du lieu';
+    if (r.status === 'En attente réseau') { r.status = 'Reçue'; r.hist.push([fmtClock(ST.clock), 'Envoyée au retour du réseau, reçue par l’équipe', 'Reçue']); }
+    realReportApply(r, rep.status); emit();
+  } catch (e) {
+    r.sending = false;
+    if (/3 signalements|429/.test(e.message)) { ST.reports = ST.reports.filter(x => x !== r); emit(); closeSheet(true); toast(esc(e.message)); return; }
+    if (r.status !== 'En attente réseau') { r.status = 'En attente réseau'; r.hist.push([fmtClock(ST.clock), 'Pas de réseau : envoi automatique dès qu’il revient', 'En attente réseau']); emit(); }
+  }
+}
+function realFlushReports() { if (!realOn()) return; ST.reports.filter(r => r.real && !r.serverId).forEach(r => realSendReport(r));
+  if (REAL.eventId) api('GET', `/v1/events/${REAL.eventId}/reports/mine`).then(o => o.reports.forEach(x => { const r = ST.reports.find(y => y.serverId === x.id); if (r) realReportApply(r, x.status); })).catch(() => {}); }
+function realOnReport(m) { const r = ST.reports.find(x => x.serverId === m.id); if (r) realReportApply(r, m.status); }
+const _reportDetailReal = V.reportDetail;
+V.reportDetail = (cat) => {
+  _reportDetailReal(cat); if (!realOn()) return;
+  const sb = $('.sheet .sbody'), send = sb && $('#send', sb); if (!send || send._real) return; send._real = 1;
+  const demoSend = send.onclick;
+  send.onclick = (e) => { const before = ST.reports[0]; demoSend.call(send, e); const r = ST.reports[0]; if (!r || r === before || !r.mine) return;
+    r.real = true; r.cid = 'r' + Date.now().toString(36) + Math.random().toString(36).slice(2, 8); r.hist[0][1] = ST.offline ? r.hist[0][1] : 'Envoi à l’équipe du lieu…';
+    if (!ST.offline) realSendReport(r); };
+};
+const _reportReal = V.report;
+V.report = (...a) => { _reportReal(...a); if (!realOn()) return; const sb = $('.sheet .sbody'); if (!sb || $('#tstw', sb)) return;
+  const h = sb.querySelector('h2'); h && h.insertAdjacentHTML('afterend', `<div id="tstw" class="tiny" style="margin-top:-4px">Transmis en direct à l’équipe du lieu inscrite sur ONEERA, avec ta position.</div>`); };
 
 // Réglages d'un compte réel : « Modifier le profil » = prénom et avatar (pas de photo ni de pseudo séparés)
 const _settingsReal2 = V.settings;
